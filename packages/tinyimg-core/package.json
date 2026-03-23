@@ -1,0 +1,57 @@
+{
+  "name": "@pz4l/tinyimg-core",
+  "type": "module",
+  "version": "0.3.6",
+  "description": "Core library for TinyPNG image compression with multi-key management, intelligent caching, and fallback strategies",
+  "author": "pzehrel",
+  "license": "MIT",
+  "homepage": "https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-core#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pzehrel/tinyimg.git",
+    "directory": "packages/tinyimg-core"
+  },
+  "bugs": {
+    "url": "https://github.com/pzehrel/tinyimg/issues"
+  },
+  "keywords": [
+    "tinypng",
+    "image",
+    "compression",
+    "compress",
+    "optimize",
+    "optimization",
+    "img",
+    "minify",
+    "png",
+    "jpg",
+    "jpeg",
+    "webp",
+    "imagemin"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "p-limit": "^7.3.0",
+    "pathe": "^2.0.3",
+    "sharp": "^0.34.5",
+    "user-agents": "^2.1.22"
+  }
+}

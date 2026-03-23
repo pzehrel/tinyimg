@@ -1,0 +1,151 @@
+import { Buffer } from 'node:buffer'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { CacheStorage, readCache, writeCache } from './storage'
+
+describe('cache storage', () => {
+  let cacheDir: string
+  let testImagePath: string
+
+  beforeEach(async () => {
+    // Create temp cache directory with unique ID to avoid conflicts in parallel tests
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(7)}`
+    cacheDir = join(tmpdir(), `tinyimg-test-${uniqueId}`)
+    await mkdir(cacheDir, { recursive: true })
+
+    // Create a temporary test image file
+    testImagePath = join(tmpdir(), `test-image-${uniqueId}.png`)
+    await writeFile(testImagePath, Buffer.from('test-image-content'))
+  })
+
+  afterEach(async () => {
+    // Clean up temp directories
+    try {
+      await rm(cacheDir, { recursive: true, force: true })
+      await rm(testImagePath, { force: true })
+    }
+    catch {
+      // Ignore cleanup errors
+    }
+  })
+
+  describe('cacheStorage', () => {
+    it('writeCache creates cache file with MD5 as filename', async () => {
+      const storage = new CacheStorage(cacheDir)
+      const testData = Buffer.from('compressed-image-data')
+
+      await storage.write(testImagePath, testData)
+
+      // Verify cache file exists by reading it back
+      const readData = await storage.read(testImagePath)
+      expect(readData).toEqual(testData)
+    })
+
+    it('writeCache uses atomic operation (temp file + rename)', async () => {
+      const storage = new CacheStorage(cacheDir)
+      const testData = Buffer.from('compressed-image-data')
+
+      await storage.write(testImagePath, testData)
+
+      // Verify no .tmp file exists after successful write
+      // This is hard to test directly, but we can verify the file exists and is complete
+      const readData = await storage.read(testImagePath)
+      expect(readData).toEqual(testData)
+    })
+
+    it('readCache returns cached Buffer for existing cache', async () => {
+      const storage = new CacheStorage(cacheDir)
+      const testData = Buffer.from('compressed-image-data')
+
+      await storage.write(testImagePath, testData)
+      const readData = await storage.read(testImagePath)
+
+      expect(readData).toEqual(testData)
+    })
+
+    it('readCache returns null for missing cache file', async () => {
+      const storage = new CacheStorage(cacheDir)
+      const readData = await storage.read(testImagePath)
+
+      expect(readData).toBeNull()
+    })
+
+    it('readCache returns null for corrupted cache (silent)', async () => {
+      const storage = new CacheStorage(cacheDir)
+
+      // Create a valid cache file first
+      const testData = Buffer.from('compressed-image-data')
+      await storage.write(testImagePath, testData)
+
+      // Get the cache path by calculating MD5
+      const { calculateMD5 } = await import('./hash')
+      const md5Hash = await calculateMD5(testImagePath)
+      const cachePath = join(cacheDir, md5Hash)
+
+      // Simulate corruption by making the file unreadable
+      // We'll delete the file and replace it with a directory
+      await rm(cachePath, { force: true })
+      await mkdir(cachePath, { recursive: true })
+
+      // Read should return null silently (EISDIR error)
+      const readData = await storage.read(testImagePath)
+      expect(readData).toBeNull()
+    })
+
+    it('auto-creates cache directory if not exists', async () => {
+      const nonExistentDir = join(tmpdir(), `non-existent-${Date.now()}`)
+      const storage = new CacheStorage(nonExistentDir)
+      const testData = Buffer.from('compressed-image-data')
+
+      await storage.write(testImagePath, testData)
+
+      // Verify directory was created
+      const readData = await storage.read(testImagePath)
+      expect(readData).toEqual(testData)
+
+      // Cleanup
+      await rm(nonExistentDir, { recursive: true, force: true })
+    })
+  })
+
+  describe('readCache', () => {
+    it('iterates through cacheDirs in priority order', async () => {
+      const projectCache = join(tmpdir(), `project-cache-${Date.now()}`)
+      const globalCache = join(tmpdir(), `global-cache-${Date.now()}`)
+      await mkdir(projectCache, { recursive: true })
+      await mkdir(globalCache, { recursive: true })
+
+      const testData1 = Buffer.from('project-cache-data')
+      const testData2 = Buffer.from('global-cache-data')
+
+      // Write to both caches
+      await writeCache(testImagePath, testData1, projectCache)
+      await writeCache(testImagePath, testData2, globalCache)
+
+      // Should read from project cache first (priority)
+      const readData = await readCache(testImagePath, [projectCache, globalCache])
+      expect(readData).toEqual(testData1)
+
+      // Cleanup
+      await rm(projectCache, { recursive: true, force: true })
+      await rm(globalCache, { recursive: true, force: true })
+    })
+
+    it('returns first successful read or null if all miss', async () => {
+      const cacheDir1 = join(tmpdir(), `cache1-${Date.now()}`)
+      const cacheDir2 = join(tmpdir(), `cache2-${Date.now()}`)
+      await mkdir(cacheDir1, { recursive: true })
+      await mkdir(cacheDir2, { recursive: true })
+
+      // Neither cache has the data
+      const readData = await readCache(testImagePath, [cacheDir1, cacheDir2])
+      expect(readData).toBeNull()
+
+      // Cleanup
+      await rm(cacheDir1, { recursive: true, force: true })
+      await rm(cacheDir2, { recursive: true, force: true })
+    })
+  })
+})

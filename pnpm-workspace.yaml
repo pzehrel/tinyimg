@@ -1,0 +1,8 @@
+
+packages:
+  - 'packages/*'
+allowBuilds:
+  sharp: false
+shellEmulator: true
+
+trustPolicy: no-downgrade

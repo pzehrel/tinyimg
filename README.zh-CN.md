@@ -1,0 +1,60 @@
+[English](README.md) | 简体中文
+
+# TinyImg
+
+基于 TinyPNG 的智能图片压缩工具，提供智能缓存和多 API 密钥管理功能。
+
+## 特性
+
+- **多 API 密钥管理** - 支持多个 API 密钥管理
+- **智能缓存** - 基于 MD5 的永久缓存，避免重复压缩
+- **并发处理** - 可配置并行压缩数量（默认 8）
+- **多种工具** - 提供 CLI 工具和 Vite/Webpack/Rolldown 的 unplugin
+
+## 快速开始
+
+### CLI 工具
+
+全局安装并压缩图片：
+
+```bash
+npm install -g @pz4l/tinyimg-cli
+tinyimg *.png *.jpg
+```
+
+### 构建插件
+
+在 Vite 项目中添加插件：
+
+```js
+// vite.config.js
+import tinyimg from '@pz4l/tinyimg-unplugin/vite'
+
+export default {
+  plugins: [tinyimg()]
+}
+```
+
+配置 API 密钥：
+
+```bash
+export TINYPNG_KEYS=your_api_key_here
+```
+
+## 包介绍
+
+- **[@pz4l/tinyimg-core](packages/tinyimg-core/)** - 核心压缩库，支持缓存和密钥管理
+- **[@pz4l/tinyimg-cli](packages/tinyimg-cli/)** - 批量压缩命令行工具
+- **[@pz4l/tinyimg-unplugin](packages/tinyimg-unplugin/)** - Vite/Webpack/Rolldown 构建工具插件
+
+## 文档
+
+- [核心 API 参考](packages/tinyimg-core/README.md)
+- [CLI 使用指南](packages/tinyimg-cli/README.md)
+- [插件集成说明](packages/tinyimg-unplugin/README.md)
+- [贡献指南](CONTRIBUTING.md)
+- [更新日志](CHANGELOG.md)
+
+## License
+
+MIT

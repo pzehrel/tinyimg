@@ -1,0 +1,13 @@
+{
+  "name": "webpack-example",
+  "version": "0.0.1",
+  "description": "Webpack example for @pz4l/tinyimg-unplugin",
+  "scripts": {
+    "build": "npx webpack"
+  },
+  "devDependencies": {
+    "@pz4l/tinyimg-unplugin": "workspace:*",
+    "dotenv-webpack": "^9.0.0",
+    "webpack": "^5.105.0"
+  }
+}

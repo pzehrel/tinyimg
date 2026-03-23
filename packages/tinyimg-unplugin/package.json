@@ -1,0 +1,78 @@
+{
+  "name": "@pz4l/tinyimg-unplugin",
+  "type": "module",
+  "version": "0.3.6",
+  "description": "unplugin for automatic image compression during build (Vite, Webpack, Rolldown)",
+  "author": "pzehrel",
+  "license": "MIT",
+  "homepage": "https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-unplugin#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pzehrel/tinyimg.git",
+    "directory": "packages/tinyimg-unplugin"
+  },
+  "bugs": {
+    "url": "https://github.com/pzehrel/tinyimg/issues"
+  },
+  "keywords": [
+    "tinypng",
+    "image",
+    "compression",
+    "compress",
+    "optimize",
+    "optimization",
+    "img",
+    "minify",
+    "unplugin",
+    "vite",
+    "webpack",
+    "rolldown",
+    "build",
+    "plugin",
+    "imagemin"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "vite": ">=2.0.0",
+    "webpack": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    },
+    "webpack": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@pz4l/tinyimg-core": "workspace:*",
+    "kleur": "^4.1.5",
+    "micromatch": "^4.0.8",
+    "pathe": "^2.0.3",
+    "unplugin": "^3.0.0"
+  },
+  "devDependencies": {
+    "fast-glob": "^3.3.3",
+    "webpack": "^5.105.4",
+    "webpack-cli": "^7.0.2"
+  }
+}

@@ -1,0 +1,121 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on version tags like v1.0.0, v2.1.3, etc.
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+  id-token: write # For npm provenance
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Install dependencies
+        run: pnpm install
+        env:
+          NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+
+      - name: Update package versions
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          # Update root package.json
+          jq ".version = \"$VERSION\"" package.json > package.json.tmp && mv package.json.tmp package.json
+          # Update all package versions
+          for pkg in packages/*/package.json; do
+            jq ".version = \"$VERSION\"" "$pkg" > "$pkg.tmp" && mv "$pkg.tmp" "$pkg"
+          done
+          echo "Updated all packages to version $VERSION"
+
+      - name: Build all packages
+        run: pnpm build
+
+      - name: Generate root changelog
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          TAG_NAME="v$VERSION"
+
+          # Try to get previous tag, fallback to first commit if no tags exist
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+          if [ -z "$PREVIOUS_TAG" ]; then
+            PREVIOUS_TAG=$(git rev-list --max-parents=0 HEAD 2>/dev/null || echo "HEAD~20")
+          fi
+
+          # Generate changelog content
+          echo "# Changelog" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "## [$VERSION] - $(date +%Y-%m-%d)" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+
+          # Get commits since last tag or from beginning
+          if [ "$PREVIOUS_TAG" = "$(git rev-list --max-parents=0 HEAD 2>/dev/null)" ]; then
+            echo "### Initial Release" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log --pretty=format:"- %s (%h)" --no-merges >> CHANGELOG.md
+          elif [ -n "$PREVIOUS_TAG" ]; then
+            echo "### Changes since $PREVIOUS_TAG" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log "$PREVIOUS_TAG"..HEAD --pretty=format:"- %s (%h)" --no-merges >> CHANGELOG.md
+          else
+            echo "### Changes" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log --pretty=format:"- %s (%h)" --no-merges -20 >> CHANGELOG.md
+          fi
+
+          echo "" >> CHANGELOG.md
+          echo "Full Changelog: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG:-main}...$TAG_NAME" >> CHANGELOG.md
+
+          cat CHANGELOG.md
+
+      - name: Commit version changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add package.json packages/*/package.json CHANGELOG.md
+          git commit -m "chore: release v${{ steps.get_version.outputs.version }}"
+          git push origin HEAD:main
+        continue-on-error: true
+
+      - name: Publish to npm
+        run: |
+          # Publish all packages
+          pnpm -r --filter './packages/**' publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
+          NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: CHANGELOG.md
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
