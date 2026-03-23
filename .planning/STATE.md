@@ -50,6 +50,14 @@ tinyimg/
 
 ## Recent Work
 
+**2026-03-23: Phase 1 Plan 3 Complete**
+- Configured Vitest 4.1.0 testing framework with v8 coverage provider
+- Created placeholder test files for all three packages (tinyimg-core, tinyimg-cli, tinyimg-unplugin)
+- Set up test execution scripts (test, test:unit, test:coverage)
+- Verified test discovery and execution across all packages (3 tests pass)
+- Generated coverage reports with text, html, and json reporters
+- Deviation: Removed deprecated `test.workspace` option for Vitest 4 compatibility
+
 **2026-03-23: Phase 1 Plan 2 Complete**
 - Configured TypeScript 5.9.3 with ES2022 target and strict mode
 - Set up ESLint 9.x flat config with @antfu/eslint-config and stylistic rules
@@ -99,3 +107,11 @@ Continue with Phase 1 plans:
 - 默认并发数：8
 - 后备方案连续失败 8 次后停止执行
 - 所有 key 耗尽时自动降级到后备方案
+
+## Performance Metrics
+
+| Phase | Plan | Duration | Tasks | Files | Date |
+|-------|------|----------|-------|-------|------|
+| 01-project-initialization | 01 | 2m 30s | 3 | 8 | 2026-03-23 |
+| 01-project-initialization | 02 | 3m 45s | 3 | 5 | 2026-03-23 |
+| 01-project-initialization | 03 | 1m 35s | 4 | 5 | 2026-03-23 |
