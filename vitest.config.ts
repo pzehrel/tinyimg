@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    workspace: ['./packages/*'],
+    plugins: [],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json'],
@@ -13,5 +13,8 @@ export default defineConfig({
         '**/*.config.ts',
       ],
     },
+  },
+  resolve: {
+    // Ensure test files can be resolved from packages
   },
 })
