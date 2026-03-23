@@ -1,0 +1,6 @@
+{
+  "name": "@pzehrel/tinyimg-vite",
+  "scripts": {
+    "prepublishOnly": "test -n \"$CI\" || (echo 'Error: Publishing is only allowed from CI.' && exit 1)"
+  }
+}
