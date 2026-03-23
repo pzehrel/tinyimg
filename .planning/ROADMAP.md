@@ -29,7 +29,7 @@
 - [ ] 01-02-PLAN.md — TypeScript, ESLint, and commitlint configuration
 - [ ] 01-03-PLAN.md — Vitest testing framework setup
 - [ ] 01-04-PLAN.md — GitHub Actions CI/CD workflows
-- [ ] 01-05-PLAN.md — Changesets version management configuration
+- [x] 01-05-PLAN.md — Changesets version management configuration
 
 **Progress**: 1/5 plans complete (20%)
 
