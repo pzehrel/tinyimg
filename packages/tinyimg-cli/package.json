@@ -1,0 +1,28 @@
+{
+  "name": "tinyimg-cli",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "CLI tool for TinyPNG image compression with batch processing and interactive key management",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "tinyimg": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "tinyimg-core": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  }
+}
