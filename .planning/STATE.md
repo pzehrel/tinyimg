@@ -1,8 +1,21 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: unknown
+last_updated: "2026-03-23T14:53:02.992Z"
+progress:
+  total_phases: 8
+  completed_phases: 1
+  total_plans: 5
+  completed_plans: 5
+---
+
 # TinyImg Project State
 
-**Project Status**: Phase 1 Plan 3 Complete
+**Project Status**: Phase 1 Plan 4 Complete
 **Last Updated**: 2026-03-23
-**Current Phase**: Phase 1 (Plan 3/5 Complete)
+**Current Phase**: Phase 1 (Plan 4/5 Complete)
 
 ## Project Overview
 
@@ -47,10 +60,23 @@ tinyimg/
 ✅ Phase 1 Plan 1 - Monorepo infrastructure setup (pnpm workspace + 3 packages)
 ✅ Phase 1 Plan 2 - TypeScript, ESLint, and Commitlint configuration
 ✅ Phase 1 Plan 3 - Vitest testing framework with coverage reporting
+✅ Phase 1 Plan 4 - CI/CD workflows with GitHub Actions (CI + Release with OIDC)
 
 ## Recent Work
 
+**2026-03-23: Phase 1 Plan 4 Complete**
+
+- Created CI workflow (.github/workflows/ci.yml) with lint, test, and build jobs
+- Created Release workflow (.github/workflows/release.yml) with OIDC trusted publishing
+- CI triggers on push to main and pull requests targeting main
+- Release workflow auto-publishes when changesets are present (no manual approval)
+- Uses pnpm 10.32.1 and Node.js 22 in both workflows
+- Implements concurrency control with cancel-in-progress for efficiency
+- Changesets integration for unified version management across all 3 packages
+- All decisions followed locked project context (D-12, D-13, D-14, D-17, D-18, D-19)
+
 **2026-03-23: Phase 1 Plan 3 Complete**
+
 - Configured Vitest 4.1.0 testing framework with v8 coverage provider
 - Created placeholder test files for all three packages (tinyimg-core, tinyimg-cli, tinyimg-unplugin)
 - Set up test execution scripts (test, test:unit, test:coverage)
@@ -59,6 +85,7 @@ tinyimg/
 - Deviation: Removed deprecated `test.workspace` option for Vitest 4 compatibility
 
 **2026-03-23: Phase 1 Plan 2 Complete**
+
 - Configured TypeScript 5.9.3 with ES2022 target and strict mode
 - Set up ESLint 9.x flat config with @antfu/eslint-config and stylistic rules
 - Configured commitlint to enforce conventional commit format
@@ -67,6 +94,7 @@ tinyimg/
 - All configurations working correctly (pnpm lint executes without errors)
 
 **2026-03-23: Phase 1 Plan 1 Complete**
+
 - Created pnpm workspace configuration
 - Set up tinyimg-core package with ES module structure
 - Set up tinyimg-cli package with workspace dependency
@@ -89,6 +117,7 @@ Continue with Phase 1 plans:
 ## Roadmap Summary
 
 **Milestone 1: MVP**
+
 - Phase 1: 项目初始化和基础设施 (1-2 天)
 - Phase 2: 核心 API Key 管理 (2-3 天)
 - Phase 3: 智能缓存系统 (2-3 天)
@@ -115,3 +144,5 @@ Continue with Phase 1 plans:
 | 01-project-initialization | 01 | 2m 30s | 3 | 8 | 2026-03-23 |
 | 01-project-initialization | 02 | 3m 45s | 3 | 5 | 2026-03-23 |
 | 01-project-initialization | 03 | 1m 35s | 4 | 5 | 2026-03-23 |
+| 01-project-initialization | 04 | 2min | 2 | 2 | 2026-03-23 |
+| Phase 01-project-initialization P04 | 2min | 2 tasks | 2 files |

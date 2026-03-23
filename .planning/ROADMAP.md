@@ -25,10 +25,10 @@
 - CI/CD 自动化流程
 
 **Plans:**
-- [x] 01-01-PLAN.md — Workspace setup and package structure creation ✅
+5/5 plans complete
 - [x] 01-02-PLAN.md — TypeScript, ESLint, and commitlint configuration
 - [x] 01-03-PLAN.md — Vitest testing framework setup ✅
-- [ ] 01-04-PLAN.md — GitHub Actions CI/CD workflows
+- [x] 01-04-PLAN.md — GitHub Actions CI/CD workflows
 - [x] 01-05-PLAN.md — Changesets version management configuration
 
 **Progress**: 3/5 plans complete (60%)
