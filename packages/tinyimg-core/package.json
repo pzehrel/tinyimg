@@ -1,7 +1,7 @@
 {
   "name": "tinyimg-core",
-  "version": "0.0.0",
   "type": "module",
+  "version": "0.0.0",
   "description": "Core library for TinyPNG image compression with multi-key management, intelligent caching, and fallback strategies",
   "exports": {
     ".": {
@@ -18,5 +18,8 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "tinify": "1.8.2"
   }
 }
