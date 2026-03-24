@@ -1,9 +1,10 @@
 // Cache
-export { calculateMD5 } from './cache/hash'
+export { calculateMD5, calculateMD5FromBuffer } from './cache/hash'
 export { getGlobalCachePath, getProjectCachePath } from './cache/paths'
 
 export { type CacheStats, formatBytes, getAllCacheStats, getCacheStats } from './cache/stats'
 export { CacheStorage, readCache, writeCache } from './cache/storage'
+export { BufferCacheStorage, readCacheByHash, writeCacheByHash } from './cache/buffer-storage'
 
 // Compression
 export { TinyPngApiCompressor } from './compress/api-compressor'
@@ -11,7 +12,9 @@ export { TinyPngWebCompressor } from './compress/web-compressor'
 export { RetryManager } from './compress/retry'
 export { createConcurrencyLimiter, executeWithConcurrency } from './compress/concurrency'
 export { compressWithFallback, getCompressorTypesForMode } from './compress/compose'
-export type { ICompressor, CompressOptions, CompressionMode } from './compress/types'
+export { compressImage, compressImages } from './compress/service'
+export type { ICompressor, CompressOptions, CompressionMode, CompressServiceOptions } from './compress/types'
+export { AllCompressionFailedError } from './errors/types'
 
 // Config loading
 export { loadKeys } from './config/loader'
