@@ -1,61 +1,61 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { RandomSelector, RoundRobinSelector, PrioritySelector } from '../keys/selector.js'
-import { KeyPool } from '../keys/pool.js'
-import { AllKeysExhaustedError, NoValidKeysError } from '../errors/types.js'
+import { describe, expect, it, vi } from 'vitest'
+import { AllKeysExhaustedError, NoValidKeysError } from '../errors/types'
+import { KeyPool } from '../keys/pool'
+import { PrioritySelector, RandomSelector, RoundRobinSelector } from '../keys/selector'
 
 // Mock dependencies
-vi.mock('../keys/validator.js', () => ({
-  validateKey: vi.fn(() => Promise.resolve(true))
+vi.mock('../keys/validator', () => ({
+  validateKey: vi.fn(() => Promise.resolve(true)),
 }))
 
-vi.mock('../keys/quota.js', () => ({
+vi.mock('../keys/quota', () => ({
   queryQuota: vi.fn(() => Promise.resolve(100)),
   createQuotaTracker: vi.fn((key, remaining) => ({
     key,
     remaining,
     localCounter: remaining,
-    decrement: vi.fn(function() { this.localCounter-- }),
-    isZero: vi.fn(function() { return this.localCounter === 0 })
-  }))
+    decrement: vi.fn(function (this: any) { this.localCounter-- }),
+    isZero: vi.fn(function (this: any) { return this.localCounter === 0 }),
+  })),
 }))
 
-vi.mock('../config/loader.js', () => ({
+vi.mock('../config/loader', () => ({
   loadKeys: vi.fn(() => [
     { key: 'key1_123456789012' },
     { key: 'key2_123456789012' },
-    { key: 'key3_123456789012' }
-  ])
+    { key: 'key3_123456789012' },
+  ]),
 }))
 
-describe('Key Selection Strategies', () => {
+describe('key Selection Strategies', () => {
   const keys = ['key1', 'key2', 'key3']
 
-  it('RandomSelector selects random key', async () => {
+  it('randomSelector selects random key', async () => {
     const selector = new RandomSelector()
     const selected = await selector.select(keys)
     expect(selected).toBeTruthy()
     expect(keys).toContain(selected!.key)
   })
 
-  it('RoundRobinSelector cycles through keys', async () => {
+  it('roundRobinSelector cycles through keys', async () => {
     const selector = new RoundRobinSelector()
     const first = await selector.select(keys)
-    const second = await selector.select(keys)
-    const third = await selector.select(keys)
+    const _second = await selector.select(keys)
+    const _third = await selector.select(keys)
     const fourth = await selector.select(keys)
 
     // Should cycle back to first after 3 selections
     expect(first!.key).toBe(fourth!.key)
   })
 
-  it('PrioritySelector returns first available', async () => {
+  it('prioritySelector returns first available', async () => {
     const selector = new PrioritySelector()
     const selected = await selector.select(keys)
     expect(selected!.key).toBe('key1')
   })
 })
 
-describe('KeyPool', () => {
+describe('keyPool', () => {
   it('initializes with loaded keys', () => {
     const pool = new KeyPool('random')
     expect(pool.getCurrentKey()).toBeNull()
@@ -69,7 +69,7 @@ describe('KeyPool', () => {
   })
 
   it('throws NoValidKeysError when no keys configured', async () => {
-    const { loadKeys: loadKeysMocked } = await import('../config/loader.js')
+    const { loadKeys: loadKeysMocked } = await import('../config/loader')
     vi.mocked(loadKeysMocked).mockReturnValueOnce([])
 
     expect(() => new KeyPool('random')).toThrow(NoValidKeysError)
@@ -77,7 +77,7 @@ describe('KeyPool', () => {
 
   it('handles quota exhaustion', async () => {
     const pool = new KeyPool('random')
-    const key = await pool.selectKey()
+    const _key = await pool.selectKey()
 
     // Decrement all quota to force re-selection
     for (let i = 0; i < 100; i++) {
@@ -85,7 +85,7 @@ describe('KeyPool', () => {
     }
 
     // Mock queryQuota to return 0 for all keys
-    const { queryQuota: queryQuotaMocked } = await import('../keys/quota.js')
+    const { queryQuota: queryQuotaMocked } = await import('../keys/quota')
     vi.mocked(queryQuotaMocked).mockResolvedValue(0)
 
     // Now selectKey should fail with AllKeysExhaustedError

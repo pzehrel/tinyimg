@@ -1,5 +1,5 @@
 import tinify from 'tinify'
-import { maskKey } from './masker.js'
+import { maskKey } from './masker'
 
 const MONTHLY_LIMIT = 500 // Free tier limit
 
@@ -7,10 +7,11 @@ export async function queryQuota(key: string): Promise<number> {
   try {
     tinify.key = key
     await tinify.validate() // Required to set compressionCount
-    const usedThisMonth = tinify.compressionCount
+    const usedThisMonth = tinify.compressionCount ?? 0
     const remaining = Math.max(0, MONTHLY_LIMIT - usedThisMonth)
     return remaining
-  } catch (error: any) {
+  }
+  catch (error: any) {
     // Invalid key or quota exhausted - return 0
     if (error?.message?.includes('credentials') || error?.message?.includes('Unauthorized') || error?.constructor?.name === 'AccountError') {
       return 0
@@ -28,7 +29,7 @@ export interface QuotaTracker {
 }
 
 export function createQuotaTracker(key: string, remaining: number): QuotaTracker {
-  let localCounter = remaining
+  const localCounter = remaining
 
   return {
     key,
@@ -45,6 +46,6 @@ export function createQuotaTracker(key: string, remaining: number): QuotaTracker
     },
     isZero() {
       return this.localCounter === 0
-    }
+    },
   }
 }
