@@ -5,12 +5,12 @@
   "description": "CLI tool for TinyPNG image compression with batch processing and interactive key management",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
     }
   },
   "bin": {
-    "tinyimg": "./dist/cli.js"
+    "tinyimg": "./dist/index.mjs"
   },
   "files": [
     "dist"
