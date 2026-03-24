@@ -20,6 +20,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "p-limit": "7.3.0",
     "tinify": "1.8.2"
   }
 }
