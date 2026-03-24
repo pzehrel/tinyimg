@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { AllKeysExhaustedError, NoValidKeysError } from '../types'
+import { AllKeysExhaustedError, NoValidKeysError } from './types'
 
 describe('Error Types', () => {
   describe('AllKeysExhaustedError', () => {
