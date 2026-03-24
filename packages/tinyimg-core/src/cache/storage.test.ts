@@ -15,12 +15,13 @@ describe('cache storage', () => {
   let testImagePath: string
 
   beforeEach(async () => {
-    // Create temp cache directory
-    cacheDir = join(tmpdir(), `tinyimg-test-${Date.now()}`)
+    // Create temp cache directory with unique ID to avoid conflicts in parallel tests
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(7)}`
+    cacheDir = join(tmpdir(), `tinyimg-test-${uniqueId}`)
     await mkdir(cacheDir, { recursive: true })
 
     // Create a temporary test image file
-    testImagePath = join(tmpdir(), `test-image-${Date.now()}.png`)
+    testImagePath = join(tmpdir(), `test-image-${uniqueId}.png`)
     await writeFile(testImagePath, Buffer.from('test-image-content'))
   })
 
