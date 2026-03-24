@@ -16,6 +16,7 @@ export { validateKey } from './keys/validator'
 export { calculateMD5 } from './cache/hash'
 export { getProjectCachePath, getGlobalCachePath } from './cache/paths'
 export { CacheStorage, readCache, writeCache } from './cache/storage'
+export { getCacheStats, getAllCacheStats, formatBytes, type CacheStats } from './cache/stats'
 
 // Utils
 export { logInfo, logWarning } from './utils/logger'
