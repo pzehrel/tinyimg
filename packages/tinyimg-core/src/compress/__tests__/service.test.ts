@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { SMALL_PNG, createMockPngBuffer } from './fixtures'
 import { KeyPool } from '../../keys/pool'
 import { CacheStorage } from '../../cache/storage'
