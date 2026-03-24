@@ -68,10 +68,9 @@ describe('KeyPool', () => {
     expect(typeof key).toBe('string')
   })
 
-  it('throws NoValidKeysError when no keys configured', () => {
-    vi.doMock('../config/loader.js', () => ({
-      loadKeys: vi.fn(() => [])
-    }))
+  it('throws NoValidKeysError when no keys configured', async () => {
+    const { loadKeys: loadKeysMocked } = await import('../config/loader.js')
+    vi.mocked(loadKeysMocked).mockReturnValueOnce([])
 
     expect(() => new KeyPool('random')).toThrow(NoValidKeysError)
   })
@@ -80,9 +79,16 @@ describe('KeyPool', () => {
     const pool = new KeyPool('random')
     const key = await pool.selectKey()
 
-    // Simulate quota exhaustion
-    vi.mocked(await import('../keys/quota.js')).queryQuota.mockResolvedValue(0)
+    // Decrement all quota to force re-selection
+    for (let i = 0; i < 100; i++) {
+      pool.decrementQuota()
+    }
 
+    // Mock queryQuota to return 0 for all keys
+    const { queryQuota: queryQuotaMocked } = await import('../keys/quota.js')
+    vi.mocked(queryQuotaMocked).mockResolvedValue(0)
+
+    // Now selectKey should fail with AllKeysExhaustedError
     await expect(pool.selectKey()).rejects.toThrow(AllKeysExhaustedError)
   })
 })
