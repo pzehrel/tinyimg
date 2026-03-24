@@ -1,7 +1,7 @@
+import type { ConfigFile } from './types'
 import fs from 'node:fs'
-import path from 'node:path'
 import os from 'node:os'
-import type { ConfigFile } from './types.js'
+import path from 'node:path'
 
 const CONFIG_DIR = '.tinyimg'
 const CONFIG_FILE = 'keys.json'
@@ -24,7 +24,7 @@ export function ensureConfigFile(): void {
     fs.writeFileSync(
       configPath,
       JSON.stringify(initialContent, null, 2),
-      { mode: 0o600 }
+      { mode: 0o600 },
     )
   }
 }
@@ -42,6 +42,6 @@ export function writeConfig(config: ConfigFile): void {
   fs.writeFileSync(
     configPath,
     JSON.stringify(config, null, 2),
-    { mode: 0o600 }
+    { mode: 0o600 },
   )
 }

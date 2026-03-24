@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { AllKeysExhaustedError, NoValidKeysError } from './types'
 
-describe('Error Types', () => {
-  describe('AllKeysExhaustedError', () => {
+describe('error Types', () => {
+  describe('allKeysExhaustedError', () => {
     it('should extend Error', () => {
       const error = new AllKeysExhaustedError()
       expect(error).toBeInstanceOf(Error)
@@ -20,7 +20,7 @@ describe('Error Types', () => {
     })
   })
 
-  describe('NoValidKeysError', () => {
+  describe('noValidKeysError', () => {
     it('should extend Error', () => {
       const error = new NoValidKeysError()
       expect(error).toBeInstanceOf(Error)

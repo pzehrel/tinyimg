@@ -1,35 +1,34 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { RandomSelector, RoundRobinSelector, PrioritySelector } from './selector'
-import type { KeySelection } from './selector'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { PrioritySelector, RandomSelector, RoundRobinSelector } from './selector'
 
 // Mock dependencies
-vi.mock('../utils/logger.js', () => ({
-  logWarning: vi.fn()
+vi.mock('../utils/logger', () => ({
+  logWarning: vi.fn(),
 }))
 
-vi.mock('./validator.js', () => ({
-  validateKey: vi.fn()
+vi.mock('./validator', () => ({
+  validateKey: vi.fn(),
 }))
 
-vi.mock('./quota.js', () => ({
+vi.mock('./quota', () => ({
   queryQuota: vi.fn(),
   createQuotaTracker: vi.fn(() => ({
     key: 'test-key',
     remaining: 100,
     localCounter: 100,
     decrement: vi.fn(),
-    isZero: vi.fn(() => false)
-  }))
+    isZero: vi.fn(() => false),
+  })),
 }))
 
-describe('Key Selection Strategies', () => {
+describe('key Selection Strategies', () => {
   const mockKeys = ['key1', 'key2', 'key3']
 
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  describe('RandomSelector', () => {
+  describe('randomSelector', () => {
     let selector: RandomSelector
 
     beforeEach(() => {
@@ -37,8 +36,8 @@ describe('Key Selection Strategies', () => {
     })
 
     it('should select random key from available keys', async () => {
-      const { validateKey } = await import('./validator.js')
-      const { queryQuota } = await import('./quota.js')
+      const { validateKey } = await import('./validator')
+      const { queryQuota } = await import('./quota')
 
       vi.mocked(validateKey).mockResolvedValue(true as never)
       vi.mocked(queryQuota).mockResolvedValue(100 as never)
@@ -50,8 +49,8 @@ describe('Key Selection Strategies', () => {
     })
 
     it('should validate and filter keys before selection', async () => {
-      const { validateKey } = await import('./validator.js')
-      const { queryQuota } = await import('./quota.js')
+      const { validateKey } = await import('./validator')
+      const { queryQuota } = await import('./quota')
 
       vi.mocked(validateKey).mockImplementation(async (key: string) => {
         return key !== 'invalid-key'
@@ -66,8 +65,8 @@ describe('Key Selection Strategies', () => {
     })
 
     it('should skip keys with zero quota', async () => {
-      const { validateKey } = await import('./validator.js')
-      const { queryQuota } = await import('./quota.js')
+      const { validateKey } = await import('./validator')
+      const { queryQuota } = await import('./quota')
 
       vi.mocked(validateKey).mockResolvedValue(true as never)
       vi.mocked(queryQuota).mockImplementation(async (key: string) => {
@@ -81,7 +80,7 @@ describe('Key Selection Strategies', () => {
     })
 
     it('should return null when no keys available', async () => {
-      const { validateKey } = await import('./validator.js')
+      const { validateKey } = await import('./validator')
 
       vi.mocked(validateKey).mockResolvedValue(false as never)
 
@@ -91,7 +90,7 @@ describe('Key Selection Strategies', () => {
     })
   })
 
-  describe('RoundRobinSelector', () => {
+  describe('roundRobinSelector', () => {
     let selector: RoundRobinSelector
 
     beforeEach(() => {
@@ -99,8 +98,8 @@ describe('Key Selection Strategies', () => {
     })
 
     it('should cycle through keys in order', async () => {
-      const { validateKey } = await import('./validator.js')
-      const { queryQuota } = await import('./quota.js')
+      const { validateKey } = await import('./validator')
+      const { queryQuota } = await import('./quota')
 
       vi.mocked(validateKey).mockResolvedValue(true as never)
       vi.mocked(queryQuota).mockResolvedValue(100 as never)
@@ -121,8 +120,8 @@ describe('Key Selection Strategies', () => {
     })
 
     it('should reset cycle index', async () => {
-      const { validateKey } = await import('./validator.js')
-      const { queryQuota } = await import('./quota.js')
+      const { validateKey } = await import('./validator')
+      const { queryQuota } = await import('./quota')
 
       vi.mocked(validateKey).mockResolvedValue(true as never)
       vi.mocked(queryQuota).mockResolvedValue(100 as never)
@@ -137,8 +136,8 @@ describe('Key Selection Strategies', () => {
     })
 
     it('should validate and filter keys before selection', async () => {
-      const { validateKey } = await import('./validator.js')
-      const { queryQuota } = await import('./quota.js')
+      const { validateKey } = await import('./validator')
+      const { queryQuota } = await import('./quota')
 
       vi.mocked(validateKey).mockImplementation(async (key: string) => {
         return key !== 'invalid-key'
@@ -153,8 +152,8 @@ describe('Key Selection Strategies', () => {
     })
 
     it('should skip keys with zero quota', async () => {
-      const { validateKey } = await import('./validator.js')
-      const { queryQuota } = await import('./quota.js')
+      const { validateKey } = await import('./validator')
+      const { queryQuota } = await import('./quota')
 
       vi.mocked(validateKey).mockResolvedValue(true as never)
       vi.mocked(queryQuota).mockImplementation(async (key: string) => {
@@ -168,7 +167,7 @@ describe('Key Selection Strategies', () => {
     })
 
     it('should return null when no keys available', async () => {
-      const { validateKey } = await import('./validator.js')
+      const { validateKey } = await import('./validator')
 
       vi.mocked(validateKey).mockResolvedValue(false as never)
 
@@ -178,7 +177,7 @@ describe('Key Selection Strategies', () => {
     })
   })
 
-  describe('PrioritySelector', () => {
+  describe('prioritySelector', () => {
     let selector: PrioritySelector
 
     beforeEach(() => {
@@ -186,8 +185,8 @@ describe('Key Selection Strategies', () => {
     })
 
     it('should select first available key', async () => {
-      const { validateKey } = await import('./validator.js')
-      const { queryQuota } = await import('./quota.js')
+      const { validateKey } = await import('./validator')
+      const { queryQuota } = await import('./quota')
 
       vi.mocked(validateKey).mockResolvedValue(true as never)
       vi.mocked(queryQuota).mockResolvedValue(100 as never)
@@ -199,8 +198,8 @@ describe('Key Selection Strategies', () => {
     })
 
     it('should validate and filter keys before selection', async () => {
-      const { validateKey } = await import('./validator.js')
-      const { queryQuota } = await import('./quota.js')
+      const { validateKey } = await import('./validator')
+      const { queryQuota } = await import('./quota')
 
       vi.mocked(validateKey).mockImplementation(async (key: string) => {
         return key !== 'invalid-key'
@@ -215,8 +214,8 @@ describe('Key Selection Strategies', () => {
     })
 
     it('should skip keys with zero quota', async () => {
-      const { validateKey } = await import('./validator.js')
-      const { queryQuota } = await import('./quota.js')
+      const { validateKey } = await import('./validator')
+      const { queryQuota } = await import('./quota')
 
       vi.mocked(validateKey).mockResolvedValue(true as never)
       vi.mocked(queryQuota).mockImplementation(async (key: string) => {
@@ -230,7 +229,7 @@ describe('Key Selection Strategies', () => {
     })
 
     it('should return null when no keys available', async () => {
-      const { validateKey } = await import('./validator.js')
+      const { validateKey } = await import('./validator')
 
       vi.mocked(validateKey).mockResolvedValue(false as never)
 

@@ -1,7 +1,7 @@
-import { validateKey } from './validator.js'
-import { queryQuota, createQuotaTracker } from './quota.js'
-import { maskKey } from './masker.js'
-import { logWarning } from '../utils/logger.js'
+import { logWarning } from '../utils/logger'
+import { maskKey } from './masker'
+import { createQuotaTracker, queryQuota } from './quota'
+import { validateKey } from './validator'
 
 export interface KeySelection {
   key: string
@@ -12,7 +12,8 @@ export interface KeySelection {
 export class RandomSelector {
   async select(keys: string[]): Promise<KeySelection | null> {
     const available = await this.getAvailableKeys(keys)
-    if (available.length === 0) return null
+    if (available.length === 0)
+      return null
 
     const randomIndex = Math.floor(Math.random() * available.length)
     const selected = available[randomIndex]
@@ -24,7 +25,8 @@ export class RandomSelector {
 
     for (const key of keys) {
       const isValid = await validateKey(key)
-      if (!isValid) continue
+      if (!isValid)
+        continue
 
       const remaining = await queryQuota(key)
       if (remaining === 0) {
@@ -34,7 +36,7 @@ export class RandomSelector {
 
       available.push({
         key,
-        tracker: createQuotaTracker(key, remaining)
+        tracker: createQuotaTracker(key, remaining),
       })
     }
 
@@ -48,7 +50,8 @@ export class RoundRobinSelector extends RandomSelector {
 
   async select(keys: string[]): Promise<KeySelection | null> {
     const available = await this.getAvailableKeys(keys)
-    if (available.length === 0) return null
+    if (available.length === 0)
+      return null
 
     const selected = available[this.currentIndex % available.length]
     this.currentIndex++
@@ -64,7 +67,8 @@ export class RoundRobinSelector extends RandomSelector {
 export class PrioritySelector extends RandomSelector {
   async select(keys: string[]): Promise<KeySelection | null> {
     const available = await this.getAvailableKeys(keys)
-    if (available.length === 0) return null
+    if (available.length === 0)
+      return null
 
     // Return first available key
     return available[0]
