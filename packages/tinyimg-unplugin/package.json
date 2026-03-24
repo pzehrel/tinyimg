@@ -1,7 +1,7 @@
 {
   "name": "tinyimg-unplugin",
-  "version": "0.0.0",
   "type": "module",
+  "version": "0.0.0",
   "description": "unplugin for automatic image compression during build (Vite, Webpack, Rolldown)",
   "exports": {
     ".": {
@@ -16,9 +16,9 @@
   "engines": {
     "node": ">=18"
   },
-  "dependencies": {
-    "tinyimg-core": "workspace:*",
-    "unplugin": "^1.0.0"
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "vite": ">=2.0.0",
@@ -32,8 +32,8 @@
       "optional": true
     }
   },
-  "scripts": {
-    "build": "tsdown",
-    "typecheck": "tsc --noEmit"
+  "dependencies": {
+    "tinyimg-core": "workspace:*",
+    "unplugin": "^1.0.0"
   }
 }

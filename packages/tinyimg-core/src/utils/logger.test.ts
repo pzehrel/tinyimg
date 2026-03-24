@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { logWarning, logInfo } from './logger'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { logInfo, logWarning } from './logger'
 
-describe('Logger Utility', () => {
+describe('logger Utility', () => {
   let consoleWarnSpy: ReturnType<typeof vi.spyOn>
   let consoleLogSpy: ReturnType<typeof vi.spyOn>
 

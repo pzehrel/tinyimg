@@ -1,5 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
-import { validateKey } from '../keys/validator.js'
+import tinify from 'tinify'
+import { describe, expect, it, vi } from 'vitest'
+
+import { validateKey } from '../keys/validator'
 
 // Mock tinify package
 vi.mock('tinify', () => {
@@ -12,8 +14,6 @@ vi.mock('tinify', () => {
     },
   }
 })
-
-import tinify from 'tinify'
 
 // Create error classes
 class AccountError extends Error {
@@ -37,7 +37,7 @@ class ServerError extends Error {
   }
 }
 
-describe('Key Validation', () => {
+describe('key Validation', () => {
   it('returns true for valid key', async () => {
     vi.mocked(tinify.validate).mockResolvedValue(undefined as never)
     const result = await validateKey('valid_key_123456')

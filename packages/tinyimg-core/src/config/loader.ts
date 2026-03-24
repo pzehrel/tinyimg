@@ -1,5 +1,5 @@
-import type { KeyMetadata } from './types.js'
-import { readConfig } from './storage.js'
+import process from 'node:process'
+import { readConfig } from './storage'
 
 export interface LoadedKey {
   key: string
@@ -23,9 +23,10 @@ export function loadKeys(): LoadedKey[] {
     return config.keys.map(metadata => ({
       key: metadata.key,
       valid: metadata.valid,
-      lastCheck: metadata.lastCheck
+      lastCheck: metadata.lastCheck,
     }))
-  } catch {
+  }
+  catch {
     // Config file doesn't exist or is invalid
     return []
   }

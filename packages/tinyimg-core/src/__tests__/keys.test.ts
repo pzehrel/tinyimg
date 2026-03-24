@@ -1,7 +1,9 @@
-import { describe, it, expect, vi } from 'vitest'
-import { maskKey } from '../keys/masker.js'
-import { validateKey } from '../keys/validator.js'
-import { queryQuota, createQuotaTracker } from '../keys/quota.js'
+import tinify from 'tinify'
+import { describe, expect, it, vi } from 'vitest'
+import { maskKey } from '../keys/masker'
+import { createQuotaTracker, queryQuota } from '../keys/quota'
+
+import { validateKey } from '../keys/validator'
 
 // Mock tinify package
 vi.mock('tinify', () => {
@@ -15,8 +17,6 @@ vi.mock('tinify', () => {
   }
 })
 
-import tinify from 'tinify'
-
 // Create error classes for testing
 class AccountError extends Error {
   constructor(message: string) {
@@ -25,8 +25,8 @@ class AccountError extends Error {
   }
 }
 
-describe('Key Operations Integration Tests', () => {
-  describe('Key Masking', () => {
+describe('key Operations Integration Tests', () => {
+  describe('key Masking', () => {
     it('masks keys correctly (short, normal, long)', () => {
       // Short key
       expect(maskKey('1234')).toBe('****')
@@ -53,7 +53,7 @@ describe('Key Operations Integration Tests', () => {
     })
   })
 
-  describe('Key Validation', () => {
+  describe('key Validation', () => {
     it('validates using tinify.validate (mocked)', async () => {
       vi.mocked(tinify.validate).mockResolvedValue(undefined as never)
       const result = await validateKey('valid_key')
@@ -75,7 +75,7 @@ describe('Key Operations Integration Tests', () => {
     })
   })
 
-  describe('Quota Tracking', () => {
+  describe('quota Tracking', () => {
     it('returns remaining quota (mocked)', async () => {
       vi.mocked(tinify.validate).mockResolvedValue(undefined as never)
       Object.defineProperty(tinify, 'compressionCount', { get: () => 100, configurable: true })
@@ -93,7 +93,7 @@ describe('Key Operations Integration Tests', () => {
     })
   })
 
-  describe('QuotaTracker', () => {
+  describe('quotaTracker', () => {
     it('decrements counter', () => {
       const tracker = createQuotaTracker('key', 5)
       expect(tracker.localCounter).toBe(5)
@@ -116,21 +116,21 @@ describe('Key Operations Integration Tests', () => {
 
       tracker.decrement()
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('quota exhausted')
+        expect.stringContaining('quota exhausted'),
       )
 
       consoleWarnSpy.mockRestore()
     })
   })
 
-  describe('Integration Scenarios', () => {
+  describe('integration Scenarios', () => {
     it('masks key in validation success message', async () => {
       const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       vi.mocked(tinify.validate).mockResolvedValue(undefined as never)
 
       await validateKey('abcd1234efgh5678')
       expect(consoleLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining('abcd****5678')
+        expect.stringContaining('abcd****5678'),
       )
 
       consoleLogSpy.mockRestore()
@@ -143,7 +143,7 @@ describe('Key Operations Integration Tests', () => {
 
       await validateKey('abcd1234efgh5678')
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('abcd****5678')
+        expect.stringContaining('abcd****5678'),
       )
 
       consoleWarnSpy.mockRestore()
@@ -155,7 +155,7 @@ describe('Key Operations Integration Tests', () => {
 
       tracker.decrement()
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('abcd****5678')
+        expect.stringContaining('abcd****5678'),
       )
 
       consoleWarnSpy.mockRestore()

@@ -1,5 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
-import { queryQuota, createQuotaTracker } from '../keys/quota.js'
+import tinify from 'tinify'
+import { describe, expect, it, vi } from 'vitest'
+
+import { createQuotaTracker, queryQuota } from '../keys/quota'
 
 // Mock tinify package
 vi.mock('tinify', () => {
@@ -13,9 +15,7 @@ vi.mock('tinify', () => {
   }
 })
 
-import tinify from 'tinify'
-
-describe('Quota Tracking', () => {
+describe('quota Tracking', () => {
   it('calculates remaining quota', async () => {
     vi.mocked(tinify.validate).mockResolvedValue(undefined as never)
     Object.defineProperty(tinify, 'compressionCount', { get: () => 100, configurable: true })
@@ -54,7 +54,7 @@ describe('Quota Tracking', () => {
     tracker.decrement()
     expect(tracker.isZero()).toBe(true)
     expect(consoleWarnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('quota exhausted')
+      expect.stringContaining('quota exhausted'),
     )
 
     consoleWarnSpy.mockRestore()
