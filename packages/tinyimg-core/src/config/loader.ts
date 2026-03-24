@@ -12,9 +12,9 @@ export function loadKeys(): LoadedKey[] {
   const envKeys = process.env.TINYPNG_KEYS
   if (envKeys && envKeys.trim()) {
     const keys = envKeys.split(',')
-      .map(k => k.trim())
-      .filter(k => k.length > 0)
-    return keys.map(key => ({ key }))
+      .map((k: string) => k.trim())
+      .filter((k: string) => k.length > 0)
+    return keys.map((key: string) => ({ key }))
   }
 
   // Priority 2: Global config file
