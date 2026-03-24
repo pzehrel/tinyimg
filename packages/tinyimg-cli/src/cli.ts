@@ -1,43 +1,70 @@
 #!/usr/bin/env node
 import cac from 'cac'
 import kleur from 'kleur'
-import type { CompressServiceOptions } from 'tinyimg-core'
+import { compressCommand } from './commands/compress.js'
+import { keyAdd, keyRemove, keyList } from './commands/key.js'
 
 const cli = cac('tinyimg')
 
 // Main compression command
 cli
-  .command('[...inputs]', 'Compress images')
-  .option('-o, --output <dir>', 'Output directory')
-  .option('-k, --key <key>', 'API key (overrides env vars)')
-  .option('-m, --mode <mode>', 'Key selection strategy', {
+  .command('[...inputs]', 'Compress images (PNG, JPG, JPEG)')
+  .option('-o, --output <dir>', 'Output directory (default: overwrite in place)')
+  .option('-k, --key <key>', 'API key (overrides environment and config)')
+  .option('-m, --mode <mode>', 'Key selection strategy (random|round-robin|priority)', {
     default: 'random',
   })
-  .option('-p, --parallel <number>', 'Concurrency limit', {
+  .option('-p, --parallel <number>', 'Concurrency limit (default: 8)', {
     default: '8',
   })
-  .option('-c, --cache', 'Enable caching', { default: true })
+  .option('-c, --cache', 'Enable caching (default: true)', { default: true })
   .option('--no-cache', 'Disable caching')
-  .option('-h, --help', 'Display help')
   .action(async (inputs: string[], options: any) => {
-    // Handler will be implemented in Plan 05-03
-    console.log('Compression handler - to be implemented')
-    console.log('Inputs:', inputs)
-    console.log('Options:', options)
+    try {
+      await compressCommand(inputs, options)
+    }
+    catch (error: any) {
+      console.error(kleur.red(`Error: ${error.message}`))
+      process.exit(1)
+    }
   })
 
-// Key management subcommands (stub - implemented in Plan 05-04)
+// Key management subcommands
 cli
   .command('key add <key>', 'Add API key')
-  .action(() => console.log('key add - to be implemented'))
+  .action(async (key: string) => {
+    try {
+      await keyAdd(key)
+    }
+    catch (error: any) {
+      console.error(kleur.red(`Error: ${error.message}`))
+      process.exit(1)
+    }
+  })
 
 cli
-  .command('key remove [key]', 'Remove API key')
-  .action(() => console.log('key remove - to be implemented'))
+  .command('key remove [key]', 'Remove API key (interactive if not specified)')
+  .action(async (key?: string) => {
+    try {
+      await keyRemove(key)
+    }
+    catch (error: any) {
+      console.error(kleur.red(`Error: ${error.message}`))
+      process.exit(1)
+    }
+  })
 
 cli
-  .command('key', 'List API keys')
-  .action(() => console.log('key list - to be implemented'))
+  .command('key', 'List all API keys with quota info')
+  .action(async () => {
+    try {
+      await keyList()
+    }
+    catch (error: any) {
+      console.error(kleur.red(`Error: ${error.message}`))
+      process.exit(1)
+    }
+  })
 
 cli.help()
 cli.parse()
