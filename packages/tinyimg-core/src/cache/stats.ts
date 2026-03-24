@@ -1,5 +1,5 @@
 import { readdir, stat } from 'node:fs/promises'
-import { getProjectCachePath, getGlobalCachePath } from './paths'
+import { getGlobalCachePath, getProjectCachePath } from './paths'
 
 /**
  * Cache statistics interface.

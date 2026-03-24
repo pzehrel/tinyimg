@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
-import { getProjectCachePath, getGlobalCachePath } from './paths'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { describe, expect, it } from 'vitest'
+import { getGlobalCachePath, getProjectCachePath } from './paths'
 
 describe('cache paths', () => {
   it('getProjectCachePath returns .node_modules/.tinyimg_cache for given project root', () => {
@@ -15,7 +15,7 @@ describe('cache paths', () => {
     expect(getGlobalCachePath()).toBe(expected)
   })
 
-  it('Paths use correct path separators for OS', () => {
+  it('paths use correct path separators for OS', () => {
     const projectRoot = '/Users/test/project'
     const path = getProjectCachePath(projectRoot)
     // Should use OS-specific separator (join handles this)
@@ -23,7 +23,7 @@ describe('cache paths', () => {
     expect(path).toContain('.tinyimg_cache')
   })
 
-  it('Project cache path is relative to provided root', () => {
+  it('project cache path is relative to provided root', () => {
     const root1 = '/path/to/project1'
     const root2 = '/path/to/project2'
     const path1 = getProjectCachePath(root1)

@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { mkdir, readFile, writeFile, rename, rm } from 'node:fs/promises'
+import { Buffer } from 'node:buffer'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CacheStorage, readCache, writeCache } from './storage'
 
 // Mock logger
@@ -31,21 +32,19 @@ describe('cache storage', () => {
       await rm(cacheDir, { recursive: true, force: true })
       await rm(testImagePath, { force: true })
     }
-    catch (error) {
+    catch {
       // Ignore cleanup errors
     }
   })
 
-  describe('CacheStorage', () => {
+  describe('cacheStorage', () => {
     it('writeCache creates cache file with MD5 as filename', async () => {
       const storage = new CacheStorage(cacheDir)
       const testData = Buffer.from('compressed-image-data')
 
       await storage.write(testImagePath, testData)
 
-      // Verify cache file exists (MD5 hash as filename, no extension)
-      const cacheFiles = await readFile(testImagePath, { flag: 'r' }).then(() => {}).catch(() => {})
-      // We'll verify by reading it back
+      // Verify cache file exists by reading it back
       const readData = await storage.read(testImagePath)
       expect(readData).toEqual(testData)
     })
@@ -101,7 +100,7 @@ describe('cache storage', () => {
       expect(readData).toBeNull()
     })
 
-    it('Auto-creates cache directory if not exists', async () => {
+    it('auto-creates cache directory if not exists', async () => {
       const nonExistentDir = join(tmpdir(), `non-existent-${Date.now()}`)
       const storage = new CacheStorage(nonExistentDir)
       const testData = Buffer.from('compressed-image-data')
@@ -118,7 +117,7 @@ describe('cache storage', () => {
   })
 
   describe('readCache', () => {
-    it('Iterates through cacheDirs in priority order', async () => {
+    it('iterates through cacheDirs in priority order', async () => {
       const projectCache = join(tmpdir(), `project-cache-${Date.now()}`)
       const globalCache = join(tmpdir(), `global-cache-${Date.now()}`)
       await mkdir(projectCache, { recursive: true })
@@ -140,7 +139,7 @@ describe('cache storage', () => {
       await rm(globalCache, { recursive: true, force: true })
     })
 
-    it('Returns first successful read or null if all miss', async () => {
+    it('returns first successful read or null if all miss', async () => {
       const cacheDir1 = join(tmpdir(), `cache1-${Date.now()}`)
       const cacheDir2 = join(tmpdir(), `cache2-${Date.now()}`)
       await mkdir(cacheDir1, { recursive: true })
@@ -157,7 +156,7 @@ describe('cache storage', () => {
   })
 
   describe('writeCache', () => {
-    it('Logs cache hit with MD5 prefix', async () => {
+    it('logs cache hit with MD5 prefix', async () => {
       const { logInfo } = await import('../utils/logger')
       const cacheDir = join(tmpdir(), `cache-${Date.now()}`)
       await mkdir(cacheDir, { recursive: true })
@@ -174,7 +173,7 @@ describe('cache storage', () => {
       await rm(cacheDir, { recursive: true, force: true })
     })
 
-    it('Logs cache miss with MD5 prefix + ", compressed"', async () => {
+    it('logs cache miss with MD5 prefix + ", compressed"', async () => {
       const { logInfo } = await import('../utils/logger')
       const cacheDir = join(tmpdir(), `cache-${Date.now()}`)
       await mkdir(cacheDir, { recursive: true })

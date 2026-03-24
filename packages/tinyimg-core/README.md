@@ -94,7 +94,8 @@ const cached = await readCache('image.png', [
 
 if (cached) {
   console.log('Cache hit!')
-} else {
+}
+else {
   console.log('Cache miss')
 }
 ```
@@ -212,11 +213,11 @@ Converts bytes to human-readable format for CLI display.
 ```typescript
 import { formatBytes } from 'tinyimg-core'
 
-formatBytes(0)        // "0 B"
-formatBytes(512)      // "512 B"
-formatBytes(1024)     // "1.00 KB"
-formatBytes(1536)     // "1.50 KB"
-formatBytes(1048576)  // "1.00 MB"
+formatBytes(0) // "0 B"
+formatBytes(512) // "512 B"
+formatBytes(1024) // "1.00 KB"
+formatBytes(1536) // "1.50 KB"
+formatBytes(1048576) // "1.00 MB"
 formatBytes(1073741824) // "1.00 GB"
 ```
 
@@ -233,12 +234,12 @@ Complete example showing cache read/write pattern:
 
 ```typescript
 import {
-  readCache,
-  writeCache,
-  getProjectCachePath,
-  getGlobalCachePath,
+  formatBytes,
   getAllCacheStats,
-  formatBytes
+  getGlobalCachePath,
+  getProjectCachePath,
+  readCache,
+  writeCache
 } from 'tinyimg-core'
 
 async function compressWithCache(imagePath: string, projectRoot: string) {

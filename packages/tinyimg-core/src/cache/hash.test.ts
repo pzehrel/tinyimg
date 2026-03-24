@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { writeFile, mkdir, rm } from 'node:fs/promises'
-import { join } from 'node:path'
+import { Buffer } from 'node:buffer'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { calculateMD5 } from './hash'
 
 let testDir: string
@@ -63,8 +64,22 @@ describe('calculateMD5', () => {
   it('should handle binary content correctly', async () => {
     // PNG magic bytes + some binary data
     const binaryContent = Buffer.from([
-      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07  // Binary data
+      0x89,
+      0x50,
+      0x4E,
+      0x47,
+      0x0D,
+      0x0A,
+      0x1A,
+      0x0A, // PNG signature
+      0x00,
+      0x01,
+      0x02,
+      0x03,
+      0x04,
+      0x05,
+      0x06,
+      0x07, // Binary data
     ])
     const filePath = join(testDir, 'binary.png')
     await writeFile(filePath, binaryContent)
