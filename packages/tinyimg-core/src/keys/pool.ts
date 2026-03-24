@@ -1,6 +1,7 @@
-import { loadKeys } from '../config/loader.js'
-import { RandomSelector, RoundRobinSelector, PrioritySelector, type KeySelection } from './selector.js'
-import { AllKeysExhaustedError, NoValidKeysError } from '../errors/types.js'
+import type { KeySelection } from './selector'
+import { loadKeys } from '../config/loader'
+import { AllKeysExhaustedError, NoValidKeysError } from '../errors/types'
+import { PrioritySelector, RandomSelector, RoundRobinSelector } from './selector'
 
 export type KeyStrategy = 'random' | 'round-robin' | 'priority'
 

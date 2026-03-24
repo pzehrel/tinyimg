@@ -20,6 +20,9 @@ importers:
       '@commitlint/config-conventional':
         specifier: latest
         version: 20.5.0
+      '@types/node':
+        specifier: ^25.5.0
+        version: 25.5.0
       '@vitest/coverage-v8':
         specifier: ^4.1.0
         version: 4.1.0(vitest@4.1.0)
@@ -29,9 +32,6 @@ importers:
       eslint:
         specifier: 9.x
         version: 9.39.4(jiti@2.6.1)
-      eslint-plugin-format:
-        specifier: ^2.0.1
-        version: 2.0.1(eslint@9.39.4(jiti@2.6.1))
       tsdown:
         specifier: 0.21.4
         version: 0.21.4(synckit@0.11.12)(typescript@5.9.3)
@@ -727,6 +727,13 @@ packages:
     cpu: [arm64]
     os: [linux]
     libc: [musl]
+
+  '@rolldown/binding-linux-ppc64-gnu@1.0.0-rc.11':
+    resolution: {integrity: sha512-ZlFgw46NOAGMgcdvdYwAGu2Q+SLFA9LzbJLW+iyMOJyhj5wk6P3KEE9Gct4xWwSzFoPI7JCdYmYMzVtlgQ+zfw==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [ppc64]
+    os: [linux]
+    libc: [glibc]
 
   '@rolldown/binding-linux-ppc64-gnu@1.0.0-rc.9':
     resolution: {integrity: sha512-aOKU9dJheda8Kj8Y3w9gnt9QFOO+qKPAl8SWd7JPHP+Cu0EuDAE5wokQubLzIDQWg2myXq2XhTpOVS07qqvT+w==}
@@ -3364,11 +3371,14 @@ snapshots:
     optionalDependencies:
       conventional-commits-parser: 6.3.0
 
-  '@dprint/formatter@0.5.1': {}
+  '@dprint/formatter@0.5.1':
+    optional: true
 
-  '@dprint/markdown@0.21.1': {}
+  '@dprint/markdown@0.21.1':
+    optional: true
 
-  '@dprint/toml@0.7.0': {}
+  '@dprint/toml@0.7.0':
+    optional: true
 
   '@e18e/eslint-plugin@0.2.0(eslint@9.39.4(jiti@2.6.1))':
     dependencies:
@@ -3670,6 +3680,9 @@ snapshots:
     optional: true
 
   '@rolldown/binding-linux-arm64-musl@1.0.0-rc.9':
+    optional: true
+
+  '@rolldown/binding-linux-ppc64-gnu@1.0.0-rc.11':
     optional: true
 
   '@rolldown/binding-linux-ppc64-gnu@1.0.0-rc.9':
@@ -4384,6 +4397,7 @@ snapshots:
     dependencies:
       eslint: 9.39.4(jiti@2.6.1)
       prettier-linter-helpers: 1.0.1
+    optional: true
 
   eslint-json-compat-utils@0.2.3(eslint@9.39.4(jiti@2.6.1))(jsonc-eslint-parser@3.1.0):
     dependencies:
@@ -4395,7 +4409,8 @@ snapshots:
     dependencies:
       eslint: 9.39.4(jiti@2.6.1)
 
-  eslint-parser-plain@0.1.1: {}
+  eslint-parser-plain@0.1.1:
+    optional: true
 
   eslint-plugin-antfu@3.2.2(eslint@9.39.4(jiti@2.6.1)):
     dependencies:
@@ -4435,6 +4450,7 @@ snapshots:
       oxfmt: 0.35.0
       prettier: 3.8.1
       synckit: 0.11.12
+    optional: true
 
   eslint-plugin-import-lite@0.5.2(eslint@9.39.4(jiti@2.6.1)):
     dependencies:
@@ -4701,7 +4717,8 @@ snapshots:
 
   fast-deep-equal@3.1.3: {}
 
-  fast-diff@1.3.0: {}
+  fast-diff@1.3.0:
+    optional: true
 
   fast-glob@3.3.3:
     dependencies:
@@ -5433,7 +5450,8 @@ snapshots:
 
   obug@2.1.1: {}
 
-  ohash@2.0.11: {}
+  ohash@2.0.11:
+    optional: true
 
   optionator@0.9.4:
     dependencies:
@@ -5469,6 +5487,7 @@ snapshots:
       '@oxfmt/binding-win32-arm64-msvc': 0.35.0
       '@oxfmt/binding-win32-ia32-msvc': 0.35.0
       '@oxfmt/binding-win32-x64-msvc': 0.35.0
+    optional: true
 
   p-filter@2.1.0:
     dependencies:
@@ -5569,10 +5588,12 @@ snapshots:
   prettier-linter-helpers@1.0.1:
     dependencies:
       fast-diff: 1.3.0
+    optional: true
 
   prettier@2.8.8: {}
 
-  prettier@3.8.1: {}
+  prettier@3.8.1:
+    optional: true
 
   promise-nodeify@3.0.1: {}
 
@@ -5649,6 +5670,7 @@ snapshots:
       '@rolldown/binding-linux-arm-gnueabihf': 1.0.0-rc.11
       '@rolldown/binding-linux-arm64-gnu': 1.0.0-rc.11
       '@rolldown/binding-linux-arm64-musl': 1.0.0-rc.11
+      '@rolldown/binding-linux-ppc64-gnu': 1.0.0-rc.11
       '@rolldown/binding-linux-s390x-gnu': 1.0.0-rc.11
       '@rolldown/binding-linux-x64-gnu': 1.0.0-rc.11
       '@rolldown/binding-linux-x64-musl': 1.0.0-rc.11
@@ -5811,7 +5833,8 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.3)
       picomatch: 4.0.3
 
-  tinypool@2.1.0: {}
+  tinypool@2.1.0:
+    optional: true
 
   tinyrainbow@3.1.0: {}
 

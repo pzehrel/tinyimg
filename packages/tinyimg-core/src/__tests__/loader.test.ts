@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { loadKeys } from '../config/loader.js'
-import { writeConfig } from '../config/storage.js'
 import fs from 'node:fs'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { loadKeys } from '../config/loader'
+import { writeConfig } from '../config/storage'
 
-describe('Key Loading', () => {
+describe('key Loading', () => {
   const originalEnv = process.env.TINYPNG_KEYS
   const testConfigDir = '.tinyimg-test-loader'
 
@@ -28,7 +28,8 @@ describe('Key Loading', () => {
     // Restore original env var
     if (originalEnv !== undefined) {
       process.env.TINYPNG_KEYS = originalEnv
-    } else {
+    }
+    else {
       delete process.env.TINYPNG_KEYS
     }
   })
@@ -70,8 +71,8 @@ describe('Key Loading', () => {
     const configKey = 'config_key_123456'
     const config = {
       keys: [
-        { key: configKey, valid: true, lastCheck: new Date().toISOString() }
-      ]
+        { key: configKey, valid: true, lastCheck: new Date().toISOString() },
+      ],
     }
     writeConfig(config as any)
 
@@ -89,8 +90,8 @@ describe('Key Loading', () => {
     // Set up config file
     const config = {
       keys: [
-        { key: configKey, valid: true, lastCheck: new Date().toISOString() }
-      ]
+        { key: configKey, valid: true, lastCheck: new Date().toISOString() },
+      ],
     }
     writeConfig(config as any)
 

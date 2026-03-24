@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { readConfig, writeConfig, ensureConfigFile } from '../config/storage.js'
-import { loadKeys } from '../config/loader.js'
 import fs from 'node:fs'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { loadKeys } from '../config/loader'
+import { ensureConfigFile, readConfig, writeConfig } from '../config/storage'
 
-describe('Config Management Integration', () => {
+describe('config Management Integration', () => {
   const originalHome = process.env.HOME
   const originalEnv = process.env.TINYPNG_KEYS
   const testConfigDir = '.tinyimg-test-integration'
@@ -31,7 +31,8 @@ describe('Config Management Integration', () => {
     // Restore original env var
     if (originalEnv !== undefined) {
       process.env.TINYPNG_KEYS = originalEnv
-    } else {
+    }
+    else {
       delete process.env.TINYPNG_KEYS
     }
   })
@@ -66,8 +67,8 @@ describe('Config Management Integration', () => {
       const configKey = 'config_key_123456'
       const config = {
         keys: [
-          { key: configKey, valid: true, lastCheck: new Date().toISOString() }
-        ]
+          { key: configKey, valid: true, lastCheck: new Date().toISOString() },
+        ],
       }
       writeConfig(config as any)
 
@@ -83,8 +84,8 @@ describe('Config Management Integration', () => {
       // Set up config file
       const config = {
         keys: [
-          { key: configKey, valid: true, lastCheck: new Date().toISOString() }
-        ]
+          { key: configKey, valid: true, lastCheck: new Date().toISOString() },
+        ],
       }
       writeConfig(config as any)
 
@@ -102,8 +103,8 @@ describe('Config Management Integration', () => {
       const lastCheck = '2026-03-23T10:00:00Z'
       const config = {
         keys: [
-          { key: configKey, valid: true, lastCheck }
-        ]
+          { key: configKey, valid: true, lastCheck },
+        ],
       }
       writeConfig(config as any)
 
@@ -115,7 +116,7 @@ describe('Config Management Integration', () => {
     })
   })
 
-  describe('Config Storage behavior', () => {
+  describe('config Storage behavior', () => {
     it('creates config file with correct structure', () => {
       ensureConfigFile()
       const configPath = `${testConfigDir}/.tinyimg/keys.json`
@@ -130,8 +131,8 @@ describe('Config Management Integration', () => {
       const testConfig = {
         keys: [
           { key: 'test1', valid: true, lastCheck: '2026-03-23T10:00:00Z' },
-          { key: 'test2', valid: false, lastCheck: '2026-03-23T11:00:00Z' }
-        ]
+          { key: 'test2', valid: false, lastCheck: '2026-03-23T11:00:00Z' },
+        ],
       }
       writeConfig(testConfig as any)
       const read = readConfig()
@@ -144,8 +145,8 @@ describe('Config Management Integration', () => {
       // Write initial config
       const initialConfig = {
         keys: [
-          { key: 'test1', valid: true, lastCheck: '2026-03-23T10:00:00Z' }
-        ]
+          { key: 'test1', valid: true, lastCheck: '2026-03-23T10:00:00Z' },
+        ],
       }
       writeConfig(initialConfig as any)
 
@@ -153,8 +154,8 @@ describe('Config Management Integration', () => {
       const updatedConfig = {
         keys: [
           { key: 'test1', valid: true, lastCheck: '2026-03-23T10:00:00Z' },
-          { key: 'test2', valid: true, lastCheck: '2026-03-23T11:00:00Z' }
-        ]
+          { key: 'test2', valid: true, lastCheck: '2026-03-23T11:00:00Z' },
+        ],
       }
       writeConfig(updatedConfig as any)
 
@@ -177,7 +178,7 @@ describe('Config Management Integration', () => {
     })
   })
 
-  describe('Edge cases', () => {
+  describe('edge cases', () => {
     it('handles empty environment variable', () => {
       process.env.TINYPNG_KEYS = ''
       const keys = loadKeys()

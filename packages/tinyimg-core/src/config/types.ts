@@ -1,7 +1,7 @@
 export interface KeyMetadata {
   key: string
   valid: boolean
-  lastCheck: string  // ISO 8601 timestamp
+  lastCheck: string // ISO 8601 timestamp
 }
 
 export interface ConfigFile {

@@ -1,7 +1,7 @@
 {
   "name": "tinyimg-cli",
-  "version": "0.0.0",
   "type": "module",
+  "version": "0.0.0",
   "description": "CLI tool for TinyPNG image compression with batch processing and interactive key management",
   "exports": {
     ".": {
@@ -18,11 +18,11 @@
   "engines": {
     "node": ">=18"
   },
-  "dependencies": {
-    "tinyimg-core": "workspace:*"
-  },
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "tinyimg-core": "workspace:*"
   }
 }

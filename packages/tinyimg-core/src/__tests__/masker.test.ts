@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
-import { maskKey } from '../keys/masker.js'
+import { describe, expect, it } from 'vitest'
+import { maskKey } from '../keys/masker'
 
-describe('Key Masking', () => {
+describe('key Masking', () => {
   it('returns **** for keys shorter than 8 chars', () => {
     expect(maskKey('1234')).toBe('****')
     expect(maskKey('1234567')).toBe('****')

@@ -1,5 +1,5 @@
-import type { KeyMetadata } from './types.js'
-import { readConfig } from './storage.js'
+import process from 'node:process'
+import { readConfig } from './storage'
 
 export interface LoadedKey {
   key: string
@@ -12,9 +12,9 @@ export function loadKeys(): LoadedKey[] {
   const envKeys = process.env.TINYPNG_KEYS
   if (envKeys && envKeys.trim()) {
     const keys = envKeys.split(',')
-      .map(k => k.trim())
-      .filter(k => k.length > 0)
-    return keys.map(key => ({ key }))
+      .map((k: string) => k.trim())
+      .filter((k: string) => k.length > 0)
+    return keys.map((key: string) => ({ key }))
   }
 
   // Priority 2: Global config file
@@ -23,9 +23,10 @@ export function loadKeys(): LoadedKey[] {
     return config.keys.map(metadata => ({
       key: metadata.key,
       valid: metadata.valid,
-      lastCheck: metadata.lastCheck
+      lastCheck: metadata.lastCheck,
     }))
-  } catch {
+  }
+  catch {
     // Config file doesn't exist or is invalid
     return []
   }

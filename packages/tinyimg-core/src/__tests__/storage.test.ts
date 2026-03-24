@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { readConfig, writeConfig, ensureConfigFile, getConfigPath } from '../config/storage.js'
 import fs from 'node:fs'
-import os from 'node:os'
+import path from 'node:path'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { ensureConfigFile, getConfigPath, readConfig, writeConfig } from '../config/storage'
 
-describe('Config Storage', () => {
+describe('config Storage', () => {
   const originalHome = process.env.HOME
   const testConfigDir = '.tinyimg-test-storage'
 
@@ -12,7 +12,7 @@ describe('Config Storage', () => {
     process.env.HOME = testConfigDir
     // Clean up any existing test config
     const configPath = getConfigPath()
-    const configDir = require('node:path').dirname(configPath)
+    const configDir = path.dirname(configPath)
     if (fs.existsSync(configDir)) {
       fs.rmSync(configDir, { recursive: true, force: true })
     }
@@ -21,7 +21,7 @@ describe('Config Storage', () => {
   afterEach(() => {
     // Clean up test config
     const configPath = getConfigPath()
-    const configDir = require('node:path').dirname(configPath)
+    const configDir = path.dirname(configPath)
     if (fs.existsSync(configDir)) {
       fs.rmSync(configDir, { recursive: true, force: true })
     }
@@ -43,15 +43,15 @@ describe('Config Storage', () => {
   it('should create config directory with correct structure', () => {
     ensureConfigFile()
     const configPath = getConfigPath()
-    const configDir = require('node:path').dirname(configPath)
+    const configDir = path.dirname(configPath)
     expect(fs.existsSync(configDir)).toBe(true)
   })
 
   it('should read config from file', () => {
     const testConfig = {
       keys: [
-        { key: 'test1', valid: true, lastCheck: '2026-03-23T10:00:00Z' }
-      ]
+        { key: 'test1', valid: true, lastCheck: '2026-03-23T10:00:00Z' },
+      ],
     }
     writeConfig(testConfig as any)
     const read = readConfig()
@@ -63,8 +63,8 @@ describe('Config Storage', () => {
     const testConfig = {
       keys: [
         { key: 'test1', valid: true, lastCheck: '2026-03-23T10:00:00Z' },
-        { key: 'test2', valid: false, lastCheck: '2026-03-23T11:00:00Z' }
-      ]
+        { key: 'test2', valid: false, lastCheck: '2026-03-23T11:00:00Z' },
+      ],
     }
     writeConfig(testConfig as any)
     const read = readConfig()
