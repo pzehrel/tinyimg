@@ -164,7 +164,7 @@
 - [x] 05-03-PLAN.md — Key management commands (add, remove, list with @clack/prompts for interactive selection)
 - [x] 05-04-PLAN.md — Compression command with file handling and progress display (fast-glob, compressImages integration, kleur output)
 
-**Progress:** 0/4 plans complete (0%)
+**Progress:** 4/4 plans complete (100%)
 
 ---
 
@@ -191,6 +191,16 @@
 - unplugin 插件
 - 使用示例和文档
 
+**Plans:**
+5 plans total
+- [x] 06-01-PLAN.md — unplugin factory and file filtering
+- [x] 06-02-PLAN.md — Options validation and logger
+- [x] 06-03-PLAN.md — Integration tests (Vite fixture, Webpack fixture)
+- [x] 06-04-PLAN.md — Build configuration and exports
+- [x] 06-05-PLAN.md — Integration test improvements
+
+**Progress:** 5/5 plans complete (100%)
+
 ---
 
 ## Phase 7: 测试和文档
@@ -201,19 +211,33 @@
 **目标**: 完善测试覆盖和文档
 
 **任务**:
-- [ ] 补充单元测试（目标覆盖率 80%+）
-- [ ] 编写集成测试
-- [ ] 编写 E2E 测试（CLI 和 unplugin）
-- [ ] 编写 README (core, cli, unplugin)
-- [ ] 编写 API 文档
-- [ ] 编写使用示例
+- [ ] 修复现有测试（16 个 web-compressor 失败测试）
+- [ ] 补充 CLI 单元测试
+- [ ] 修复 unplugin 集成测试
+- [ ] 编写 CLI README
+- [ ] 编写 unplugin README
+- [ ] 补充 core API 文档
 - [ ] 编写贡献指南
+- [ ] 创建 CHANGELOG 模板
 
 **依赖**: Phase 5, Phase 6
 
 **输出**:
 - 完整的测试套件
 - 完整的文档
+
+**Plans:**
+8 plans total
+- [ ] 07-01-PLAN.md — Fix web-compressor tests (FormData mock issues)
+- [ ] 07-02-PLAN.md — Add CLI unit tests (TDD for commands and utilities)
+- [ ] 07-03-PLAN.md — Fix unplugin integration tests (mock Tinify API)
+- [ ] 07-04-PLAN.md — Write CLI README (installation, usage, examples)
+- [ ] 07-05-PLAN.md — Write unplugin README (integration examples)
+- [ ] 07-06-PLAN.md — Add core API documentation (compressImage, compressImages, KeyPool)
+- [ ] 07-07-PLAN.md — Create CONTRIBUTING.md (development setup, testing, PR workflow)
+- [ ] 07-08-PLAN.md — Create CHANGELOG.md (Keep a Changelog format)
+
+**Progress:** 0/8 plans complete (0%)
 
 ---
 
@@ -295,4 +319,4 @@ Phase 8 (发布准备)
 
 ## Last Updated
 
-**2026-03-24**: Phase 5 plans created (4 plans for CLI tool)
+**2026-03-25**: Phase 7 plans created (8 plans for testing and documentation)
