@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite'
-import tinyimg from 'tinyimg-unplugin'
+import tinyimg from '../../../dist/index.mjs'
 
 export default defineConfig({
   plugins: [
-    tinyimg({
+    tinyimg.vite({
       mode: 'random',
       cache: true,
       parallel: 8,

@@ -1,6 +1,7 @@
 // Import sample images for build
-import logoUrl from '../images/sample.png?url'
-import bannerUrl from '../images/sample.jpg?url'
+// Using direct imports so unplugin can process them
+import samplePng from '../../images/sample.png'
+import sampleJpg from '../../images/sample.jpg'
 
-console.log('Logo:', logoUrl)
-console.log('Banner:', bannerUrl)
+console.log('Sample PNG:', samplePng)
+console.log('Sample JPG:', sampleJpg)
