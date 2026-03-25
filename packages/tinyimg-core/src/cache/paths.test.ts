@@ -4,9 +4,9 @@ import { describe, expect, it } from 'vitest'
 import { getGlobalCachePath, getProjectCachePath } from './paths'
 
 describe('cache paths', () => {
-  it('getProjectCachePath returns .node_modules/.tinyimg_cache for given project root', () => {
+  it('getProjectCachePath returns node_modules/.tinyimg_cache for given project root', () => {
     const projectRoot = '/Users/test/project'
-    const expected = join(projectRoot, '.node_modules', '.tinyimg_cache')
+    const expected = join(projectRoot, 'node_modules', '.tinyimg_cache')
     expect(getProjectCachePath(projectRoot)).toBe(expected)
   })
 
@@ -19,7 +19,7 @@ describe('cache paths', () => {
     const projectRoot = '/Users/test/project'
     const path = getProjectCachePath(projectRoot)
     // Should use OS-specific separator (join handles this)
-    expect(path).toContain('.node_modules')
+    expect(path).toContain('node_modules')
     expect(path).toContain('.tinyimg_cache')
   })
 
