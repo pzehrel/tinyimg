@@ -142,14 +142,14 @@
 **目标**: 实现完整的 CLI 工具
 
 **任务**:
-- [ ] 实现基础命令 (`tinyimg [options] <input...>`)
-- [ ] 实现所有选项 (output, key, mode, parallel, cache, help)
-- [ ] 实现文件、目录、glob 模式输入支持
-- [ ] 实现全局 key 管理命令 (add, remove, list)
-- [ ] 集成 @clack/prompts 处理交互
-- [ ] 集成 kleur 进行命令行着色
-- [ ] 实现执行信息输出（进度、状态）
-- [ ] 编写集成测试
+- [x] 实现基础命令 (`tinyimg [options] <input...>`)
+- [x] 实现所有选项 (output, key, mode, parallel, cache, help)
+- [x] 实现文件、目录、glob 模式输入支持
+- [x] 实现全局 key 管理命令 (add, remove, list)
+- [x] 集成 @clack/prompts 处理交互
+- [x] 集成 kleur 进行命令行着色
+- [x] 实现执行信息输出（进度、状态）
+- [x] 编写集成测试
 
 **依赖**: Phase 2, Phase 3, Phase 4
 
