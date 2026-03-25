@@ -25,15 +25,26 @@ describe('shouldProcessImage', () => {
     expect(shouldProcessImage('public/image.png', { include: 'src/**' })).toBe(false)
   })
 
-  test.skip('respects exclude glob pattern', () => {
-    expect(true).toBe(false)
+  test('respects exclude glob pattern', async () => {
+    const { shouldProcessImage } = await import('./filter')
+    expect(shouldProcessImage('node_modules/image.png', { exclude: 'node_modules/**' })).toBe(false)
+    expect(shouldProcessImage('src/image.png', { exclude: 'node_modules/**' })).toBe(true)
   })
 
-  test.skip('handles array of patterns', () => {
-    expect(true).toBe(false)
+  test('handles array of patterns', async () => {
+    const { shouldProcessImage } = await import('./filter')
+    expect(shouldProcessImage('src/image.png', { include: ['src/**', 'public/**'] })).toBe(true)
+    expect(shouldProcessImage('public/image.png', { include: ['src/**', 'public/**'] })).toBe(true)
+    expect(shouldProcessImage('assets/image.png', { exclude: ['**/*.min.png', 'placeholder.png'] })).toBe(true)
+    expect(shouldProcessImage('image.min.png', { exclude: ['**/*.min.png', 'placeholder.png'] })).toBe(false)
   })
 
-  test.skip('checks extension first (fast path)', () => {
-    expect(true).toBe(false)
+  test('checks extension first (fast path)', async () => {
+    const { shouldProcessImage, IMAGE_EXTENSIONS } = await import('./filter')
+    // Verify IMAGE_EXTENSIONS is a Set for O(1) lookup
+    expect(IMAGE_EXTENSIONS).toBeInstanceOf(Set)
+    // Verify extension check rejects non-image files before glob matching
+    expect(shouldProcessImage('document.svg', { include: '**/*' })).toBe(false)
+    expect(shouldProcessImage('video.webp', { include: '**/*' })).toBe(false)
   })
 })
