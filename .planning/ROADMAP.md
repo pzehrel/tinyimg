@@ -176,20 +176,30 @@
 **目标**: 实现 unplugin 插件，支持 Vite/WebPack/Rolldown
 
 **任务**:
-- [ ] 实现 unplugin 基础结构
-- [ ] 实现图片文件处理逻辑
-- [ ] 实现配置选项 (mode, cache, parallel)
-- [ ] 支持 Vite 集成
-- [ ] 支持 WebPack 集成
-- [ ] 支持 Rolldown 集成
-- [ ] 仅使用项目级缓存
-- [ ] 编写集成测试
+- [x] 实现 unplugin 基础结构
+- [x] 实现图片文件处理逻辑
+- [x] 实现配置选项 (mode, cache, parallel)
+- [x] 支持 Vite 集成
+- [x] 支持 WebPack 集成
+- [x] 支持 Rolldown 集成
+- [x] 仅使用项目级缓存
+- [x] 编写集成测试
 
 **依赖**: Phase 2, Phase 3, Phase 4
 
 **输出**:
 - unplugin 插件
 - 使用示例和文档
+
+**Plans:**
+5 plans total (all complete)
+- [x] 06-01-PLAN.md — unplugin setup and transform hook
+- [x] 06-02-PLAN.md — Configuration options and schema
+- [x] 06-03-PLAN.md — Vite integration with publicDir handling
+- [x] 06-04-PLAN.md — Webpack integration and emits
+- [x] 06-05-PLAN.md — Rolldown integration and tests
+
+**Progress:** 5/5 plans complete (100%)
 
 ---
 
