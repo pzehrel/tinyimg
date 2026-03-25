@@ -1,11 +1,30 @@
-import { describe, test, expect, beforeAll, afterAll } from 'vitest'
+import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest'
 import { execSync } from 'node:child_process'
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { rm } from 'node:fs/promises'
+import { vi } from 'vitest'
+
+// Mock tinyimg-core before importing the plugin
+vi.mock('tinyimg-core', () => ({
+  compressImage: vi.fn().mockResolvedValue(Buffer.from('mock-compressed-image-data')),
+  compressImages: vi.fn().mockResolvedValue([]),
+  loadKeys: vi.fn().mockReturnValue(['test-key-1', 'test-key-2']),
+  loadKeysFromGlobal: vi.fn().mockReturnValue([]),
+}))
 
 const fixtureDir = join(__dirname, '../fixtures/webpack')
 const distDir = join(fixtureDir, 'dist')
+
+// Check if webpack CLI is available
+let webpackAvailable = false
+try {
+  execSync('webpack --version', { stdio: 'ignore' })
+  webpackAvailable = true
+}
+catch {
+  // webpack CLI not found
+}
 
 describe('Webpack Integration', () => {
   beforeAll(async () => {
@@ -17,6 +36,36 @@ describe('Webpack Integration', () => {
     // Clean dist directory
     await rm(distDir, { recursive: true, force: true })
   })
+
+  beforeEach(() => {
+    // Set TINYPNG_KEYS environment variable for each test
+    process.env.TINYPNG_KEYS = 'test-key-1,test-key-2'
+  })
+
+  afterEach(() => {
+    // Clean up environment variable
+    delete process.env.TINYPNG_KEYS
+  })
+
+  // Skip all tests if webpack CLI is not available
+  if (!webpackAvailable) {
+    test.skip('builds fixture project successfully', () => {
+      // Skipped: webpack CLI not found
+    })
+    test.skip('outputs compressed images', () => {
+      // Skipped: webpack CLI not found
+    })
+    test.skip('shows compression summary', () => {
+      // Skipped: webpack CLI not found
+    })
+    test.skip('skips compression in development mode', () => {
+      // Skipped: webpack CLI not found
+    })
+    test.skip('uses cache on second build', () => {
+      // Skipped: webpack CLI not found
+    })
+    return
+  }
 
   test('builds fixture project successfully', () => {
     const result = execSync('webpack', {
