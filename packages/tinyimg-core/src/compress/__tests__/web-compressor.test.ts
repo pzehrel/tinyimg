@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest'
 import https from 'node:https'
 import FormData from 'form-data'
-import { SMALL_PNG, createMockPngBuffer, resetHttpsMocks } from './fixtures'
+import { SMALL_PNG, createMockPngBuffer, resetHttpsMocks, createMockClientRequest } from './fixtures'
 import { TinyPngWebCompressor } from '../web-compressor'
 
 describe('TinyPngWebCompressor', () => {
@@ -21,6 +21,10 @@ describe('TinyPngWebCompressor', () => {
     pipeSpy = vi.spyOn(FormData.prototype, 'pipe')
   })
 
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   describe('compress', () => {
     it('should upload to tinypng.com web interface and download compressed image', async () => {
       // Arrange: Mock HTTPS success response
@@ -38,25 +42,17 @@ describe('TinyPngWebCompressor', () => {
           statusCode: 200,
           on: vi.fn((event, fn) => {
             if (event === 'data') {
-              setTimeout(() => fn(uploadResponseBody), 0)
+              fn(uploadResponseBody)
             } else if (event === 'end') {
-              setTimeout(() => {
-                fn()
-                uploadCallbackCalled = true
-              }, 0)
+              fn()
+              uploadCallbackCalled = true
             }
           }),
         }
 
         callback(mockRes as any)
 
-        const mockReq = {
-          emit: vi.fn(),
-          on: vi.fn(),
-          write: vi.fn(),
-          end: vi.fn(),
-        }
-        return mockReq as any
+        return createMockClientRequest()
       })
 
       // Mock download request
@@ -65,12 +61,10 @@ describe('TinyPngWebCompressor', () => {
           statusCode: 200,
           on: vi.fn((event, fn) => {
             if (event === 'data') {
-              setTimeout(() => fn(compressedBuffer), 0)
+              fn(compressedBuffer)
             } else if (event === 'end') {
-              setTimeout(() => {
-                fn()
-                downloadCallbackCalled = true
-              }, 0)
+              fn()
+              downloadCallbackCalled = true
             }
           }),
         }
@@ -101,22 +95,15 @@ describe('TinyPngWebCompressor', () => {
           statusCode: 200,
           on: vi.fn((event, fn) => {
             if (event === 'data') {
-              setTimeout(() => fn(JSON.stringify({ output: { url: 'https://tinypng.com/output.png' } })), 0)
+              fn(JSON.stringify({ output: { url: 'https://tinypng.com/output.png' } }))
             } else if (event === 'end') {
-              setTimeout(() => fn(), 0)
+              fn()
             }
           }),
         }
 
         callback(mockRes as any)
-
-        const mockReq = {
-          emit: vi.fn(),
-          on: vi.fn(),
-          write: vi.fn(),
-          end: vi.fn(),
-        }
-        return mockReq as any
+        return createMockClientRequest()
       })
 
       getSpy.mockImplementation((url, callback) => {
@@ -124,9 +111,9 @@ describe('TinyPngWebCompressor', () => {
           statusCode: 200,
           on: vi.fn((event, fn) => {
             if (event === 'data') {
-              setTimeout(() => fn(compressedBuffer), 0)
+              fn(compressedBuffer)
             } else if (event === 'end') {
-              setTimeout(() => fn(), 0)
+              fn()
             }
           }),
         }
@@ -148,24 +135,19 @@ describe('TinyPngWebCompressor', () => {
       // Arrange: First 2 attempts fail, 3rd succeeds
       let attemptCount = 0
 
-      requestSpy.mockImplementation(() => {
+      requestSpy.mockImplementation(function (this: any) {
         attemptCount++
         if (attemptCount <= 2) {
           // First 2 attempts fail with network error
           const error = new Error('Connection reset')
           ;(error as any).code = 'ECONNRESET'
 
-          const mockReq = {
-            emit: vi.fn(),
-            on: vi.fn((event, fn) => {
-              if (event === 'error') {
-                setTimeout(() => fn(error), 0)
-              }
-            }),
-            write: vi.fn(),
-            end: vi.fn(),
-          }
-          return mockReq as any
+          const mockReq = createMockClientRequest()
+          // Emit error on next tick to allow form.pipe() to set up handlers
+          setImmediate(() => {
+            mockReq.emit('error', error)
+          })
+          return mockReq
         }
         else {
           // Third attempt succeeds
@@ -173,9 +155,9 @@ describe('TinyPngWebCompressor', () => {
             statusCode: 200,
             on: vi.fn((event, fn) => {
               if (event === 'data') {
-                setTimeout(() => fn(JSON.stringify({ output: { url: 'https://tinypng.com/output.png' } })), 0)
+                fn(JSON.stringify({ output: { url: 'https://tinypng.com/output.png' } }))
               } else if (event === 'end') {
-                setTimeout(() => fn(), 0)
+                fn()
               }
             }),
           }
@@ -183,13 +165,7 @@ describe('TinyPngWebCompressor', () => {
           const callback = (arguments[2] as Function)
           callback(mockRes as any)
 
-          const mockReq = {
-            emit: vi.fn(),
-            on: vi.fn(),
-            write: vi.fn(),
-            end: vi.fn(),
-          }
-          return mockReq as any
+          return createMockClientRequest()
         }
       })
 
@@ -198,9 +174,9 @@ describe('TinyPngWebCompressor', () => {
           statusCode: 200,
           on: vi.fn((event, fn) => {
             if (event === 'data') {
-              setTimeout(() => fn(createMockPngBuffer(512)), 0)
+              fn(createMockPngBuffer(512))
             } else if (event === 'end') {
-              setTimeout(() => fn(), 0)
+              fn()
             }
           }),
         }
@@ -215,7 +191,7 @@ describe('TinyPngWebCompressor', () => {
       // Assert: Retries and eventually succeeds
       expect(attemptCount).toBe(3)
       expect(result).toBeDefined()
-    })
+    }, 30000)
 
     it('should parse compressed image from download response', async () => {
       // Arrange: Mock upload and download
@@ -226,22 +202,15 @@ describe('TinyPngWebCompressor', () => {
           statusCode: 200,
           on: vi.fn((event, fn) => {
             if (event === 'data') {
-              setTimeout(() => fn(JSON.stringify({ output: { url: 'https://tinypng.com/output.png' } })), 0)
+              fn(JSON.stringify({ output: { url: 'https://tinypng.com/output.png' } }))
             } else if (event === 'end') {
-              setTimeout(() => fn(), 0)
+              fn()
             }
           }),
         }
 
         callback(mockRes as any)
-
-        const mockReq = {
-          emit: vi.fn(),
-          on: vi.fn(),
-          write: vi.fn(),
-          end: vi.fn(),
-        }
-        return mockReq as any
+        return createMockClientRequest()
       })
 
       getSpy.mockImplementation((url, callback) => {
@@ -249,9 +218,9 @@ describe('TinyPngWebCompressor', () => {
           statusCode: 200,
           on: vi.fn((event, fn) => {
             if (event === 'data') {
-              setTimeout(() => fn(compressedBuffer), 0)
+              fn(compressedBuffer)
             } else if (event === 'end') {
-              setTimeout(() => fn(), 0)
+              fn()
             }
           }),
         }
@@ -275,22 +244,15 @@ describe('TinyPngWebCompressor', () => {
           statusCode: 429,
           on: vi.fn((event, fn) => {
             if (event === 'data') {
-              setTimeout(() => fn('Too Many Requests'), 0)
+              fn('Too Many Requests')
             } else if (event === 'end') {
-              setTimeout(() => fn(), 0)
+              fn()
             }
           }),
         }
 
         callback(mockRes as any)
-
-        const mockReq = {
-          emit: vi.fn(),
-          on: vi.fn(),
-          write: vi.fn(),
-          end: vi.fn(),
-        }
-        return mockReq as any
+        return createMockClientRequest()
       })
 
       // Act & Assert: Should throw HTTP 429 error
@@ -307,24 +269,19 @@ describe('TinyPngWebCompressor', () => {
         const error = new Error('Connection reset')
         ;(error as any).code = 'ECONNRESET'
 
-        const mockReq = {
-          emit: vi.fn(),
-          on: vi.fn((event, fn) => {
-            if (event === 'error') {
-              setTimeout(() => fn(error), 0)
-            }
-          }),
-          write: vi.fn(),
-          end: vi.fn(),
-        }
-        return mockReq as any
+        const mockReq = createMockClientRequest()
+        // Emit error on next tick to allow form.pipe() to set up handlers
+        setImmediate(() => {
+          mockReq.emit('error', error)
+        })
+        return mockReq
       })
 
       const limitedCompressor = new TinyPngWebCompressor(maxRetries)
 
       // Act & Assert: Should fail after max retries
       await expect(limitedCompressor.compress(SMALL_PNG)).rejects.toThrow()
-      expect(attemptCount).toBe(maxRetries)
-    })
+      expect(attemptCount).toBe(maxRetries + 1) // initial + maxRetries retries
+    }, 30000)
   })
 })

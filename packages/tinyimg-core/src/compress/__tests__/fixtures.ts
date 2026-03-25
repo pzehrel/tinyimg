@@ -266,3 +266,84 @@ export function mockHttpsFailure(statusCode: number, message: string): void {
 export function resetHttpsMocks(): void {
   vi.restoreAllMocks()
 }
+
+/**
+ * Create a mock HTTPS ClientRequest object with all required stream methods.
+ *
+ * This mock includes all methods required by FormData.pipe() and Node.js streams:
+ * - removeListener, on, emit, once (event handling)
+ * - write, end, destroy (stream control)
+ *
+ * The emit() method is connected to the on() spy, so when you emit an event,
+ * it will call any registered handlers.
+ *
+ * @returns Mock ClientRequest object
+ *
+ * @example
+ * ```ts
+ * const mockReq = createMockClientRequest()
+ * mockReq.on('error', handler)
+ * mockReq.emit('error', error) // Will call handler
+ * ```
+ */
+export function createMockClientRequest(): any {
+  const handlers: Map<string, Function[]> = new Map()
+
+  const mockReq = {
+    // Event methods (required by FormData.pipe())
+    removeListener: vi.fn((event: string, fn: Function) => {
+      const eventHandlers = handlers.get(event)
+      if (eventHandlers) {
+        const index = eventHandlers.indexOf(fn)
+        if (index > -1) {
+          eventHandlers.splice(index, 1)
+        }
+      }
+      return mockReq
+    }),
+    on: vi.fn((event: string, fn: Function) => {
+      if (!handlers.has(event)) {
+        handlers.set(event, [])
+      }
+      handlers.get(event)!.push(fn)
+      return mockReq
+    }),
+    emit: vi.fn((event: string, ...args: any[]) => {
+      const eventHandlers = handlers.get(event)
+      if (eventHandlers) {
+        eventHandlers.forEach((fn) => {
+          if (typeof fn === 'function') {
+            fn(...args)
+          }
+        })
+      }
+      return true
+    }),
+    once: vi.fn((event: string, fn: Function) => {
+      const onceWrapper = (...args: any[]) => {
+        mockReq.removeListener(event, onceWrapper)
+        fn(...args)
+      }
+      mockReq.on(event, onceWrapper)
+      return mockReq
+    }),
+    // EventEmitter methods required by streams
+    listenerCount: vi.fn((event: string) => {
+      return handlers.get(event)?.length || 0
+    }),
+
+    // Stream methods (required by FormData.pipe())
+    write: vi.fn(),
+    end: vi.fn(),
+    destroy: vi.fn(),
+
+    // Additional ClientRequest properties
+    writable: true,
+    aborted: false,
+    method: 'POST',
+    path: '/backend/opt/shrink',
+    headers: {},
+  }
+
+  return mockReq
+}
