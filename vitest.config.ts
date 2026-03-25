@@ -2,6 +2,12 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/*.config.ts',
+      '**/.claude/worktrees/**',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json'],
