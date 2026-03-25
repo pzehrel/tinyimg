@@ -5,11 +5,11 @@
 **目标**: 完成核心功能，可以正常压缩图片并发布到 npm
 
 **完成标准**:
-- [ ] 三个包 (core/cli/unplugin) 可以正常编译和发布
-- [ ] CLI 工具可以压缩图片
-- [ ] unplugin 插件可以在构建过程中压缩图片
-- [ ] 缓存系统工作正常
-- [ ] 基本测试覆盖
+- [x] 三个包 (core/cli/unplugin) 可以正常编译和发布
+- [x] CLI 工具可以压缩图片
+- [x] unplugin 插件可以在构建过程中压缩图片
+- [x] 缓存系统工作正常
+- [x] 基本测试覆盖
 
 ---
 
@@ -123,14 +123,16 @@
 - 并发控制和错误处理机制
 
 **Plans:**
-5 plans total
-- [ ] 04-00-PLAN.md — Test Infrastructure Setup (Wave 0: test stubs, fixtures, mock helpers)
+6 plans total
+- [x] 04-00-PLAN.md — Test Infrastructure Setup (Wave 0: test stubs, fixtures, mock helpers)
 - [x] 04-01-PLAN.md — API Compressor and Retry Logic (TinyPngApiCompressor, RetryManager, 5MB limit)
 - [x] 04-02-PLAN.md — Web Compressor Implementation (TinyPngWebCompressor, multipart upload, tinypng.com)
 - [x] 04-03-PLAN.md — Concurrency Control and Composition (p-limit, compressWithFallback, mode selection)
 - [x] 04-04-PLAN.md — Service Integration (compressImage, cache integration, KeyPool integration)
+- [x] 04-05-PLAN.md — ClientRequest Mock and Upload Fix (Wave 3: form-data mock, FormData reference polyfill)
+- [x] 04-06-PLAN.md — RetryManager Tests (Wave 4: TDD for retry logic with exponential backoff)
 
-**Progress:** 4/5 plans complete (80%)
+**Progress:** 6/6 plans complete (100%)
 
 ---
 
