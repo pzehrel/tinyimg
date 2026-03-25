@@ -19,6 +19,10 @@ export type { ICompressor, CompressOptions, CompressionMode, CompressServiceOpti
 export { loadKeys } from './config/loader'
 export type { LoadedKey } from './config/loader'
 
+// Config storage
+export { readConfig, writeConfig, ensureConfigFile } from './config/storage'
+export type { ConfigFile, KeyMetadata } from './config/types'
+
 // Errors
 export { AllKeysExhaustedError, NoValidKeysError, AllCompressionFailedError } from './errors/types'
 

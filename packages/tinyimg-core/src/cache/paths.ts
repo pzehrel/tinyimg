@@ -5,16 +5,16 @@ import { join } from 'node:path'
  * Get the project-level cache directory path.
  *
  * @param projectRoot - Absolute path to the project root directory
- * @returns Path to project cache directory: `.node_modules/.tinyimg_cache/`
+ * @returns Path to project cache directory: `node_modules/.tinyimg_cache/`
  *
  * @example
  * ```ts
  * const cachePath = getProjectCachePath('/Users/test/project')
- * // Returns: '/Users/test/project/.node_modules/.tinyimg_cache'
+ * // Returns: '/Users/test/project/node_modules/.tinyimg_cache'
  * ```
  */
 export function getProjectCachePath(projectRoot: string): string {
-  return join(projectRoot, '.node_modules', '.tinyimg_cache')
+  return join(projectRoot, 'node_modules', '.tinyimg_cache')
 }
 
 /**
