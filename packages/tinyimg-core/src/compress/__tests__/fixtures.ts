@@ -291,7 +291,7 @@ export function resetHttpsMocks(): void {
  * ```
  */
 export function createMockClientRequest(): any {
-  const handlers: Map<string, Function[]> = new Map()
+  const handlers: Map<string, Array<(...args: any[]) => void>> = new Map()
 
   const mockReq = {
     // Event methods (required by FormData.pipe())

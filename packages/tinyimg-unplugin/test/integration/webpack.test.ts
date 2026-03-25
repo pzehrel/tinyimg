@@ -1,8 +1,8 @@
+import { Buffer } from 'node:buffer'
 import { execSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { join } from 'node:path'
-import { Buffer } from 'node:buffer'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock tinyimg-core before importing the plugin
