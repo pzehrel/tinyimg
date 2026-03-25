@@ -5,9 +5,9 @@
   "description": "unplugin for automatic image compression during build (Vite, Webpack, Rolldown)",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.mjs"
     }
   },
   "files": [
@@ -38,6 +38,8 @@
     "unplugin": "^1.0.0"
   },
   "devDependencies": {
-    "fast-glob": "^3.3.3"
+    "fast-glob": "^3.3.3",
+    "webpack": "^5.105.4",
+    "webpack-cli": "^7.0.2"
   }
 }

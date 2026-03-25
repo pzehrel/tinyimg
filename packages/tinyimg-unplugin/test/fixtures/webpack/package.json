@@ -1,0 +1,11 @@
+{
+  "name": "webpack-fixture",
+  "version": "0.0.0",
+  "scripts": {
+    "build": "npx webpack"
+  },
+  "dependencies": {
+    "tinyimg-unplugin": "workspace:*",
+    "webpack": "^5.0.0"
+  }
+}
