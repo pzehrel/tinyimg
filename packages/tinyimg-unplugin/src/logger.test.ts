@@ -190,7 +190,7 @@ describe('TinyimgLogger', () => {
   test('tracks compression statistics', () => {
     const logger = new TinyimgLogger()
     logger.logCompressed('assets/logo.png', 15000, 8000)
-    logger.logCached('assets/icon.png', 3000)
+    logger.logCacheHit('assets/icon.png', 3000)
 
     const stats = logger.getStats().getSummary()
     expect(stats.compressedCount).toBe(1)
@@ -208,7 +208,7 @@ describe('TinyimgLogger', () => {
 
     expect(consoleSpy).toHaveBeenCalledTimes(3)
     expect(consoleSpy).toHaveBeenNthCalledWith(1, '[tinyimg] Compressing assets/logo.png...')
-    expect(consoleSpy).toHaveBeenNthCalledWith(2, '[tinyimg] ✓ Compressed: 15.00 KB → 8.00 KB (46.7% saved)')
+    expect(consoleSpy).toHaveBeenNthCalledWith(2, '[tinyimg] ✓ Compressed: 14.65 KB → 7.81 KB (46.7% saved)')
     expect(consoleSpy).toHaveBeenNthCalledWith(3, '[tinyimg] Cache hit: assets/icon.png')
 
     consoleSpy.mockRestore()
@@ -219,7 +219,7 @@ describe('TinyimgLogger', () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
     logger.logCompressed('assets/logo.png', 15000, 8000)
-    logger.logCached('assets/icon.png', 3000)
+    logger.logCacheHit('assets/icon.png', 3000)
     logger.logSummary()
 
     expect(consoleSpy).toHaveBeenCalledTimes(2)
