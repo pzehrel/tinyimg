@@ -228,11 +228,11 @@
 
 **Plans:**
 8 plans total
-- [ ] 07-01-PLAN.md — Fix web-compressor tests (FormData mock issues)
+- [x] 07-01-PLAN.md — Fix web-compressor tests (FormData mock issues)
 - [x] 07-02-PLAN.md — Add CLI unit tests (TDD for commands and utilities)
 - [x] 07-03-PLAN.md — Fix unplugin integration tests (mock Tinify API)
 - [ ] 07-04-PLAN.md — Write CLI README (installation, usage, examples)
-- [ ] 07-05-PLAN.md — Write unplugin README (integration examples)
+- [x] 07-05-PLAN.md — Write unplugin README (integration examples)
 - [ ] 07-06-PLAN.md — Add core API documentation (compressImage, compressImages, KeyPool)
 - [ ] 07-07-PLAN.md — Create CONTRIBUTING.md (development setup, testing, PR workflow)
 - [ ] 07-08-PLAN.md — Create CHANGELOG.md (Keep a Changelog format)
