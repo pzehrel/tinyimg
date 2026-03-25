@@ -1,10 +1,11 @@
+import type { Buffer } from 'node:buffer'
+import type { CompressServiceOptions, KeyStrategy } from 'tinyimg-core'
 import fs from 'node:fs/promises'
-import { compressImages, AllKeysExhaustedError, NoValidKeysError, AllCompressionFailedError, KeyPool } from 'tinyimg-core'
-import type { CompressServiceOptions } from 'tinyimg-core'
-import type { KeyStrategy } from 'tinyimg-core'
+import process from 'node:process'
+import kleur from 'kleur'
+import { AllCompressionFailedError, AllKeysExhaustedError, compressImages, KeyPool, NoValidKeysError } from 'tinyimg-core'
 import { expandInputs, resolveOutputPath } from '../utils/files.js'
 import { formatProgress, formatResult } from '../utils/format.js'
-import kleur from 'kleur'
 
 interface CompressOptions {
   output?: string
@@ -57,7 +58,7 @@ export async function compressCommand(inputs: string[], options: CompressOptions
   // Build compression options
   const compressOptions: CompressServiceOptions = {
     cache: options.cache !== false,
-    concurrency: options.parallel ? parseInt(options.parallel, 10) : 8,
+    concurrency: options.parallel ? Number.parseInt(options.parallel, 10) : 8,
   }
 
   // Add mode if specified

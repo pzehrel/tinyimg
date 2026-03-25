@@ -1,10 +1,10 @@
-import { describe, expect, test, vi } from 'vitest'
-import { CompressionStats } from './stats'
+import { describe, expect, it, vi } from 'vitest'
 import { TinyimgLogger } from './logger'
+import { CompressionStats } from './stats'
 
-describe('CompressionStats', () => {
+describe('compressionStats', () => {
   describe('recordCompressed', () => {
-    test('increments compressed count', () => {
+    it('increments compressed count', () => {
       const stats = new CompressionStats()
       stats.recordCompressed('assets/logo.png', 15000, 8000)
 
@@ -12,7 +12,7 @@ describe('CompressionStats', () => {
       expect(summary.compressedCount).toBe(1)
     })
 
-    test('updates original and compressed sizes', () => {
+    it('updates original and compressed sizes', () => {
       const stats = new CompressionStats()
       stats.recordCompressed('assets/logo.png', 15000, 8000)
 
@@ -21,7 +21,7 @@ describe('CompressionStats', () => {
       expect(summary.compressedSize).toBe(8000)
     })
 
-    test('accumulates multiple compressed files', () => {
+    it('accumulates multiple compressed files', () => {
       const stats = new CompressionStats()
       stats.recordCompressed('assets/logo.png', 15000, 8000)
       stats.recordCompressed('assets/icon.png', 5000, 3000)
@@ -32,7 +32,7 @@ describe('CompressionStats', () => {
       expect(summary.compressedSize).toBe(11000)
     })
 
-    test('stores file result', () => {
+    it('stores file result', () => {
       const stats = new CompressionStats()
       stats.recordCompressed('assets/logo.png', 15000, 8000)
 
@@ -48,7 +48,7 @@ describe('CompressionStats', () => {
   })
 
   describe('recordCached', () => {
-    test('increments cached count', () => {
+    it('increments cached count', () => {
       const stats = new CompressionStats()
       stats.recordCached('assets/logo.png', 8000)
 
@@ -56,7 +56,7 @@ describe('CompressionStats', () => {
       expect(summary.cachedCount).toBe(1)
     })
 
-    test('updates sizes with cached file size', () => {
+    it('updates sizes with cached file size', () => {
       const stats = new CompressionStats()
       stats.recordCached('assets/logo.png', 8000)
 
@@ -65,7 +65,7 @@ describe('CompressionStats', () => {
       expect(summary.compressedSize).toBe(8000)
     })
 
-    test('stores file result with cached flag', () => {
+    it('stores file result with cached flag', () => {
       const stats = new CompressionStats()
       stats.recordCached('assets/logo.png', 8000)
 
@@ -81,7 +81,7 @@ describe('CompressionStats', () => {
   })
 
   describe('recordError', () => {
-    test('stores error without affecting sizes', () => {
+    it('stores error without affecting sizes', () => {
       const stats = new CompressionStats()
       stats.recordError('assets/logo.png', 'All keys exhausted')
 
@@ -92,7 +92,7 @@ describe('CompressionStats', () => {
       expect(summary.compressedSize).toBe(0)
     })
 
-    test('stores file result with error', () => {
+    it('stores file result with error', () => {
       const stats = new CompressionStats()
       stats.recordError('assets/logo.png', 'All keys exhausted')
 
@@ -108,7 +108,7 @@ describe('CompressionStats', () => {
   })
 
   describe('getSummary', () => {
-    test('calculates bytes saved correctly', () => {
+    it('calculates bytes saved correctly', () => {
       const stats = new CompressionStats()
       stats.recordCompressed('assets/logo.png', 15000, 8000)
       stats.recordCompressed('assets/icon.png', 5000, 3000)
@@ -117,7 +117,7 @@ describe('CompressionStats', () => {
       expect(summary.bytesSaved).toBe(9000) // (15000-8000) + (5000-3000)
     })
 
-    test('calculates total file count', () => {
+    it('calculates total file count', () => {
       const stats = new CompressionStats()
       stats.recordCompressed('assets/logo.png', 15000, 8000)
       stats.recordCached('assets/icon.png', 3000)
@@ -129,7 +129,7 @@ describe('CompressionStats', () => {
   })
 
   describe('formatSummary', () => {
-    test('formats normal summary with compressed and cached files', () => {
+    it('formats normal summary with compressed and cached files', () => {
       const stats = new CompressionStats()
       stats.recordCompressed('assets/logo.png', 15000, 8000)
       stats.recordCompressed('assets/icon.png', 5000, 3000)
@@ -141,7 +141,7 @@ describe('CompressionStats', () => {
       expect(lines[1]).toMatch(/✓ \[tinyimg\] Saved \d+\.\d+ KB \(original: \d+\.\d+ KB → compressed: \d+\.\d+ KB\)/)
     })
 
-    test('formats silent message when all files cached', () => {
+    it('formats silent message when all files cached', () => {
       const stats = new CompressionStats()
       stats.recordCached('assets/logo.png', 8000)
       stats.recordCached('assets/icon.png', 3000)
@@ -151,7 +151,7 @@ describe('CompressionStats', () => {
       expect(lines[0]).toBe('[tinyimg] All images cached (0 compressed, 2 cached)')
     })
 
-    test('handles zero compressed files with cached files', () => {
+    it('handles zero compressed files with cached files', () => {
       const stats = new CompressionStats()
       stats.recordCached('assets/logo.png', 8000)
 
@@ -160,7 +160,7 @@ describe('CompressionStats', () => {
       expect(lines[0]).toBe('[tinyimg] All images cached (0 compressed, 1 cached)')
     })
 
-    test('handles mixed compressed and cached with errors', () => {
+    it('handles mixed compressed and cached with errors', () => {
       const stats = new CompressionStats()
       stats.recordCompressed('assets/logo.png', 15000, 8000)
       stats.recordCached('assets/icon.png', 3000)
@@ -174,20 +174,20 @@ describe('CompressionStats', () => {
   })
 })
 
-describe('TinyimgLogger', () => {
-  test('initializes with verbose mode', () => {
+describe('tinyimgLogger', () => {
+  it('initializes with verbose mode', () => {
     const logger = new TinyimgLogger({ verbose: true })
     const stats = logger.getStats()
     expect(stats).toBeInstanceOf(CompressionStats)
   })
 
-  test('initializes with summary mode', () => {
+  it('initializes with summary mode', () => {
     const logger = new TinyimgLogger({ verbose: false })
     const stats = logger.getStats()
     expect(stats).toBeInstanceOf(CompressionStats)
   })
 
-  test('tracks compression statistics', () => {
+  it('tracks compression statistics', () => {
     const logger = new TinyimgLogger()
     logger.logCompressed('assets/logo.png', 15000, 8000)
     logger.logCacheHit('assets/icon.png', 3000)
@@ -198,7 +198,7 @@ describe('TinyimgLogger', () => {
     expect(stats.fileCount).toBe(2)
   })
 
-  test('logs individual file in verbose mode', () => {
+  it('logs individual file in verbose mode', () => {
     const logger = new TinyimgLogger({ verbose: true })
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
@@ -214,7 +214,7 @@ describe('TinyimgLogger', () => {
     consoleSpy.mockRestore()
   })
 
-  test('logs summary at end', () => {
+  it('logs summary at end', () => {
     const logger = new TinyimgLogger()
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
@@ -229,7 +229,7 @@ describe('TinyimgLogger', () => {
     consoleSpy.mockRestore()
   })
 
-  test('logs warning in non-strict mode', () => {
+  it('logs warning in non-strict mode', () => {
     const logger = new TinyimgLogger({ strict: false })
     const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
@@ -241,7 +241,7 @@ describe('TinyimgLogger', () => {
     consoleWarnSpy.mockRestore()
   })
 
-  test('logs error in strict mode', () => {
+  it('logs error in strict mode', () => {
     const logger = new TinyimgLogger({ strict: true })
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 

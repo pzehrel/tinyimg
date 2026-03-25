@@ -1,6 +1,6 @@
+import type { Buffer } from 'node:buffer'
 import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
-import type { Buffer } from 'node:buffer'
 
 /**
  * Calculate MD5 hash of a file's content.

@@ -1,8 +1,9 @@
-import { describe, it, expect } from 'vitest'
-import { ICompressor, CompressOptions, CompressionMode } from '../types'
+import type { CompressionMode, CompressOptions, ICompressor } from '../types'
+import { Buffer } from 'node:buffer'
+import { describe, expect, it } from 'vitest'
 
 describe('compression types', () => {
-  describe('ICompressor interface', () => {
+  describe('iCompressor interface', () => {
     it('should have compress method signature', () => {
       // This test verifies the interface contract
       // Any class implementing ICompressor must have a compress method
@@ -22,7 +23,7 @@ describe('compression types', () => {
     })
   })
 
-  describe('CompressionMode type', () => {
+  describe('compressionMode type', () => {
     it('should accept "auto" mode', () => {
       const mode: CompressionMode = 'auto'
       expect(mode).toBe('auto')
@@ -44,7 +45,7 @@ describe('compression types', () => {
     })
   })
 
-  describe('CompressOptions interface', () => {
+  describe('compressOptions interface', () => {
     it('should accept empty options', () => {
       const options: CompressOptions = {}
       expect(options).toEqual({})

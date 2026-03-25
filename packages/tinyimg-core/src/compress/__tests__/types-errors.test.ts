@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { AllCompressionFailedError } from '../../errors/types'
 
-describe('AllCompressionFailedError', () => {
+describe('allCompressionFailedError', () => {
   it('should create error instance', () => {
     const error = new AllCompressionFailedError()
     expect(error).toBeInstanceOf(Error)

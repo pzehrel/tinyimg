@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { SMALL_PNG, LARGE_PNG, createMockPngBuffer, mockTinifySuccess, resetTinifyMocks } from './fixtures'
 import { TinyPngApiCompressor } from '../api-compressor'
+import { createMockPngBuffer, LARGE_PNG, mockTinifySuccess, resetTinifyMocks, SMALL_PNG } from './fixtures'
 
-describe('TinyPngApiCompressor', () => {
+describe('tinyPngApiCompressor', () => {
   let compressor: TinyPngApiCompressor
   let mockKeyPool: any
 
