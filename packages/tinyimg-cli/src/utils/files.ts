@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { glob } from 'fast-glob'
+import fastGlob from 'fast-glob'
 
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg'] as const
 
@@ -24,7 +24,7 @@ export async function expandInputs(inputs: string[]): Promise<string[]> {
       else if (stat.isDirectory()) {
         // Directory - recursively find all image files
         const pattern = path.join(input, '**', '*').replace(/\\/g, '/')
-        const files = await glob(pattern, {
+        const files = await fastGlob.glob(pattern, {
           absolute: true,
           onlyFiles: true,
         })
@@ -34,7 +34,7 @@ export async function expandInputs(inputs: string[]): Promise<string[]> {
     catch {
       // Not a file or directory - try as glob pattern
       try {
-        const files = await glob(input, {
+        const files = await fastGlob.glob(input, {
           absolute: true,
           onlyFiles: true,
         })
