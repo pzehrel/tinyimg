@@ -14,7 +14,6 @@ export { createConcurrencyLimiter, executeWithConcurrency } from './compress/con
 export { compressWithFallback, getCompressorTypesForMode } from './compress/compose'
 export { compressImage, compressImages } from './compress/service'
 export type { ICompressor, CompressOptions, CompressionMode, CompressServiceOptions } from './compress/types'
-export { AllCompressionFailedError } from './errors/types'
 
 // Config loading
 export { loadKeys } from './config/loader'
