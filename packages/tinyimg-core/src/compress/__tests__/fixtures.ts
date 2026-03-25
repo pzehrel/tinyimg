@@ -277,6 +277,7 @@ export function resetHttpsMocks(): void {
  * This mock includes all methods required by FormData.pipe() and Node.js streams:
  * - removeListener, on, emit, once (event handling)
  * - write, end, destroy (stream control)
+ * - eventNames, setMaxListeners, listenerCount (EventEmitter API)
  *
  * The emit() method is connected to the on() spy, so when you emit an event,
  * it will call any registered handlers.
@@ -332,6 +333,12 @@ export function createMockClientRequest(): any {
       return mockReq
     }),
     // EventEmitter methods required by streams
+    eventNames: vi.fn(() => {
+      return Array.from(handlers.keys())
+    }),
+    setMaxListeners: vi.fn((n: number) => {
+      // No-op for mock
+    }),
     listenerCount: vi.fn((event: string) => {
       return handlers.get(event)?.length || 0
     }),
