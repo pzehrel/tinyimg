@@ -1,7 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { SMALL_PNG } from './fixtures'
+import { afterEach, beforeEach, describe, it, vi } from 'vitest'
 
-describe('RetryManager', () => {
+describe('retryManager', () => {
   beforeEach(() => {
     // Use fake timers for testing delay timing
     vi.useFakeTimers()

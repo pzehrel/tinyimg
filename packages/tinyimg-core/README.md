@@ -26,6 +26,7 @@ TinyImg uses an MD5-based permanent cache for compressed images with two cache l
 2. **Global Cache** (fallback): `~/.tinyimg/cache/` - Shared across projects
 
 The cache system provides:
+
 - Automatic cache hit detection using MD5 content hashing
 - Atomic writes for concurrent safety
 - Graceful corruption handling (silent re-compression)
@@ -45,6 +46,7 @@ console.log(hash) // 'a1b2c3d4e5f6...'
 ```
 
 **Parameters:**
+
 - `imagePath: string` - Absolute path to the image file
 
 **Returns:** `Promise<string>` - 32-character hexadecimal MD5 hash
@@ -63,6 +65,7 @@ const cachePath = getProjectCachePath('/Users/test/project')
 ```
 
 **Parameters:**
+
 - `projectRoot: string` - Absolute path to the project root directory
 
 **Returns:** `string` - Path to project cache directory
@@ -101,12 +104,14 @@ else {
 ```
 
 **Parameters:**
+
 - `imagePath: string` - Absolute path to the source image
 - `cacheDirs: string[]` - Array of cache directories in priority order
 
 **Returns:** `Promise<Buffer | null>` - Cached compressed data or null if miss
 
 **Behavior:**
+
 - Iterates through cache directories in order
 - Returns first successful read
 - Returns null if all caches miss or corrupted
@@ -124,11 +129,13 @@ await writeCache('image.png', compressed, getProjectCachePath('/project'))
 ```
 
 **Parameters:**
+
 - `imagePath: string` - Absolute path to the source image
 - `data: Buffer` - Compressed image data to cache
 - `cacheDir: string` - Cache directory to write to
 
 **Behavior:**
+
 - Uses atomic write (temp file + rename) for concurrent safety
 - Auto-creates cache directory if needed
 - Safe for concurrent writes from multiple processes
@@ -153,9 +160,11 @@ await storage.write('/path/to/image.png', compressedData)
 ```
 
 **Constructor:**
+
 - `cacheDir: string` - Cache directory path
 
 **Methods:**
+
 - `async getCachePath(imagePath: string): Promise<string>` - Get cache file path
 - `async read(imagePath: string): Promise<Buffer | null>` - Read cached data
 - `async write(imagePath: string, data: Buffer): Promise<void>` - Write data to cache
@@ -172,11 +181,13 @@ console.log(`Files: ${stats.count}, Size: ${formatBytes(stats.size)}`)
 ```
 
 **Parameters:**
+
 - `cacheDir: string` - Cache directory path
 
 **Returns:** `Promise<CacheStats>` - Object with `count` and `size` (in bytes)
 
 **Behavior:**
+
 - Returns `{ count: 0, size: 0 }` for non-existent directories
 - Handles errors gracefully (no exceptions thrown)
 
@@ -198,11 +209,13 @@ console.log(`Global: ${globalOnly.global.count} files`)
 ```
 
 **Parameters:**
+
 - `projectRoot?: string` - Optional project root directory
 
 **Returns:** `Promise<{ project: CacheStats | null, global: CacheStats }>` - Statistics object
 
 **Behavior:**
+
 - Project stats is `null` if no `projectRoot` provided
 - Global stats always returned
 
@@ -222,6 +235,7 @@ formatBytes(1073741824) // "1.00 GB"
 ```
 
 **Parameters:**
+
 - `bytes: number` - Number of bytes
 
 **Returns:** `string` - Formatted string (e.g., "1.23 MB", "456 KB")
@@ -276,23 +290,28 @@ async function showCacheStats(projectRoot: string) {
 ### Cache Behavior
 
 **Cache Key:**
+
 - MD5 hash of original image content
 - Same content = same hash, regardless of filename/location
 
 **Cache File:**
+
 - Filename: MD5 hash (no extension)
 - Content: Compressed image data (Buffer)
 
 **Cache Policy:**
+
 - No TTL - cache is permanent until manually cleaned
 - Corrupted cache files handled gracefully (silent re-compression)
 - Atomic writes prevent concurrent write corruption
 
 **Cache Priority:**
+
 1. Project cache checked first (fastest, project-specific)
 2. Global cache checked second (shared, fallback)
 
 **Storage Locations:**
+
 - Project: `<projectRoot>/node_modules/.tinyimg_cache/`
 - Global: `~/.tinyimg/cache/`
 
@@ -315,13 +334,14 @@ import { compressImage } from 'tinyimg-core'
 
 const imageBuffer = Buffer.from(/* image data */)
 const compressed = await compressImage(imageBuffer, {
-  mode: 'auto',      // 'auto' | 'api' | 'web'
-  cache: true,       // Enable caching (default: true)
-  maxRetries: 8,     // Max retry attempts (default: 8)
+  mode: 'auto', // 'auto' | 'api' | 'web'
+  cache: true, // Enable caching (default: true)
+  maxRetries: 8, // Max retry attempts (default: 8)
 })
 ```
 
 **Signature:**
+
 ```typescript
 async function compressImage(
   buffer: Buffer,
@@ -330,12 +350,14 @@ async function compressImage(
 ```
 
 **Parameters:**
+
 - `buffer: Buffer` - Original image data as Node.js Buffer
 - `options?: CompressServiceOptions` - Compression options (see below)
 
 **Returns:** `Promise<Buffer>` - Compressed image data
 
 **Behavior:**
+
 - Checks cache first (project cache, then global cache)
 - Compresses using API keys with automatic rotation
 - Falls back to web compressor if all keys exhausted
@@ -351,13 +373,14 @@ import { compressImages } from 'tinyimg-core'
 
 const images = [buffer1, buffer2, buffer3]
 const compressed = await compressImages(images, {
-  concurrency: 8,    // Max parallel compressions (default: 8)
+  concurrency: 8, // Max parallel compressions (default: 8)
   mode: 'auto',
   cache: true,
 })
 ```
 
 **Signature:**
+
 ```typescript
 async function compressImages(
   buffers: Buffer[],
@@ -366,12 +389,14 @@ async function compressImages(
 ```
 
 **Parameters:**
+
 - `buffers: Buffer[]` - Array of image buffers to compress
 - `options?: CompressServiceOptions` - Compression options
 
 **Returns:** `Promise<Buffer[]>` - Array of compressed image buffers (same order as input)
 
 **Behavior:**
+
 - Processes images with configurable concurrency limit
 - Each image goes through the same pipeline as `compressImage`
 - Maintains order of results matching input order
@@ -395,22 +420,26 @@ const pool = new KeyPool('priority')
 ```
 
 **Constructor:**
+
 ```typescript
 new KeyPool(strategy?: KeyStrategy)
 ```
 
 **Parameters:**
+
 - `strategy: KeyStrategy` - Key selection strategy: `'random'` | `'round-robin'` | `'priority'`
   - `random` (default): Randomly select available keys
   - `round-robin`: Cycle through keys in order
   - `priority`: Prefer API keys, fallback to web compressor
 
 **Methods:**
+
 - `async selectKey(): Promise<string>` - Select and return an available API key
 - `decrementQuota(): void` - Mark current key's quota as used
 - `getCurrentKey(): string | null` - Get the currently selected key
 
 **Throws:**
+
 - `NoValidKeysError` - When no API keys are configured
 - `AllKeysExhaustedError` - When all keys have exhausted their quota
 
@@ -486,7 +515,8 @@ import { AllKeysExhaustedError } from 'tinyimg-core'
 
 try {
   await compressImage(buffer)
-} catch (error) {
+}
+catch (error) {
   if (error instanceof AllKeysExhaustedError) {
     console.log('All API keys exhausted, falling back to web compressor')
   }
@@ -502,7 +532,8 @@ import { NoValidKeysError } from 'tinyimg-core'
 
 try {
   const pool = new KeyPool('random')
-} catch (error) {
+}
+catch (error) {
   if (error instanceof NoValidKeysError) {
     console.log('Please configure API keys via TINYPNG_KEYS env var')
   }
@@ -518,7 +549,8 @@ import { AllCompressionFailedError } from 'tinyimg-core'
 
 try {
   await compressImage(buffer)
-} catch (error) {
+}
+catch (error) {
   if (error instanceof AllCompressionFailedError) {
     console.log('Compression failed - image may be corrupted or unsupported')
   }
@@ -530,19 +562,19 @@ try {
 Full workflow example showing compression with caching and error handling:
 
 ```typescript
+import { readFile, writeFile } from 'node:fs/promises'
 import {
+  AllCompressionFailedError,
+  AllKeysExhaustedError,
   compressImage,
   compressImages,
-  KeyPool,
-  getProjectCachePath,
-  getGlobalCachePath,
-  getAllCacheStats,
   formatBytes,
-  AllKeysExhaustedError,
+  getAllCacheStats,
+  getGlobalCachePath,
+  getProjectCachePath,
+  KeyPool,
   NoValidKeysError,
-  AllCompressionFailedError,
 } from 'tinyimg-core'
-import { readFile, writeFile } from 'node:fs/promises'
 
 // Single image compression
 async function compressSingleImage(inputPath: string, outputPath: string) {
@@ -550,9 +582,9 @@ async function compressSingleImage(inputPath: string, outputPath: string) {
     const imageBuffer = await readFile(inputPath)
 
     const compressed = await compressImage(imageBuffer, {
-      mode: 'auto',      // Try API first, fallback to web
-      cache: true,       // Enable caching
-      maxRetries: 8,     // Retry on transient failures
+      mode: 'auto', // Try API first, fallback to web
+      cache: true, // Enable caching
+      maxRetries: 8, // Retry on transient failures
     })
 
     await writeFile(outputPath, compressed)
@@ -561,12 +593,15 @@ async function compressSingleImage(inputPath: string, outputPath: string) {
     console.log(`Compressed: ${savings}% reduction`)
 
     return compressed
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof AllCompressionFailedError) {
       console.error('Compression failed: All methods exhausted')
-    } else if (error instanceof NoValidKeysError) {
+    }
+    else if (error instanceof NoValidKeysError) {
       console.error('No API keys configured. Set TINYPNG_KEYS env var.')
-    } else {
+    }
+    else {
       console.error('Unexpected error:', error)
     }
     throw error
@@ -580,7 +615,7 @@ async function compressBatch(inputPaths: string[], outputDir: string) {
   )
 
   const compressed = await compressImages(images, {
-    concurrency: 8,    // Process 8 images in parallel
+    concurrency: 8, // Process 8 images in parallel
     mode: 'auto',
     cache: true,
   })
@@ -621,8 +656,8 @@ async function manualKeyManagement() {
 
     // Mark quota as used after compression
     pool.decrementQuota()
-
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof AllKeysExhaustedError) {
       console.log('All keys exhausted - using web fallback')
     }
@@ -641,6 +676,7 @@ main().catch(console.error)
 ## Error Handling
 
 The cache system is designed to fail gracefully:
+
 - Missing cache directory → Returns null (cache miss)
 - Corrupted cache file → Returns null (triggers re-compression)
 - Concurrent writes → Atomic write pattern prevents corruption

@@ -24,7 +24,7 @@ export function formatResult(
   const originalStr = formatBytes(originalSize)
   const compressedStr = formatBytes(compressedSize)
 
-  return kleur.green('✓') + ' ' + kleur.yellow(`${basename}: ${originalStr} → ${compressedStr} (${savedPercent}% saved)`)
+  return `${kleur.green('✓')} ${kleur.yellow(`${basename}: ${originalStr} → ${compressedStr} (${savedPercent}% saved)`)}`
 }
 
 /**

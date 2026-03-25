@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatProgress, formatResult, formatBytes } from './format.js'
+import { formatBytes, formatProgress, formatResult } from './format.js'
 
 describe('format utilities', () => {
   describe('formatProgress', () => {

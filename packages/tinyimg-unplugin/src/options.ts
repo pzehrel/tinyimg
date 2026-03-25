@@ -33,6 +33,6 @@ export function normalizeOptions(options: TinyimgUnpluginOptions = {}): Normaliz
     strict: options.strict ?? false,
     verbose: options.verbose ?? false,
     include: options.include ? (Array.isArray(options.include) ? options.include : [options.include]) : undefined,
-    exclude: options.exclude ? (Array.isArray(options.exclude) ? options.exclude : [options.exclude]) : undefined
+    exclude: options.exclude ? (Array.isArray(options.exclude) ? options.exclude : [options.exclude]) : undefined,
   }
 }

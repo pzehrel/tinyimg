@@ -1,13 +1,14 @@
 import type { Buffer } from 'node:buffer'
-import { KeyPool } from '../keys/pool'
-import { calculateMD5FromBuffer } from '../cache/hash'
-import { getProjectCachePath, getGlobalCachePath } from '../cache/paths'
+import type { CompressOptions, ICompressor } from './types'
+import process from 'node:process'
 import { readCacheByHash, writeCacheByHash } from '../cache/buffer-storage'
+import { calculateMD5FromBuffer } from '../cache/hash'
+import { getGlobalCachePath, getProjectCachePath } from '../cache/paths'
+import { KeyPool } from '../keys/pool'
+import { logInfo, logWarning } from '../utils/logger'
 import { TinyPngApiCompressor, TinyPngWebCompressor } from './api-compressor'
 import { compressWithFallback } from './compose'
 import { createConcurrencyLimiter } from './concurrency'
-import { logInfo, logWarning } from '../utils/logger'
-import type { ICompressor, CompressOptions } from './types'
 
 export interface CompressServiceOptions extends CompressOptions {
   /**

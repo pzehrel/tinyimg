@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { compressWithFallback, getCompressorTypesForMode } from '../compose'
-import { AllCompressionFailedError } from '../../errors/types'
-import { SMALL_PNG } from './fixtures'
 import type { ICompressor } from '../types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { AllCompressionFailedError } from '../../errors/types'
+import { compressWithFallback, getCompressorTypesForMode } from '../compose'
+import { SMALL_PNG } from './fixtures'
 
 describe('compressWithFallback', () => {
   beforeEach(() => {
@@ -79,9 +79,11 @@ describe('compressWithFallback', () => {
 
       // Act & Assert: Throws AllCompressionFailedError
       await expect(compressWithFallback(SMALL_PNG, { compressors }))
-        .rejects.toThrow(AllCompressionFailedError)
+        .rejects
+        .toThrow(AllCompressionFailedError)
       await expect(compressWithFallback(SMALL_PNG, { compressors }))
-        .rejects.toThrow('All compression methods failed')
+        .rejects
+        .toThrow('All compression methods failed')
     })
 
     it('should support mode: "api" for API-only', async () => {

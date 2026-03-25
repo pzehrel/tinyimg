@@ -22,8 +22,7 @@ describe('createConcurrencyLimiter', () => {
           await new Promise(resolve => setTimeout(resolve, 50))
           concurrentCount--
           return i
-        }),
-      )
+        }))
 
       await Promise.all(tasks)
 
@@ -42,8 +41,7 @@ describe('createConcurrencyLimiter', () => {
           await new Promise(resolve => setTimeout(resolve, 50))
           results.push(i)
           return i
-        }),
-      )
+        }))
 
       await Promise.all(tasks)
 
