@@ -1,4 +1,4 @@
-import * as tinify from 'tinify'
+import tinify from 'tinify'
 import { KeyPool } from '../keys/pool'
 import { RetryManager } from './retry'
 import { logInfo, logWarning } from '../utils/logger'

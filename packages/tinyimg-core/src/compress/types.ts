@@ -59,3 +59,9 @@ export interface CompressOptions {
    */
   maxRetries?: number
 }
+
+/**
+ * Re-export from service.ts for public API
+ * This is defined in compress/service.ts but exported here for consistency
+ */
+export type { CompressServiceOptions } from './service'
