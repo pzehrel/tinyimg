@@ -1,9 +1,9 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest'
 import { execSync } from 'node:child_process'
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
-import { vi } from 'vitest'
+import { join } from 'node:path'
+import { Buffer } from 'node:buffer'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock tinyimg-core before importing the plugin
 vi.mock('tinyimg-core', () => ({
@@ -26,13 +26,8 @@ catch {
   // webpack CLI not found
 }
 
-describe('Webpack Integration', () => {
+describe('webpack Integration', () => {
   beforeAll(async () => {
-    // Clean dist directory
-    await rm(distDir, { recursive: true, force: true })
-  })
-
-  afterAll(async () => {
     // Clean dist directory
     await rm(distDir, { recursive: true, force: true })
   })
@@ -47,47 +42,52 @@ describe('Webpack Integration', () => {
     delete process.env.TINYPNG_KEYS
   })
 
+  afterAll(async () => {
+    // Clean dist directory
+    await rm(distDir, { recursive: true, force: true })
+  })
+
   // Skip all tests if webpack CLI is not available
   if (!webpackAvailable) {
-    test.skip('builds fixture project successfully', () => {
+    it.skip('builds fixture project successfully (CLI unavailable)', () => {
       // Skipped: webpack CLI not found
     })
-    test.skip('outputs compressed images', () => {
+    it.skip('outputs compressed images (CLI unavailable)', () => {
       // Skipped: webpack CLI not found
     })
-    test.skip('shows compression summary', () => {
+    it.skip('shows compression summary (CLI unavailable)', () => {
       // Skipped: webpack CLI not found
     })
-    test.skip('skips compression in development mode', () => {
+    it.skip('skips compression in development mode (CLI unavailable)', () => {
       // Skipped: webpack CLI not found
     })
-    test.skip('uses cache on second build', () => {
+    it.skip('uses cache on second build (CLI unavailable)', () => {
       // Skipped: webpack CLI not found
     })
     return
   }
 
-  test('builds fixture project successfully', () => {
+  it('builds fixture project successfully (CLI available)', () => {
     const result = execSync('webpack', {
       cwd: fixtureDir,
       env: {
         ...process.env,
-        NODE_ENV: 'production'
+        NODE_ENV: 'production',
       },
-      encoding: 'utf-8'
+      encoding: 'utf-8',
     })
 
     expect(result).toContain('bundle.js')
   })
 
-  test('outputs compressed images', () => {
+  it('outputs compressed images (CLI available)', () => {
     // First, run the build
     execSync('webpack', {
       cwd: fixtureDir,
       env: {
         ...process.env,
-        NODE_ENV: 'production'
-      }
+        NODE_ENV: 'production',
+      },
     })
 
     // Check that dist directory exists
@@ -101,7 +101,7 @@ describe('Webpack Integration', () => {
     expect(jsFiles.length).toBeGreaterThan(0)
 
     // Verify JS files contain image data (base64 data URLs)
-    jsFiles.forEach(file => {
+    jsFiles.forEach((file) => {
       const filePath = join(distDir, file)
       const content = readFileSync(filePath, 'utf-8')
 
@@ -110,14 +110,14 @@ describe('Webpack Integration', () => {
     })
   })
 
-  test('shows compression summary', () => {
+  it('shows compression summary (CLI available)', () => {
     const result = execSync('webpack', {
       cwd: fixtureDir,
       env: {
         ...process.env,
-        NODE_ENV: 'production'
+        NODE_ENV: 'production',
       },
-      encoding: 'utf-8'
+      encoding: 'utf-8',
     })
 
     // Check for summary output (D-09)
@@ -125,7 +125,7 @@ describe('Webpack Integration', () => {
     expect(result).toMatch(/images?|KB|bytes/)
   })
 
-  test('skips compression in development mode', () => {
+  it('skips compression in development mode (CLI available)', () => {
     // Clean dist first
     execSync('rm -rf dist', { cwd: fixtureDir, shell: true })
 
@@ -134,16 +134,16 @@ describe('Webpack Integration', () => {
       cwd: fixtureDir,
       env: {
         ...process.env,
-        NODE_ENV: 'development'
+        NODE_ENV: 'development',
       },
-      encoding: 'utf-8'
+      encoding: 'utf-8',
     })
 
     // Should not show compression output
     expect(result).not.toMatch(/Compressing|compressing/)
   })
 
-  test('uses cache on second build', () => {
+  it('uses cache on second build (CLI available)', () => {
     // Clean dist first
     execSync('rm -rf dist', { cwd: fixtureDir, shell: true })
 
@@ -152,8 +152,8 @@ describe('Webpack Integration', () => {
       cwd: fixtureDir,
       env: {
         ...process.env,
-        NODE_ENV: 'production'
-      }
+        NODE_ENV: 'production',
+      },
     })
 
     // Second build (should use cache)
@@ -161,9 +161,9 @@ describe('Webpack Integration', () => {
       cwd: fixtureDir,
       env: {
         ...process.env,
-        NODE_ENV: 'production'
+        NODE_ENV: 'production',
       },
-      encoding: 'utf-8'
+      encoding: 'utf-8',
     })
 
     // Should indicate cache hits

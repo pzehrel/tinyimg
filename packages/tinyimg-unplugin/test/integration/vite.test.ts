@@ -1,9 +1,10 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest'
+import { Buffer } from 'node:buffer'
 import { execSync } from 'node:child_process'
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
-import { vi } from 'vitest'
+import { join } from 'node:path'
+import process from 'node:process'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock tinyimg-core before importing the plugin
 vi.mock('tinyimg-core', () => ({
@@ -15,15 +16,10 @@ vi.mock('tinyimg-core', () => ({
 
 const fixtureDir = join(__dirname, '../fixtures/vite')
 const distDir = join(fixtureDir, 'dist')
-const imageAssetsDir = join(distDir, 'images')
+const _imageAssetsDir = join(distDir, 'images')
 
-describe('Vite Integration', () => {
+describe('vite Integration', () => {
   beforeAll(async () => {
-    // Clean dist directory
-    await rm(distDir, { recursive: true, force: true })
-  })
-
-  afterAll(async () => {
     // Clean dist directory
     await rm(distDir, { recursive: true, force: true })
   })
@@ -38,28 +34,33 @@ describe('Vite Integration', () => {
     delete process.env.TINYPNG_KEYS
   })
 
-  test('builds fixture project successfully', () => {
+  afterAll(async () => {
+    // Clean dist directory
+    await rm(distDir, { recursive: true, force: true })
+  })
+
+  it('builds fixture project successfully', () => {
     const result = execSync('vite build', {
       cwd: fixtureDir,
       env: {
         ...process.env,
-        NODE_ENV: 'production'
+        NODE_ENV: 'production',
       },
-      encoding: 'utf-8'
+      encoding: 'utf-8',
     })
 
     expect(result).toContain('build')
     expect(result).toContain('dist')
   })
 
-  test('outputs compressed images', () => {
+  it('outputs compressed images', () => {
     // First, run the build
     execSync('vite build', {
       cwd: fixtureDir,
       env: {
         ...process.env,
-        NODE_ENV: 'production'
-      }
+        NODE_ENV: 'production',
+      },
     })
 
     // Check that dist directory exists
@@ -77,7 +78,7 @@ describe('Vite Integration', () => {
     expect(jsFiles.length).toBeGreaterThan(0)
 
     // Verify JS files contain image data (base64 data URLs)
-    jsFiles.forEach(file => {
+    jsFiles.forEach((file) => {
       const filePath = join(assetsDir, file)
       const content = readFileSync(filePath, 'utf-8')
 
@@ -86,14 +87,14 @@ describe('Vite Integration', () => {
     })
   })
 
-  test('shows compression summary', () => {
+  it('shows compression summary', () => {
     const result = execSync('vite build', {
       cwd: fixtureDir,
       env: {
         ...process.env,
-        NODE_ENV: 'production'
+        NODE_ENV: 'production',
       },
-      encoding: 'utf-8'
+      encoding: 'utf-8',
     })
 
     // Check for summary output (D-09)
@@ -102,7 +103,7 @@ describe('Vite Integration', () => {
     expect(result).toMatch(/images?|KB|bytes/)
   })
 
-  test('skips compression in development mode', () => {
+  it('skips compression in development mode', () => {
     // Clean dist first
     execSync('rm -rf dist', { cwd: fixtureDir })
 
@@ -111,16 +112,16 @@ describe('Vite Integration', () => {
       cwd: fixtureDir,
       env: {
         ...process.env,
-        NODE_ENV: 'development'
+        NODE_ENV: 'development',
       },
-      encoding: 'utf-8'
+      encoding: 'utf-8',
     })
 
     // Should not show compression output
     expect(result).not.toMatch(/Compressing|compressing/)
   })
 
-  test('uses cache on second build', () => {
+  it('uses cache on second build', () => {
     // Clean dist first
     execSync('rm -rf dist', { cwd: fixtureDir })
 
@@ -129,8 +130,8 @@ describe('Vite Integration', () => {
       cwd: fixtureDir,
       env: {
         ...process.env,
-        NODE_ENV: 'production'
-      }
+        NODE_ENV: 'production',
+      },
     })
 
     // Second build (should use cache)
@@ -138,9 +139,9 @@ describe('Vite Integration', () => {
       cwd: fixtureDir,
       env: {
         ...process.env,
-        NODE_ENV: 'production'
+        NODE_ENV: 'production',
       },
-      encoding: 'utf-8'
+      encoding: 'utf-8',
     })
 
     // Should indicate cache hits

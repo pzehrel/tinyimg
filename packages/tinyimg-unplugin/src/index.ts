@@ -1,10 +1,14 @@
+import type { TinyimgUnpluginOptions } from './options.js'
+import { Buffer } from 'node:buffer'
+import process from 'node:process'
+import { compressImage, loadKeys } from 'tinyimg-core'
 import { createUnplugin } from 'unplugin'
-import { compressImage } from 'tinyimg-core'
-import { loadKeys } from 'tinyimg-core'
 import { shouldProcessImage } from './filter.js'
-import { normalizeOptions, type TinyimgUnpluginOptions } from './options.js'
 import { createLogger } from './logger.js'
-import path from 'node:path'
+import { normalizeOptions } from './options.js'
+
+// Regex for matching image file extensions
+const IMAGE_REGEX = /\.(png|jpg|jpeg|gif|webp|svg)$/i
 
 export default createUnplugin((options: TinyimgUnpluginOptions = {}) => {
   // Normalize options
@@ -19,7 +23,7 @@ export default createUnplugin((options: TinyimgUnpluginOptions = {}) => {
   // Create logger
   const logger = createLogger({
     verbose: normalized.verbose,
-    strict: normalized.strict
+    strict: normalized.strict,
   })
 
   return {
@@ -54,7 +58,7 @@ export default createUnplugin((options: TinyimgUnpluginOptions = {}) => {
           projectCacheOnly: true, // Only project cache (D-17)
           cache: normalized.cache,
           parallel: normalized.parallel,
-          mode: normalized.mode
+          mode: normalized.mode,
         })
 
         // Log success
@@ -78,7 +82,7 @@ export default createUnplugin((options: TinyimgUnpluginOptions = {}) => {
 
     buildEnd() {
       logger.logSummary()
-    }
+    },
   }
 })
 
@@ -101,5 +105,5 @@ function isProductionBuild(context: any): boolean {
 function getRelativePath(id: string): string {
   // Convert absolute path to relative for logging
   const root = process.cwd()
-  return id.replace(root, '').replace(/^\//, '')
+  return id.replace(root, '').replace(IMAGE_REGEX, '')
 }
