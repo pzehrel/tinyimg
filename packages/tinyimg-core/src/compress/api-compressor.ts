@@ -38,7 +38,7 @@ export class TinyPngApiCompressor implements ICompressor {
           tinify.key = key
           this.currentKey = key
         }
-        catch (_error) {
+        catch {
           // In test environments, tinify.key might not be writable
           // This is OK as long as fromBuffer is mocked
         }

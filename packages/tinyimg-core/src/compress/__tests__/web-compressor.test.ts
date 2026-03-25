@@ -139,7 +139,7 @@ describe('tinyPngWebCompressor', () => {
       // Arrange: First 2 attempts fail, 3rd succeeds
       let attemptCount = 0
 
-      requestSpy.mockImplementation(function (this: any, ...args: any[]) {
+      requestSpy.mockImplementation((...args: any[]) => {
         attemptCount++
         if (attemptCount <= 2) {
           // First 2 attempts fail with network error
