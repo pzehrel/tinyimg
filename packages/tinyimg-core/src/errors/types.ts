@@ -11,3 +11,10 @@ export class NoValidKeysError extends Error {
     this.name = 'NoValidKeysError'
   }
 }
+
+export class AllCompressionFailedError extends Error {
+  constructor(message = 'All compression methods failed') {
+    super(message)
+    this.name = 'AllCompressionFailedError'
+  }
+}
