@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest'
 import https from 'node:https'
 import FormData from 'form-data'
-import { SMALL_PNG, createMockPngBuffer, resetHttpsMocks, createMockClientRequest } from './fixtures'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TinyPngWebCompressor } from '../web-compressor'
+import { createMockClientRequest, createMockPngBuffer, resetHttpsMocks, SMALL_PNG } from './fixtures'
 
-describe('TinyPngWebCompressor', () => {
+describe('tinyPngWebCompressor', () => {
   let compressor: TinyPngWebCompressor
   let requestSpy: ReturnType<typeof vi.spyOn>
   let getSpy: ReturnType<typeof vi.spyOn>
@@ -43,7 +43,8 @@ describe('TinyPngWebCompressor', () => {
           on: vi.fn((event, fn) => {
             if (event === 'data') {
               fn(uploadResponseBody)
-            } else if (event === 'end') {
+            }
+            else if (event === 'end') {
               fn()
               uploadCallbackCalled = true
             }
@@ -62,7 +63,8 @@ describe('TinyPngWebCompressor', () => {
           on: vi.fn((event, fn) => {
             if (event === 'data') {
               fn(compressedBuffer)
-            } else if (event === 'end') {
+            }
+            else if (event === 'end') {
               fn()
               downloadCallbackCalled = true
             }
@@ -96,7 +98,8 @@ describe('TinyPngWebCompressor', () => {
           on: vi.fn((event, fn) => {
             if (event === 'data') {
               fn(JSON.stringify({ output: { url: 'https://tinypng.com/output.png' } }))
-            } else if (event === 'end') {
+            }
+            else if (event === 'end') {
               fn()
             }
           }),
@@ -112,7 +115,8 @@ describe('TinyPngWebCompressor', () => {
           on: vi.fn((event, fn) => {
             if (event === 'data') {
               fn(compressedBuffer)
-            } else if (event === 'end') {
+            }
+            else if (event === 'end') {
               fn()
             }
           }),
@@ -135,7 +139,7 @@ describe('TinyPngWebCompressor', () => {
       // Arrange: First 2 attempts fail, 3rd succeeds
       let attemptCount = 0
 
-      requestSpy.mockImplementation(function (this: any) {
+      requestSpy.mockImplementation(function (this: any, ...args: any[]) {
         attemptCount++
         if (attemptCount <= 2) {
           // First 2 attempts fail with network error
@@ -156,13 +160,14 @@ describe('TinyPngWebCompressor', () => {
             on: vi.fn((event, fn) => {
               if (event === 'data') {
                 fn(JSON.stringify({ output: { url: 'https://tinypng.com/output.png' } }))
-              } else if (event === 'end') {
+              }
+              else if (event === 'end') {
                 fn()
               }
             }),
           }
 
-          const callback = (arguments[2] as Function)
+          const callback = args[2] as (...args: any[]) => void
           callback(mockRes as any)
 
           return createMockClientRequest()
@@ -175,7 +180,8 @@ describe('TinyPngWebCompressor', () => {
           on: vi.fn((event, fn) => {
             if (event === 'data') {
               fn(createMockPngBuffer(512))
-            } else if (event === 'end') {
+            }
+            else if (event === 'end') {
               fn()
             }
           }),
@@ -203,7 +209,8 @@ describe('TinyPngWebCompressor', () => {
           on: vi.fn((event, fn) => {
             if (event === 'data') {
               fn(JSON.stringify({ output: { url: 'https://tinypng.com/output.png' } }))
-            } else if (event === 'end') {
+            }
+            else if (event === 'end') {
               fn()
             }
           }),
@@ -219,7 +226,8 @@ describe('TinyPngWebCompressor', () => {
           on: vi.fn((event, fn) => {
             if (event === 'data') {
               fn(compressedBuffer)
-            } else if (event === 'end') {
+            }
+            else if (event === 'end') {
               fn()
             }
           }),
@@ -245,7 +253,8 @@ describe('TinyPngWebCompressor', () => {
           on: vi.fn((event, fn) => {
             if (event === 'data') {
               fn('Too Many Requests')
-            } else if (event === 'end') {
+            }
+            else if (event === 'end') {
               fn()
             }
           }),

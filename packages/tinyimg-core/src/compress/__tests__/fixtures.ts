@@ -1,6 +1,7 @@
-import { vi } from 'vitest'
-import tinify from 'tinify'
+import { Buffer } from 'node:buffer'
 import https from 'node:https'
+import tinify from 'tinify'
+import { vi } from 'vitest'
 
 /**
  * Create a mock PNG buffer with valid PNG magic bytes.
@@ -172,7 +173,7 @@ export function mockHttpsSuccess(responseBuffer: Buffer): void {
     }
 
     // Simulate data chunks
-    const onData = (chunk: Buffer) => {
+    const _onData = (chunk: Buffer) => {
       mockRes.data = Buffer.concat([mockRes.data, chunk])
     }
 
@@ -184,10 +185,11 @@ export function mockHttpsSuccess(responseBuffer: Buffer): void {
       // Emit data and end events
       setTimeout(() => {
         const listeners = (mockRes.on as any).mock.calls
-        listeners.forEach(([event, fn]: [string, Function]) => {
+        listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
             fn(responseBuffer)
-          } else if (event === 'end') {
+          }
+          else if (event === 'end') {
             fn()
           }
         })
@@ -234,12 +236,14 @@ export function mockHttpsFailure(statusCode: number, message: string): void {
     // Emit error event
     setTimeout(() => {
       const listeners = (mockRes.on as any).mock.calls
-      listeners.forEach(([event, fn]: [string, Function]) => {
+      listeners.forEach(([event, fn]: [string, (...args: any[]) => void]) => {
         if (event === 'error') {
           fn(new Error(message))
-        } else if (event === 'data') {
+        }
+        else if (event === 'data') {
           fn(Buffer.from(JSON.stringify({ error: message })))
-        } else if (event === 'end') {
+        }
+        else if (event === 'end') {
           fn()
         }
       })
@@ -291,7 +295,7 @@ export function createMockClientRequest(): any {
 
   const mockReq = {
     // Event methods (required by FormData.pipe())
-    removeListener: vi.fn((event: string, fn: Function) => {
+    removeListener: vi.fn((event: string, fn: (...args: any[]) => void) => {
       const eventHandlers = handlers.get(event)
       if (eventHandlers) {
         const index = eventHandlers.indexOf(fn)
@@ -301,7 +305,7 @@ export function createMockClientRequest(): any {
       }
       return mockReq
     }),
-    on: vi.fn((event: string, fn: Function) => {
+    on: vi.fn((event: string, fn: (...args: any[]) => void) => {
       if (!handlers.has(event)) {
         handlers.set(event, [])
       }
@@ -319,7 +323,7 @@ export function createMockClientRequest(): any {
       }
       return true
     }),
-    once: vi.fn((event: string, fn: Function) => {
+    once: vi.fn((event: string, fn: (...args: any[]) => void) => {
       const onceWrapper = (...args: any[]) => {
         mockReq.removeListener(event, onceWrapper)
         fn(...args)
