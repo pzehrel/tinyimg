@@ -1,7 +1,27 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, test } from 'vitest'
 
 describe('tinyimg-unplugin', () => {
-  it('should have placeholder test', () => {
-    expect(true).toBe(true)
+  test.skip('creates unplugin factory', () => {
+    expect(true).toBe(false)
+  })
+
+  test.skip('returns plugin with transform hook', () => {
+    expect(true).toBe(false)
+  })
+
+  test.skip('skips non-image files', () => {
+    expect(true).toBe(false)
+  })
+
+  test.skip('compresses PNG/JPG/JPEG files in production', () => {
+    expect(true).toBe(false)
+  })
+
+  test.skip('skips compression in development', () => {
+    expect(true).toBe(false)
+  })
+
+  test.skip('uses project-only cache', () => {
+    expect(true).toBe(false)
   })
 })
