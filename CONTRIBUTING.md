@@ -148,16 +148,16 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/) for commi
 
 ### Commit Types
 
-| Type | Description |
-|------|-------------|
-| `feat` | A new feature |
-| `fix` | A bug fix |
-| `docs` | Documentation only changes |
-| `style` | Changes that do not affect the meaning of the code (formatting) |
-| `refactor` | Code change that neither fixes a bug nor adds a feature |
-| `perf` | Performance improvement |
-| `test` | Adding or correcting tests |
-| `chore` | Changes to build process, dependencies, or tooling |
+| Type       | Description                                                     |
+| ---------- | --------------------------------------------------------------- |
+| `feat`     | A new feature                                                   |
+| `fix`      | A bug fix                                                       |
+| `docs`     | Documentation only changes                                      |
+| `style`    | Changes that do not affect the meaning of the code (formatting) |
+| `refactor` | Code change that neither fixes a bug nor adds a feature         |
+| `perf`     | Performance improvement                                         |
+| `test`     | Adding or correcting tests                                      |
+| `chore`    | Changes to build process, dependencies, or tooling              |
 
 ### Commit Scopes
 
@@ -191,6 +191,7 @@ refactor(core): simplify key rotation logic
 1. **Fork the repository** on GitHub
 
 2. **Create a feature branch** from `main`:
+
    ```bash
    git checkout -b feature/my-feature
    ```
@@ -201,6 +202,7 @@ refactor(core): simplify key rotation logic
    - Update documentation if applicable
 
 4. **Ensure quality checks pass**:
+
    ```bash
    pnpm lint
    pnpm test:unit
@@ -210,6 +212,7 @@ refactor(core): simplify key rotation logic
 5. **Commit your changes** using conventional commit format
 
 6. **Push to your fork**:
+
    ```bash
    git push origin feature/my-feature
    ```
@@ -231,16 +234,19 @@ refactor(core): simplify key rotation logic
 ### Daily Development
 
 1. Pull latest changes from `main`:
+
    ```bash
    git pull origin main
    ```
 
 2. Install dependencies if `package.json` changed:
+
    ```bash
    pnpm install
    ```
 
 3. Make your changes and run tests frequently:
+
    ```bash
    pnpm test
    ```

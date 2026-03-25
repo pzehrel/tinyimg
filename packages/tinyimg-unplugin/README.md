@@ -38,11 +38,13 @@ export TINYPNG_KEYS=key1,key2,key3
 ### 在项目中配置环境变量
 
 **Vite 项目**（`.env` 文件）：
+
 ```bash
 TINYPNG_KEYS=your_api_key_here
 ```
 
 **Webpack 项目**（`webpack.config.js`）：
+
 ```javascript
 const webpack = require('webpack')
 
@@ -60,20 +62,20 @@ module.exports = {
 ### Vite
 
 ```javascript
+import tinyimg from 'tinyimg-unplugin/vite'
 // vite.config.js
 import { defineConfig } from 'vite'
-import tinyimg from 'tinyimg-unplugin/vite'
 
 export default defineConfig({
   plugins: [
     tinyimg({
-      mode: 'random',      // key 使用策略
-      cache: true,         // 启用缓存
-      parallel: 8,         // 并发数
-      verbose: false,      // 详细日志
-      strict: false,       // 严格模式
-      include: ['**/*.png', '**/*.jpg'],  // 包含的文件
-      exclude: ['**/node_modules/**']    // 排除的文件
+      mode: 'random', // key 使用策略
+      cache: true, // 启用缓存
+      parallel: 8, // 并发数
+      verbose: false, // 详细日志
+      strict: false, // 严格模式
+      include: ['**/*.png', '**/*.jpg'], // 包含的文件
+      exclude: ['**/node_modules/**'] // 排除的文件
     })
   ]
 })
@@ -177,6 +179,7 @@ export default {
 ### Supported Formats
 
 仅支持 TinyPNG 支持的格式：
+
 - PNG
 - JPG / JPEG
 

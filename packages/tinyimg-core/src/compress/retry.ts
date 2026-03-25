@@ -22,7 +22,7 @@ export class RetryManager {
           throw error
         }
 
-        const delay = this.baseDelay * Math.pow(2, attempt)
+        const delay = this.baseDelay * 2 ** attempt
         logWarning(`Retry ${attempt + 1}/${this.maxRetries} after ${delay}ms`)
         await this.sleep(delay)
       }

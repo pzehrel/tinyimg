@@ -1,7 +1,9 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+import { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
+import process from 'node:process'
+import { AllCompressionFailedError, AllKeysExhaustedError, compressImages, NoValidKeysError } from 'tinyimg-core'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { compressCommand } from './compress.js'
-import { compressImages, AllKeysExhaustedError, NoValidKeysError, AllCompressionFailedError } from 'tinyimg-core'
 
 // Mock dependencies
 vi.mock('tinyimg-core')
@@ -50,7 +52,7 @@ describe('compress command', () => {
       expect.objectContaining({
         cache: true,
         concurrency: 8,
-      })
+      }),
     )
   })
 
@@ -101,7 +103,7 @@ describe('compress command', () => {
         cache: false,
         concurrency: 16,
         mode: 'round-robin',
-      })
+      }),
     )
   })
 

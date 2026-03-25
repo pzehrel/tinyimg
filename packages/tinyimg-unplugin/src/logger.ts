@@ -1,5 +1,5 @@
-import { CompressionStats } from './stats'
 import { formatBytes } from 'tinyimg-core'
+import { CompressionStats } from './stats'
 
 export interface LoggerOptions {
   verbose?: boolean

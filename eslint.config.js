@@ -2,7 +2,10 @@ import antfu from '@antfu/eslint-config'
 
 export default antfu({
   typescript: true,
-  stylistic: true,
+  markdown: false,
+  formatters: {
+    markdown: true,
+  },
   ignores: [
     '**/dist',
     '**/node_modules',
@@ -11,4 +14,7 @@ export default antfu({
     '**/.git',
     '**/coverage',
   ],
+  rules: {
+    'no-console': 'off',
+  },
 })

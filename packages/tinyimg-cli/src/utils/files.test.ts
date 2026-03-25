@@ -1,13 +1,14 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { expandInputs, resolveOutputPath, isImageFile } from './files.js'
+// Mock fast-glob - import after mocking
+import fastGlob from 'fast-glob'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { expandInputs, isImageFile, resolveOutputPath } from './files.js'
 
 // Mock file system
 vi.mock('node:fs/promises')
 
-// Mock fast-glob - import after mocking
-import fastGlob from 'fast-glob'
 vi.mock('fast-glob')
 
 describe('files utilities', () => {

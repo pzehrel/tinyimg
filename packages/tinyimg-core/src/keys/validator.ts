@@ -5,7 +5,7 @@ export async function validateKey(key: string): Promise<boolean> {
   try {
     tinify.key = key
     await tinify.validate()
-    // eslint-disable-next-line no-console
+
     console.log(`✓ API key ${maskKey(key)} validated successfully`)
     return true
   }

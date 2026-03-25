@@ -1,8 +1,9 @@
+import type { ICompressor } from './types'
+import { Buffer } from 'node:buffer'
 import https from 'node:https'
 import FormData from 'form-data'
-import { RetryManager } from './retry'
 import { logInfo } from '../utils/logger'
-import type { ICompressor } from './types'
+import { RetryManager } from './retry'
 
 const TINYPNG_WEB_URL = 'https://tinypng.com/backend/opt/shrink'
 
@@ -89,7 +90,7 @@ export class TinyPngWebCompressor implements ICompressor {
         }
 
         const chunks: Buffer[] = []
-        res.on('data', (chunk) => chunks.push(chunk))
+        res.on('data', chunk => chunks.push(chunk))
         res.on('end', () => resolve(Buffer.concat(chunks)))
         res.on('error', reject)
       }).on('error', reject)

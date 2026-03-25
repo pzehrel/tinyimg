@@ -1,10 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { SMALL_PNG, createMockPngBuffer, mockTinifySuccess, resetTinifyMocks } from './fixtures'
-import { compressImage, compressImages } from '../service'
-import { KeyPool } from '../../keys/pool'
-import { AllCompressionFailedError, AllKeysExhaustedError } from '../../errors/types'
-import { readCacheByHash, writeCacheByHash } from '../../cache/buffer-storage'
 import https from 'node:https'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { readCacheByHash } from '../../cache/buffer-storage'
+import { KeyPool } from '../../keys/pool'
+import { compressImage, compressImages } from '../service'
+import { createMockPngBuffer, mockTinifySuccess, resetTinifyMocks, SMALL_PNG } from './fixtures'
 
 // Mock the dependencies
 vi.mock('../../keys/pool')
@@ -143,7 +142,7 @@ describe('compressImage', () => {
 
       // Assert: All 5 complete successfully
       expect(results).toHaveLength(5)
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result).toEqual(compressedBuffer)
       })
     })
@@ -167,7 +166,7 @@ describe('compressImage', () => {
 
       // Assert: All 6 complete successfully
       expect(results).toHaveLength(6)
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result).toEqual(compressedBuffer)
       })
     })
@@ -190,7 +189,8 @@ describe('compressImage', () => {
 
       // Act & Assert: Call compressImage() should throw
       await expect(compressImage(SMALL_PNG, { mode: 'auto', keyPool: mockKeyPool }))
-        .rejects.toThrow()
+        .rejects
+        .toThrow()
     })
 
     it('should handle errors gracefully during compression', async () => {
