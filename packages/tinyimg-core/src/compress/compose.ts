@@ -1,7 +1,7 @@
+import type { Buffer } from 'node:buffer'
+import type { CompressionMode, CompressOptions } from './types'
 import { AllCompressionFailedError } from '../errors/types'
 import { logInfo, logWarning } from '../utils/logger'
-import type { ICompressor, CompressOptions, CompressionMode } from './types'
-
 /**
  * Compress buffer with automatic fallback through multiple compressors
  *

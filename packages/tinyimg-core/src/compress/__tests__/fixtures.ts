@@ -1,6 +1,7 @@
-import { vi } from 'vitest'
-import tinify from 'tinify'
+import { Buffer } from 'node:buffer'
 import https from 'node:https'
+import tinify from 'tinify'
+import { vi } from 'vitest'
 
 /**
  * Create a mock PNG buffer with valid PNG magic bytes.
@@ -172,7 +173,7 @@ export function mockHttpsSuccess(responseBuffer: Buffer): void {
     }
 
     // Simulate data chunks
-    const onData = (chunk: Buffer) => {
+    const _onData = (chunk: Buffer) => {
       mockRes.data = Buffer.concat([mockRes.data, chunk])
     }
 
@@ -184,10 +185,11 @@ export function mockHttpsSuccess(responseBuffer: Buffer): void {
       // Emit data and end events
       setTimeout(() => {
         const listeners = (mockRes.on as any).mock.calls
-        listeners.forEach(([event, fn]: [string, Function]) => {
+        listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
             fn(responseBuffer)
-          } else if (event === 'end') {
+          }
+          else if (event === 'end') {
             fn()
           }
         })
@@ -234,12 +236,14 @@ export function mockHttpsFailure(statusCode: number, message: string): void {
     // Emit error event
     setTimeout(() => {
       const listeners = (mockRes.on as any).mock.calls
-      listeners.forEach(([event, fn]: [string, Function]) => {
+      listeners.forEach(([event, fn]: [string, (...args: any[]) => void]) => {
         if (event === 'error') {
           fn(new Error(message))
-        } else if (event === 'data') {
+        }
+        else if (event === 'data') {
           fn(Buffer.from(JSON.stringify({ error: message })))
-        } else if (event === 'end') {
+        }
+        else if (event === 'end') {
           fn()
         }
       })
@@ -265,4 +269,85 @@ export function mockHttpsFailure(statusCode: number, message: string): void {
  */
 export function resetHttpsMocks(): void {
   vi.restoreAllMocks()
+}
+
+/**
+ * Create a mock HTTPS ClientRequest object with all required stream methods.
+ *
+ * This mock includes all methods required by FormData.pipe() and Node.js streams:
+ * - removeListener, on, emit, once (event handling)
+ * - write, end, destroy (stream control)
+ *
+ * The emit() method is connected to the on() spy, so when you emit an event,
+ * it will call any registered handlers.
+ *
+ * @returns Mock ClientRequest object
+ *
+ * @example
+ * ```ts
+ * const mockReq = createMockClientRequest()
+ * mockReq.on('error', handler)
+ * mockReq.emit('error', error) // Will call handler
+ * ```
+ */
+export function createMockClientRequest(): any {
+  const handlers: Map<string, Array<(...args: any[]) => void>> = new Map()
+
+  const mockReq = {
+    // Event methods (required by FormData.pipe())
+    removeListener: vi.fn((event: string, fn: (...args: any[]) => void) => {
+      const eventHandlers = handlers.get(event)
+      if (eventHandlers) {
+        const index = eventHandlers.indexOf(fn)
+        if (index > -1) {
+          eventHandlers.splice(index, 1)
+        }
+      }
+      return mockReq
+    }),
+    on: vi.fn((event: string, fn: (...args: any[]) => void) => {
+      if (!handlers.has(event)) {
+        handlers.set(event, [])
+      }
+      handlers.get(event)!.push(fn)
+      return mockReq
+    }),
+    emit: vi.fn((event: string, ...args: any[]) => {
+      const eventHandlers = handlers.get(event)
+      if (eventHandlers) {
+        eventHandlers.forEach((fn) => {
+          if (typeof fn === 'function') {
+            fn(...args)
+          }
+        })
+      }
+      return true
+    }),
+    once: vi.fn((event: string, fn: (...args: any[]) => void) => {
+      const onceWrapper = (...args: any[]) => {
+        mockReq.removeListener(event, onceWrapper)
+        fn(...args)
+      }
+      mockReq.on(event, onceWrapper)
+      return mockReq
+    }),
+    // EventEmitter methods required by streams
+    listenerCount: vi.fn((event: string) => {
+      return handlers.get(event)?.length || 0
+    }),
+
+    // Stream methods (required by FormData.pipe())
+    write: vi.fn(),
+    end: vi.fn(),
+    destroy: vi.fn(),
+
+    // Additional ClientRequest properties
+    writable: true,
+    aborted: false,
+    method: 'POST',
+    path: '/backend/opt/shrink',
+    headers: {},
+  }
+
+  return mockReq
 }

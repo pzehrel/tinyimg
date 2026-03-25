@@ -1,8 +1,9 @@
-import tinify from 'tinify'
-import { KeyPool } from '../keys/pool'
-import { RetryManager } from './retry'
-import { logInfo, logWarning } from '../utils/logger'
+import type { Buffer } from 'node:buffer'
+import type { KeyPool } from '../keys/pool'
 import type { ICompressor } from './types'
+import * as tinify from 'tinify'
+import { logInfo, logWarning } from '../utils/logger'
+import { RetryManager } from './retry'
 
 // Re-export TinyPngWebCompressor for convenience
 export { TinyPngWebCompressor } from './web-compressor'
@@ -37,7 +38,7 @@ export class TinyPngApiCompressor implements ICompressor {
           tinify.key = key
           this.currentKey = key
         }
-        catch (error) {
+        catch {
           // In test environments, tinify.key might not be writable
           // This is OK as long as fromBuffer is mocked
         }

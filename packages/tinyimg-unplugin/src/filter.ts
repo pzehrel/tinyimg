@@ -1,5 +1,5 @@
-import micromatch from 'micromatch'
 import path from 'node:path'
+import micromatch from 'micromatch'
 
 export interface FilterOptions {
   include?: string | string[]
@@ -19,14 +19,16 @@ export function shouldProcessImage(id: string, options: FilterOptions = {}): boo
   if (options.include) {
     const includePatterns = Array.isArray(options.include) ? options.include : [options.include]
     const isInclude = micromatch.isMatch(id, includePatterns)
-    if (!isInclude) return false
+    if (!isInclude)
+      return false
   }
 
   // 3. Check exclude pattern if provided
   if (options.exclude) {
     const excludePatterns = Array.isArray(options.exclude) ? options.exclude : [options.exclude]
     const isExclude = micromatch.isMatch(id, excludePatterns)
-    if (isExclude) return false
+    if (isExclude)
+      return false
   }
 
   return true

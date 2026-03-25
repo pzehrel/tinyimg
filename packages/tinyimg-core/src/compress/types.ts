@@ -1,3 +1,4 @@
+import type { Buffer } from 'node:buffer'
 /**
  * Compressor interface for compression implementations
  *
@@ -19,7 +20,7 @@ export interface ICompressor {
    * @returns Compressed image data
    * @throws Error when compression fails
    */
-  compress(buffer: Buffer): Promise<Buffer>
+  compress: (buffer: Buffer) => Promise<Buffer>
 }
 
 /**

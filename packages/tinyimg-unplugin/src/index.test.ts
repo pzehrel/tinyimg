@@ -1,6 +1,7 @@
-import { describe, expect, test, vi, beforeEach } from 'vitest'
-import { compressImage } from 'tinyimg-core'
-import { loadKeys } from 'tinyimg-core'
+import { Buffer } from 'node:buffer'
+import process from 'node:process'
+import { compressImage, loadKeys } from 'tinyimg-core'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import tinyimgUnplugin from './index'
 
 // Mock the core modules
@@ -9,7 +10,7 @@ vi.mock('tinyimg-core', async () => {
   return {
     ...actual,
     compressImage: vi.fn(),
-    loadKeys: vi.fn(() => [{ key: 'test-key-1' }, { key: 'test-key-2' }])
+    loadKeys: vi.fn(() => [{ key: 'test-key-1' }, { key: 'test-key-2' }]),
   }
 })
 
@@ -20,7 +21,7 @@ describe('tinyimg-unplugin', () => {
     // Reset NODE_ENV
     delete process.env.NODE_ENV
   })
-  test('creates unplugin factory', () => {
+  it('creates unplugin factory', () => {
     // The default export is the result of createUnplugin()
     // which returns an object with raw, vite, webpack as getter functions
     expect(tinyimgUnplugin).toBeDefined()
@@ -29,7 +30,7 @@ describe('tinyimg-unplugin', () => {
     expect(typeof tinyimgUnplugin.webpack).toBe('function')
   })
 
-  test('returns plugin with transform hook', () => {
+  it('returns plugin with transform hook', () => {
     const plugin = tinyimgUnplugin.raw()
 
     expect(plugin).toBeDefined()
@@ -38,14 +39,14 @@ describe('tinyimg-unplugin', () => {
     expect(typeof plugin.buildEnd).toBe('function')
   })
 
-  test('skips non-image files', async () => {
+  it('skips non-image files', async () => {
     const plugin = tinyimgUnplugin.raw()
     const result = await plugin.transform('console.log("hello")', '/path/to/file.js')
 
     expect(result).toBeNull()
   })
 
-  test('compresses PNG/JPG/JPEG files in production', async () => {
+  it('compresses PNG/JPG/JPEG files in production', async () => {
     const mockCompressedBuffer = Buffer.from('compressed-image-data')
 
     vi.mocked(compressImage).mockResolvedValue(mockCompressedBuffer)
@@ -61,7 +62,7 @@ describe('tinyimg-unplugin', () => {
       const result = await plugin.transform.call(
         { config: { isBuild: true } }, // Vite context
         Buffer.from('original-image-data'),
-        '/path/to/image.png'
+        '/path/to/image.png',
       )
 
       console.log('compressImage calls:', vi.mocked(compressImage).mock.calls)
@@ -70,12 +71,12 @@ describe('tinyimg-unplugin', () => {
       expect(compressImage).toHaveBeenCalledWith(
         Buffer.from('original-image-data'),
         expect.objectContaining({
-          projectCacheOnly: true
-        })
+          projectCacheOnly: true,
+        }),
       )
       expect(result).toEqual({
         code: mockCompressedBuffer,
-        map: null
+        map: null,
       })
     }
     finally {
@@ -83,7 +84,7 @@ describe('tinyimg-unplugin', () => {
     }
   })
 
-  test('skips compression in development', async () => {
+  it('skips compression in development', async () => {
     const plugin = tinyimgUnplugin.raw()
 
     // Set NODE_ENV to development
@@ -94,7 +95,7 @@ describe('tinyimg-unplugin', () => {
       const result = await plugin.transform.call(
         { config: { isBuild: false } }, // Vite development context
         Buffer.from('original-image-data'),
-        '/path/to/image.png'
+        '/path/to/image.png',
       )
 
       expect(compressImage).not.toHaveBeenCalled()
@@ -105,7 +106,7 @@ describe('tinyimg-unplugin', () => {
     }
   })
 
-  test('uses project-only cache', async () => {
+  it('uses project-only cache', async () => {
     const mockCompressedBuffer = Buffer.from('compressed-image-data')
 
     vi.mocked(compressImage).mockResolvedValue(mockCompressedBuffer)
@@ -119,15 +120,15 @@ describe('tinyimg-unplugin', () => {
       await plugin.transform.call(
         { config: { isBuild: true } },
         Buffer.from('original-image-data'),
-        '/path/to/image.png'
+        '/path/to/image.png',
       )
 
       // Verify compressImage was called with projectCacheOnly: true
       expect(compressImage).toHaveBeenCalledWith(
         expect.any(Buffer),
         expect.objectContaining({
-          projectCacheOnly: true
-        })
+          projectCacheOnly: true,
+        }),
       )
     }
     finally {
@@ -135,7 +136,7 @@ describe('tinyimg-unplugin', () => {
     }
   })
 
-  test('validates TINYPNG_KEYS at initialization', () => {
+  it('validates TINYPNG_KEYS at initialization', () => {
     vi.mocked(loadKeys).mockReturnValueOnce([])
 
     expect(() => {
@@ -143,7 +144,7 @@ describe('tinyimg-unplugin', () => {
     }).toThrow('TINYPNG_KEYS environment variable is required')
   })
 
-  test('handles errors in non-strict mode', async () => {
+  it('handles errors in non-strict mode', async () => {
     const mockError = new Error('All keys exhausted')
     vi.mocked(compressImage).mockRejectedValue(mockError)
 
@@ -157,7 +158,7 @@ describe('tinyimg-unplugin', () => {
       const result = await plugin.transform.call(
         { config: { isBuild: true } },
         Buffer.from('original-image-data'),
-        '/path/to/image.png'
+        '/path/to/image.png',
       )
 
       // In non-strict mode, should return null to use original file
@@ -168,7 +169,7 @@ describe('tinyimg-unplugin', () => {
     }
   })
 
-  test('handles errors in strict mode', async () => {
+  it('handles errors in strict mode', async () => {
     const mockError = new Error('All keys exhausted')
     vi.mocked(compressImage).mockRejectedValue(mockError)
 
@@ -183,8 +184,8 @@ describe('tinyimg-unplugin', () => {
         plugin.transform.call(
           { config: { isBuild: true } },
           Buffer.from('original-image-data'),
-          '/path/to/image.png'
-        )
+          '/path/to/image.png',
+        ),
       ).rejects.toThrow('All keys exhausted')
     }
     finally {

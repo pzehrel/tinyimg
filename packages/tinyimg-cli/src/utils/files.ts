@@ -4,6 +4,9 @@ import fastGlob from 'fast-glob'
 
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg'] as const
 
+// Regex for normalizing path separators in glob patterns
+const BACKSLASH_REGEX = /\\/g
+
 /**
  * Expand input paths (files, directories, globs) to absolute file paths
  * Filters for supported image formats only
@@ -23,7 +26,7 @@ export async function expandInputs(inputs: string[]): Promise<string[]> {
       }
       else if (stat.isDirectory()) {
         // Directory - recursively find all image files
-        const pattern = path.join(input, '**', '*').replace(/\\/g, '/')
+        const pattern = path.join(input, '**', '*').replace(BACKSLASH_REGEX, '/')
         const files = await fastGlob.glob(pattern, {
           absolute: true,
           onlyFiles: true,
