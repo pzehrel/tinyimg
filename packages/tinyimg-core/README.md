@@ -300,6 +300,344 @@ async function showCacheStats(projectRoot: string) {
 
 Coming soon in Phase 2 documentation.
 
+## Compression API
+
+### Overview
+
+The compression API provides programmatic access to TinyPNG image compression with intelligent caching, multi-key management, and fallback strategies.
+
+### compressImage
+
+Compresses a single image with cache integration and automatic fallback.
+
+```typescript
+import { compressImage } from 'tinyimg-core'
+
+const imageBuffer = Buffer.from(/* image data */)
+const compressed = await compressImage(imageBuffer, {
+  mode: 'auto',      // 'auto' | 'api' | 'web'
+  cache: true,       // Enable caching (default: true)
+  maxRetries: 8,     // Max retry attempts (default: 8)
+})
+```
+
+**Signature:**
+```typescript
+async function compressImage(
+  buffer: Buffer,
+  options?: CompressServiceOptions
+): Promise<Buffer>
+```
+
+**Parameters:**
+- `buffer: Buffer` - Original image data as Node.js Buffer
+- `options?: CompressServiceOptions` - Compression options (see below)
+
+**Returns:** `Promise<Buffer>` - Compressed image data
+
+**Behavior:**
+- Checks cache first (project cache, then global cache)
+- Compresses using API keys with automatic rotation
+- Falls back to web compressor if all keys exhausted
+- Writes result to project cache for future use
+- Gracefully handles cache errors (continues with compression)
+
+### compressImages
+
+Compresses multiple images with concurrency control.
+
+```typescript
+import { compressImages } from 'tinyimg-core'
+
+const images = [buffer1, buffer2, buffer3]
+const compressed = await compressImages(images, {
+  concurrency: 8,    // Max parallel compressions (default: 8)
+  mode: 'auto',
+  cache: true,
+})
+```
+
+**Signature:**
+```typescript
+async function compressImages(
+  buffers: Buffer[],
+  options?: CompressServiceOptions
+): Promise<Buffer[]>
+```
+
+**Parameters:**
+- `buffers: Buffer[]` - Array of image buffers to compress
+- `options?: CompressServiceOptions` - Compression options
+
+**Returns:** `Promise<Buffer[]>` - Array of compressed image buffers (same order as input)
+
+**Behavior:**
+- Processes images with configurable concurrency limit
+- Each image goes through the same pipeline as `compressImage`
+- Maintains order of results matching input order
+- Failed compressions will throw (use try/catch for individual handling)
+
+### KeyPool
+
+Manages multiple API keys with automatic rotation and quota tracking.
+
+```typescript
+import { KeyPool } from 'tinyimg-core'
+
+// Create pool with random strategy (default)
+const pool = new KeyPool('random')
+
+// Create pool with round-robin strategy
+const pool = new KeyPool('round-robin')
+
+// Create pool with priority strategy
+const pool = new KeyPool('priority')
+```
+
+**Constructor:**
+```typescript
+new KeyPool(strategy?: KeyStrategy)
+```
+
+**Parameters:**
+- `strategy: KeyStrategy` - Key selection strategy: `'random'` | `'round-robin'` | `'priority'`
+  - `random` (default): Randomly select available keys
+  - `round-robin`: Cycle through keys in order
+  - `priority`: Prefer API keys, fallback to web compressor
+
+**Methods:**
+- `async selectKey(): Promise<string>` - Select and return an available API key
+- `decrementQuota(): void` - Mark current key's quota as used
+- `getCurrentKey(): string | null` - Get the currently selected key
+
+**Throws:**
+- `NoValidKeysError` - When no API keys are configured
+- `AllKeysExhaustedError` - When all keys have exhausted their quota
+
+### Type Definitions
+
+#### CompressServiceOptions
+
+Options for compression operations.
+
+```typescript
+interface CompressServiceOptions {
+  /** Compression mode (default: 'auto') */
+  mode?: 'auto' | 'api' | 'web'
+
+  /** Enable cache (default: true) */
+  cache?: boolean
+
+  /** Use project cache only, ignore global cache (default: false) */
+  projectCacheOnly?: boolean
+
+  /** Concurrency limit for batch operations (default: 8) */
+  concurrency?: number
+
+  /** Maximum retry attempts (default: 8) */
+  maxRetries?: number
+
+  /** Custom KeyPool instance for advanced usage */
+  keyPool?: KeyPool
+}
+```
+
+#### CompressOptions
+
+Base compression options (used internally).
+
+```typescript
+interface CompressOptions {
+  /** Compression mode (default: 'auto') */
+  mode?: 'auto' | 'api' | 'web'
+
+  /** Custom compressor array for fallback chain */
+  compressors?: ICompressor[]
+
+  /** Maximum retry attempts (default: 3) */
+  maxRetries?: number
+}
+```
+
+#### CompressionMode
+
+Type for compression mode selection.
+
+```typescript
+type CompressionMode = 'auto' | 'api' | 'web'
+```
+
+#### KeyStrategy
+
+Type for key pool strategy selection.
+
+```typescript
+type KeyStrategy = 'random' | 'round-robin' | 'priority'
+```
+
+### Error Types
+
+#### AllKeysExhaustedError
+
+Thrown when all API keys have exhausted their monthly quota.
+
+```typescript
+import { AllKeysExhaustedError } from 'tinyimg-core'
+
+try {
+  await compressImage(buffer)
+} catch (error) {
+  if (error instanceof AllKeysExhaustedError) {
+    console.log('All API keys exhausted, falling back to web compressor')
+  }
+}
+```
+
+#### NoValidKeysError
+
+Thrown when no API keys are configured.
+
+```typescript
+import { NoValidKeysError } from 'tinyimg-core'
+
+try {
+  const pool = new KeyPool('random')
+} catch (error) {
+  if (error instanceof NoValidKeysError) {
+    console.log('Please configure API keys via TINYPNG_KEYS env var')
+  }
+}
+```
+
+#### AllCompressionFailedError
+
+Thrown when all compression methods (API and web) have failed.
+
+```typescript
+import { AllCompressionFailedError } from 'tinyimg-core'
+
+try {
+  await compressImage(buffer)
+} catch (error) {
+  if (error instanceof AllCompressionFailedError) {
+    console.log('Compression failed - image may be corrupted or unsupported')
+  }
+}
+```
+
+### Complete Usage Example
+
+Full workflow example showing compression with caching and error handling:
+
+```typescript
+import {
+  compressImage,
+  compressImages,
+  KeyPool,
+  getProjectCachePath,
+  getGlobalCachePath,
+  getAllCacheStats,
+  formatBytes,
+  AllKeysExhaustedError,
+  NoValidKeysError,
+  AllCompressionFailedError,
+} from 'tinyimg-core'
+import { readFile, writeFile } from 'node:fs/promises'
+
+// Single image compression
+async function compressSingleImage(inputPath: string, outputPath: string) {
+  try {
+    const imageBuffer = await readFile(inputPath)
+
+    const compressed = await compressImage(imageBuffer, {
+      mode: 'auto',      // Try API first, fallback to web
+      cache: true,       // Enable caching
+      maxRetries: 8,     // Retry on transient failures
+    })
+
+    await writeFile(outputPath, compressed)
+
+    const savings = ((1 - compressed.length / imageBuffer.length) * 100).toFixed(1)
+    console.log(`Compressed: ${savings}% reduction`)
+
+    return compressed
+  } catch (error) {
+    if (error instanceof AllCompressionFailedError) {
+      console.error('Compression failed: All methods exhausted')
+    } else if (error instanceof NoValidKeysError) {
+      console.error('No API keys configured. Set TINYPNG_KEYS env var.')
+    } else {
+      console.error('Unexpected error:', error)
+    }
+    throw error
+  }
+}
+
+// Batch compression with concurrency
+async function compressBatch(inputPaths: string[], outputDir: string) {
+  const images = await Promise.all(
+    inputPaths.map(path => readFile(path))
+  )
+
+  const compressed = await compressImages(images, {
+    concurrency: 8,    // Process 8 images in parallel
+    mode: 'auto',
+    cache: true,
+  })
+
+  // Save results
+  await Promise.all(
+    compressed.map((data, i) =>
+      writeFile(`${outputDir}/compressed-${i}.png`, data)
+    )
+  )
+
+  // Calculate total savings
+  const originalSize = images.reduce((sum, buf) => sum + buf.length, 0)
+  const compressedSize = compressed.reduce((sum, buf) => sum + buf.length, 0)
+  const savings = ((1 - compressedSize / originalSize) * 100).toFixed(1)
+
+  console.log(`Batch complete: ${savings}% total reduction`)
+  return compressed
+}
+
+// Show cache statistics
+async function showStats(projectRoot: string) {
+  const stats = await getAllCacheStats(projectRoot)
+
+  console.log('Cache Statistics:')
+  console.log(`  Project: ${stats.project?.count || 0} files (${formatBytes(stats.project?.size || 0)})`)
+  console.log(`  Global: ${stats.global.count} files (${formatBytes(stats.global.size)})`)
+}
+
+// Manual KeyPool usage (advanced)
+async function manualKeyManagement() {
+  try {
+    const pool = new KeyPool('round-robin')
+
+    // Get a key for manual API calls
+    const key = await pool.selectKey()
+    console.log(`Using key: ${key.substring(0, 4)}****${key.slice(-4)}`)
+
+    // Mark quota as used after compression
+    pool.decrementQuota()
+
+  } catch (error) {
+    if (error instanceof AllKeysExhaustedError) {
+      console.log('All keys exhausted - using web fallback')
+    }
+  }
+}
+
+// Run examples
+async function main() {
+  await compressSingleImage('input.png', 'output.png')
+  await showStats(process.cwd())
+}
+
+main().catch(console.error)
+```
+
 ## Error Handling
 
 The cache system is designed to fail gracefully:
