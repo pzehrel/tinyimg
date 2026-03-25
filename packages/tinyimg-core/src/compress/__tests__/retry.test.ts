@@ -9,6 +9,7 @@ describe('RetryManager', () => {
 
   afterEach(() => {
     // Restore real timers after each test
+    vi.useRealTimers()
     vi.restoreAllMocks()
   })
 
@@ -165,6 +166,9 @@ describe('RetryManager', () => {
     })
 
     it('should throw error after max retries', async () => {
+      // Use real timers for this test to avoid unhandled rejection issues with fake timers
+      vi.useRealTimers()
+
       // Arrange: Create operation that always fails
       let attemptCount = 0
       const operation = async () => {
@@ -175,19 +179,14 @@ describe('RetryManager', () => {
       }
 
       // Act: Call RetryManager.execute() with maxRetries=3
-      const manager = new RetryManager(3, 1000)
+      const manager = new RetryManager(3, 10) // Use short delay (10ms) for faster test
 
-      // Use a try-catch to handle the promise properly
-      const promise = manager.execute(operation)
-
-      // Advance all timers to trigger all retries
-      await vi.advanceTimersByTimeAsync(1000) // First retry
-      await vi.advanceTimersByTimeAsync(2000) // Second retry
-      await vi.advanceTimersByTimeAsync(4000) // Third retry
-
-      // Assert: Throws error after 3 failed attempts (4 total attempts)
-      await expect(promise).rejects.toThrow('Always fails')
+      // Assert: Throws error after max retries
+      await expect(manager.execute(operation)).rejects.toThrow('Always fails')
       expect(attemptCount).toBe(4) // Initial attempt + 3 retries
+
+      // Restore fake timers for other tests
+      vi.useFakeTimers()
     })
 
     it('should track failure count accurately', async () => {
