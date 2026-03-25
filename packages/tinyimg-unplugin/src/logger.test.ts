@@ -1,5 +1,6 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { CompressionStats } from './stats'
+import { TinyimgLogger } from './logger'
 
 describe('CompressionStats', () => {
   describe('recordCompressed', () => {
@@ -174,31 +175,81 @@ describe('CompressionStats', () => {
 })
 
 describe('TinyimgLogger', () => {
-  test.skip('initializes with verbose mode', () => {
-    expect(true).toBe(false)
+  test('initializes with verbose mode', () => {
+    const logger = new TinyimgLogger({ verbose: true })
+    const stats = logger.getStats()
+    expect(stats).toBeInstanceOf(CompressionStats)
   })
 
-  test.skip('initializes with summary mode', () => {
-    expect(true).toBe(false)
+  test('initializes with summary mode', () => {
+    const logger = new TinyimgLogger({ verbose: false })
+    const stats = logger.getStats()
+    expect(stats).toBeInstanceOf(CompressionStats)
   })
 
-  test.skip('tracks compression statistics', () => {
-    expect(true).toBe(false)
+  test('tracks compression statistics', () => {
+    const logger = new TinyimgLogger()
+    logger.logCompressed('assets/logo.png', 15000, 8000)
+    logger.logCached('assets/icon.png', 3000)
+
+    const stats = logger.getStats().getSummary()
+    expect(stats.compressedCount).toBe(1)
+    expect(stats.cachedCount).toBe(1)
+    expect(stats.fileCount).toBe(2)
   })
 
-  test.skip('logs individual file in verbose mode', () => {
-    expect(true).toBe(false)
+  test('logs individual file in verbose mode', () => {
+    const logger = new TinyimgLogger({ verbose: true })
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    logger.logCompressing('assets/logo.png')
+    logger.logCompressed('assets/logo.png', 15000, 8000)
+    logger.logCacheHit('assets/icon.png', 3000)
+
+    expect(consoleSpy).toHaveBeenCalledTimes(3)
+    expect(consoleSpy).toHaveBeenNthCalledWith(1, '[tinyimg] Compressing assets/logo.png...')
+    expect(consoleSpy).toHaveBeenNthCalledWith(2, '[tinyimg] ✓ Compressed: 15.00 KB → 8.00 KB (46.7% saved)')
+    expect(consoleSpy).toHaveBeenNthCalledWith(3, '[tinyimg] Cache hit: assets/icon.png')
+
+    consoleSpy.mockRestore()
   })
 
-  test.skip('logs summary at end', () => {
-    expect(true).toBe(false)
+  test('logs summary at end', () => {
+    const logger = new TinyimgLogger()
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    logger.logCompressed('assets/logo.png', 15000, 8000)
+    logger.logCached('assets/icon.png', 3000)
+    logger.logSummary()
+
+    expect(consoleSpy).toHaveBeenCalledTimes(2)
+    expect(consoleSpy).toHaveBeenNthCalledWith(1, '✓ [tinyimg] Compressed 2 images (1 cached, 1 compressed)')
+    expect(consoleSpy).toHaveBeenNthCalledWith(2, expect.stringMatching(/✓ \[tinyimg\] Saved \d+\.\d+ KB \(original: \d+\.\d+ KB → compressed: \d+\.\d+ KB\)/))
+
+    consoleSpy.mockRestore()
   })
 
-  test.skip('logs warning in non-strict mode', () => {
-    expect(true).toBe(false)
+  test('logs warning in non-strict mode', () => {
+    const logger = new TinyimgLogger({ strict: false })
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    logger.logError('assets/logo.png', 'All keys exhausted')
+
+    expect(consoleWarnSpy).toHaveBeenCalledTimes(1)
+    expect(consoleWarnSpy).toHaveBeenCalledWith('[tinyimg] ⚠ Failed to compress assets/logo.png: All keys exhausted. Using original file.')
+
+    consoleWarnSpy.mockRestore()
   })
 
-  test.skip('logs error in strict mode', () => {
-    expect(true).toBe(false)
+  test('logs error in strict mode', () => {
+    const logger = new TinyimgLogger({ strict: true })
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    logger.logError('assets/logo.png', 'All keys exhausted')
+
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
+    expect(consoleErrorSpy).toHaveBeenCalledWith('[tinyimg] ✖ Failed to compress assets/logo.png: All keys exhausted. Build failed.')
+
+    consoleErrorSpy.mockRestore()
   })
 })
