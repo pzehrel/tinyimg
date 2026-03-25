@@ -1,5 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import cac from 'cac'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as cliModule from './cli.js'
 import { compressCommand } from './commands/compress.js'
 
@@ -13,14 +12,14 @@ vi.mock('./commands/key.js', () => ({
   keyList: vi.fn(),
 }))
 
-describe('CLI entry point', () => {
-  let consoleErrorSpy: any
-  let processExitSpy: any
+describe('cLI entry point', () => {
+  let _consoleErrorSpy: any
+  let _processExitSpy: any
 
   beforeEach(() => {
     vi.clearAllMocks()
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    processExitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as any)
+    _consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    _processExitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as any)
   })
 
   afterEach(() => {
