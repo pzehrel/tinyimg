@@ -22,7 +22,7 @@ npm install tinyimg-core
 
 TinyImg uses an MD5-based permanent cache for compressed images with two cache levels:
 
-1. **Project Cache** (priority): `.node_modules/.tinyimg_cache/` - Relative to project root
+1. **Project Cache** (priority): `node_modules/.tinyimg_cache/` - Relative to project root
 2. **Global Cache** (fallback): `~/.tinyimg/cache/` - Shared across projects
 
 The cache system provides:
@@ -59,7 +59,7 @@ Returns the path to the project-level cache directory.
 import { getProjectCachePath } from 'tinyimg-core'
 
 const cachePath = getProjectCachePath('/Users/test/project')
-// Returns: '/Users/test/project/.node_modules/.tinyimg_cache'
+// Returns: '/Users/test/project/node_modules/.tinyimg_cache'
 ```
 
 **Parameters:**
@@ -293,7 +293,7 @@ async function showCacheStats(projectRoot: string) {
 2. Global cache checked second (shared, fallback)
 
 **Storage Locations:**
-- Project: `<projectRoot>/.node_modules/.tinyimg_cache/`
+- Project: `<projectRoot>/node_modules/.tinyimg_cache/`
 - Global: `~/.tinyimg/cache/`
 
 ## API Key Management
