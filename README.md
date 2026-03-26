@@ -1,3 +1,5 @@
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 # TinyImg
 
 Smart image compression tool powered by TinyPNG with intelligent caching and multi-API key management.
