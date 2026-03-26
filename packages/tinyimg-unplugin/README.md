@@ -34,8 +34,6 @@ export TINYPNG_KEYS=key1,key2,key3
 
 1. 访问 [TinyPNG 开发者页面](https://tinypng.com/developers)
 2. 使用邮箱注册获取 API key
-3. 每个邮箱每月可获得 500 张免费压缩额度
-4. 使用多个 key 可以叠加免费额度
 
 ### 在项目中配置环境变量
 
