@@ -14,7 +14,7 @@ Core library for TinyPNG image compression with intelligent caching and multi-AP
 ## Installation
 
 ```bash
-npm install tinyimg-core
+npm install @pz4l/tinyimg-core
 ```
 
 ## Cache System
@@ -40,7 +40,7 @@ The cache system provides:
 Calculates MD5 hash of a file's content. Used as cache key for storing/retrieving compressed images.
 
 ```typescript
-import { calculateMD5 } from 'tinyimg-core'
+import { calculateMD5 } from '@pz4l/tinyimg-core'
 
 const hash = await calculateMD5('/path/to/image.png')
 console.log(hash) // 'a1b2c3d4e5f6...'
@@ -59,7 +59,7 @@ console.log(hash) // 'a1b2c3d4e5f6...'
 Returns the path to the project-level cache directory.
 
 ```typescript
-import { getProjectCachePath } from 'tinyimg-core'
+import { getProjectCachePath } from '@pz4l/tinyimg-core'
 
 const cachePath = getProjectCachePath('/Users/test/project')
 // Returns: '/Users/test/project/node_modules/.tinyimg_cache'
@@ -76,7 +76,7 @@ const cachePath = getProjectCachePath('/Users/test/project')
 Returns the path to the global cache directory (shared across projects).
 
 ```typescript
-import { getGlobalCachePath } from 'tinyimg-core'
+import { getGlobalCachePath } from '@pz4l/tinyimg-core'
 
 const cachePath = getGlobalCachePath()
 // Returns: '/Users/username/.tinyimg/cache'
@@ -89,7 +89,7 @@ const cachePath = getGlobalCachePath()
 Reads cached compressed image from cache directories in priority order.
 
 ```typescript
-import { readCache } from 'tinyimg-core'
+import { readCache } from '@pz4l/tinyimg-core'
 
 const cached = await readCache('image.png', [
   getProjectCachePath('/project'),
@@ -123,7 +123,7 @@ else {
 Writes compressed image data to cache using atomic write pattern.
 
 ```typescript
-import { writeCache } from 'tinyimg-core'
+import { writeCache } from '@pz4l/tinyimg-core'
 
 const compressed = await compressImage(image)
 await writeCache('image.png', compressed, getProjectCachePath('/project'))
@@ -146,7 +146,7 @@ await writeCache('image.png', compressed, getProjectCachePath('/project'))
 Object-oriented interface for cache operations.
 
 ```typescript
-import { CacheStorage } from 'tinyimg-core'
+import { CacheStorage } from '@pz4l/tinyimg-core'
 
 const storage = new CacheStorage('/path/to/cache')
 
@@ -175,7 +175,7 @@ await storage.write('/path/to/image.png', compressedData)
 Returns cache statistics (file count and total size) for a directory.
 
 ```typescript
-import { getCacheStats } from 'tinyimg-core'
+import { getCacheStats } from '@pz4l/tinyimg-core'
 
 const stats = await getCacheStats('/path/to/cache')
 console.log(`Files: ${stats.count}, Size: ${formatBytes(stats.size)}`)
@@ -197,7 +197,7 @@ console.log(`Files: ${stats.count}, Size: ${formatBytes(stats.size)}`)
 Returns statistics for both project and global cache.
 
 ```typescript
-import { getAllCacheStats } from 'tinyimg-core'
+import { getAllCacheStats } from '@pz4l/tinyimg-core'
 
 // Get both project and global stats
 const stats = await getAllCacheStats('/project/path')
@@ -225,7 +225,7 @@ console.log(`Global: ${globalOnly.global.count} files`)
 Converts bytes to human-readable format for CLI display.
 
 ```typescript
-import { formatBytes } from 'tinyimg-core'
+import { formatBytes } from '@pz4l/tinyimg-core'
 
 formatBytes(0) // "0 B"
 formatBytes(512) // "512 B"
@@ -331,7 +331,7 @@ The compression API provides programmatic access to TinyPNG image compression wi
 Compresses a single image with cache integration and automatic fallback.
 
 ```typescript
-import { compressImage } from 'tinyimg-core'
+import { compressImage } from '@pz4l/tinyimg-core'
 
 const imageBuffer = Buffer.from(/* image data */)
 const compressed = await compressImage(imageBuffer, {
@@ -370,7 +370,7 @@ async function compressImage(
 Compresses multiple images with concurrency control.
 
 ```typescript
-import { compressImages } from 'tinyimg-core'
+import { compressImages } from '@pz4l/tinyimg-core'
 
 const images = [buffer1, buffer2, buffer3]
 const compressed = await compressImages(images, {
@@ -408,7 +408,7 @@ async function compressImages(
 Manages multiple API keys with automatic rotation and quota tracking.
 
 ```typescript
-import { KeyPool } from 'tinyimg-core'
+import { KeyPool } from '@pz4l/tinyimg-core'
 
 // Create pool with random strategy (default)
 const pool = new KeyPool('random')
@@ -512,7 +512,7 @@ type KeyStrategy = 'random' | 'round-robin' | 'priority'
 Thrown when all API keys have exhausted their quota.
 
 ```typescript
-import { AllKeysExhaustedError } from 'tinyimg-core'
+import { AllKeysExhaustedError } from '@pz4l/tinyimg-core'
 
 try {
   await compressImage(buffer)
@@ -529,7 +529,7 @@ catch (error) {
 Thrown when no API keys are configured.
 
 ```typescript
-import { NoValidKeysError } from 'tinyimg-core'
+import { NoValidKeysError } from '@pz4l/tinyimg-core'
 
 try {
   const pool = new KeyPool('random')
@@ -546,7 +546,7 @@ catch (error) {
 Thrown when all compression methods (API and web) have failed.
 
 ```typescript
-import { AllCompressionFailedError } from 'tinyimg-core'
+import { AllCompressionFailedError } from '@pz4l/tinyimg-core'
 
 try {
   await compressImage(buffer)

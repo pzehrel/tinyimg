@@ -18,7 +18,7 @@
 全局安装并压缩图片：
 
 ```bash
-npm install -g tinyimg-cli
+npm install -g @pz4l/tinyimg-cli
 tinyimg *.png *.jpg
 ```
 
@@ -28,7 +28,7 @@ tinyimg *.png *.jpg
 
 ```js
 // vite.config.js
-import tinyimg from 'tinyimg-unplugin/vite'
+import tinyimg from '@pz4l/tinyimg-unplugin/vite'
 
 export default {
   plugins: [tinyimg()]
@@ -43,9 +43,9 @@ export TINYPNG_KEYS=your_api_key_here
 
 ## 包介绍
 
-- **[tinyimg-core](packages/tinyimg-core/)** - 核心压缩库，支持缓存和密钥管理
-- **[tinyimg-cli](packages/tinyimg-cli/)** - 批量压缩命令行工具
-- **[tinyimg-unplugin](packages/tinyimg-unplugin/)** - Vite/Webpack/Rolldown 构建工具插件
+- **[@pz4l/tinyimg-core](packages/tinyimg-core/)** - 核心压缩库，支持缓存和密钥管理
+- **[@pz4l/tinyimg-cli](packages/tinyimg-cli/)** - 批量压缩命令行工具
+- **[@pz4l/tinyimg-unplugin](packages/tinyimg-unplugin/)** - Vite/Webpack/Rolldown 构建工具插件
 
 ## 文档
 

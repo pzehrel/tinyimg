@@ -5,7 +5,7 @@
     "build": "npx webpack"
   },
   "dependencies": {
-    "tinyimg-unplugin": "workspace:*",
+    "@pz4l/tinyimg-unplugin": "workspace:*",
     "webpack": "^5.0.0"
   }
 }

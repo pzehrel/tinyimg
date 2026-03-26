@@ -1,4 +1,4 @@
-const tinyimg = require('tinyimg-unplugin')
+const tinyimg = require('@pz4l/tinyimg-unplugin')
 
 module.exports = {
   mode: 'production',

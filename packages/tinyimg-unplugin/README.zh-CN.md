@@ -13,7 +13,7 @@
 ## 安装
 
 ```bash
-npm install tinyimg-unplugin -D
+npm install @pz4l/tinyimg-unplugin -D
 ```
 
 ## 环境设置
@@ -62,7 +62,7 @@ module.exports = {
 ### Vite
 
 ```javascript
-import tinyimg from 'tinyimg-unplugin/vite'
+import tinyimg from '@pz4l/tinyimg-unplugin/vite'
 // vite.config.js
 import { defineConfig } from 'vite'
 
@@ -85,7 +85,7 @@ export default defineConfig({
 
 ```javascript
 // webpack.config.js
-const tinyimg = require('tinyimg-unplugin/webpack')
+const tinyimg = require('@pz4l/tinyimg-unplugin/webpack')
 
 module.exports = {
   plugins: [
@@ -106,7 +106,7 @@ module.exports = {
 
 ```javascript
 // rolldown.config.js
-import tinyimg from 'tinyimg-unplugin/rolldown'
+import tinyimg from '@pz4l/tinyimg-unplugin/rolldown'
 
 export default {
   plugins: [
@@ -206,5 +206,5 @@ unplugin 仅使用项目级缓存（`.node_modules/.tinyimg_cache/`），不使�
 
 ## 相关包
 
-- [tinyimg-core](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-core) - 核心压缩库
-- [tinyimg-cli](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-cli) - 图片压缩 CLI 工具
+- [@pz4l/tinyimg-core](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-core) - 核心压缩库
+- [@pz4l/tinyimg-cli](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-cli) - 图片压缩 CLI 工具

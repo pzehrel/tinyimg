@@ -1,4 +1,4 @@
-import { formatBytes } from 'tinyimg-core'
+import { formatBytes } from '@pz4l/tinyimg-core'
 
 export interface FileResult {
   path: string

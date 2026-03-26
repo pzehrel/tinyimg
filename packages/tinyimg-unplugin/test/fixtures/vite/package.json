@@ -6,7 +6,7 @@
     "build": "vite build"
   },
   "dependencies": {
-    "tinyimg-unplugin": "workspace:*",
+    "@pz4l/tinyimg-unplugin": "workspace:*",
     "vite": "^5.0.0"
   }
 }
