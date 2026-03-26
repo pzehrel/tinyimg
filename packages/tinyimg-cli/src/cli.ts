@@ -2,8 +2,8 @@
 import process from 'node:process'
 import cac from 'cac'
 import kleur from 'kleur'
-import { compressCommand } from './commands/compress.js'
-import { keyAdd, keyList, keyRemove } from './commands/key.js'
+import { compressCommand } from './commands/compress'
+import { keyAdd, keyList, keyRemove } from './commands/key'
 
 const cli = cac('tinyimg')
 

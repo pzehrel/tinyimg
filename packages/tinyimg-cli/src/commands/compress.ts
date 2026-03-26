@@ -4,8 +4,8 @@ import fs from 'node:fs/promises'
 import process from 'node:process'
 import kleur from 'kleur'
 import { AllCompressionFailedError, AllKeysExhaustedError, compressImages, KeyPool, NoValidKeysError } from 'tinyimg-core'
-import { expandInputs, resolveOutputPath } from '../utils/files.js'
-import { formatProgress, formatResult } from '../utils/format.js'
+import { expandInputs, resolveOutputPath } from '../utils/files'
+import { formatProgress, formatResult } from '../utils/format'
 
 interface CompressOptions {
   output?: string

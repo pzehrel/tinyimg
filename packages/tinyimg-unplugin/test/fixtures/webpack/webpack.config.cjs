@@ -2,10 +2,10 @@ const tinyimg = require('tinyimg-unplugin')
 
 module.exports = {
   mode: 'production',
-  entry: './src/main.js',
+  entry: './src/main',
   output: {
     path: require('node:path').resolve(__dirname, 'dist'),
-    filename: 'bundle.js'
+    filename: 'bundle'
   },
   plugins: [
     tinyimg.default.webpack({

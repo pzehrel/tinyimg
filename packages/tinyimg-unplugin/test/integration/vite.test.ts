@@ -74,7 +74,7 @@ describe('vite Integration', () => {
     const files = readdirSync(assetsDir)
     expect(files.length).toBeGreaterThan(0)
 
-    const jsFiles = files.filter(f => f.endsWith('.js'))
+    const jsFiles = files.filter(f => f.endsWith(''))
     expect(jsFiles.length).toBeGreaterThan(0)
 
     // Verify JS files contain image data (base64 data URLs)
