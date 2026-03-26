@@ -1,9 +1,9 @@
-import type { Buffer } from 'node:buffer'
 import type { CompressServiceOptions, KeyStrategy } from '@pz4l/tinyimg-core'
+import type { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
 import process from 'node:process'
-import kleur from 'kleur'
 import { AllCompressionFailedError, AllKeysExhaustedError, compressImages, KeyPool, NoValidKeysError } from '@pz4l/tinyimg-core'
+import kleur from 'kleur'
 import { expandInputs, resolveOutputPath } from '../utils/files'
 import { formatProgress, formatResult } from '../utils/format'
 

@@ -54,10 +54,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@pz4l/tinyimg-core": "workspace:*",
     "cac": "^7.0.0",
     "fast-glob": "^3.3.3",
-    "kleur": "^4.1.5",
-    "@pz4l/tinyimg-core": "workspace:*"
+    "kleur": "^4.1.5"
   },
   "devDependencies": {
     "@clack/prompts": "^1.1.0"
