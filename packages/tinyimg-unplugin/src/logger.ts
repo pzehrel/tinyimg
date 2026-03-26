@@ -1,4 +1,4 @@
-import { formatBytes } from 'tinyimg-core'
+import { formatBytes } from '@pz4l/tinyimg-core'
 import { CompressionStats } from './stats'
 
 export interface LoggerOptions {

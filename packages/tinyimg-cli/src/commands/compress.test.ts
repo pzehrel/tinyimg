@@ -1,12 +1,12 @@
 import { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
 import process from 'node:process'
-import { AllCompressionFailedError, AllKeysExhaustedError, compressImages, NoValidKeysError } from 'tinyimg-core'
+import { AllCompressionFailedError, AllKeysExhaustedError, compressImages, NoValidKeysError } from '@pz4l/tinyimg-core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { compressCommand } from './compress'
 
 // Mock dependencies
-vi.mock('tinyimg-core')
+vi.mock('@pz4l/tinyimg-core')
 vi.mock('node:fs/promises')
 
 describe('compress command', () => {

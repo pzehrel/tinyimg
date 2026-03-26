@@ -1,11 +1,11 @@
 import { Buffer } from 'node:buffer'
 import process from 'node:process'
-import { compressImage, loadKeys } from 'tinyimg-core'
+import { compressImage, loadKeys } from '@pz4l/tinyimg-core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import tinyimgUnplugin from './index'
 
 // Mock the core modules
-vi.mock('tinyimg-core', async () => {
+vi.mock('@pz4l/tinyimg-core', async () => {
   const actual = await vi.importActual('tinyimg-core')
   return {
     ...actual,
