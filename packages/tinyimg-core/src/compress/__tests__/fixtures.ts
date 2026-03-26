@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer'
-import https from 'node:https'
+import type { IncomingMessage } from 'node:http'
+import * as https from 'node:https'
 import tinify from 'tinify'
 import { vi } from 'vitest'
 
@@ -159,7 +160,10 @@ export function resetTinifyMocks(): void {
  * ```
  */
 export function mockHttpsSuccess(responseBuffer: Buffer): void {
-  vi.spyOn(https, 'request').mockImplementation((options, callback) => {
+  vi.spyOn(https, 'request').mockImplementation((
+    _options: any,
+    _callback?: any,
+  ) => {
     const mockRes = {
       statusCode: 200,
       headers: {
@@ -170,15 +174,13 @@ export function mockHttpsSuccess(responseBuffer: Buffer): void {
       setEncoding: vi.fn(),
     }
 
-    // Simulate data chunks
-    const _onData = (chunk: Buffer) => {
-      mockRes.data = Buffer.concat([mockRes.data, chunk])
-    }
-
     // Simulate end of response
     const onEnd = () => {
       // Call the callback with mock response
-      callback(mockRes as any)
+      const callback = _callback as ((res: IncomingMessage) => void) | undefined
+      if (callback) {
+        callback(mockRes as any)
+      }
 
       // Emit data and end events
       setTimeout(() => {
@@ -218,7 +220,10 @@ export function mockHttpsSuccess(responseBuffer: Buffer): void {
  * ```
  */
 export function mockHttpsFailure(statusCode: number, message: string): void {
-  vi.spyOn(https, 'request').mockImplementation((options, callback) => {
+  vi.spyOn(https, 'request').mockImplementation((
+    _options: any,
+    _callback?: any,
+  ) => {
     const mockRes = {
       statusCode,
       headers: {
@@ -229,7 +234,10 @@ export function mockHttpsFailure(statusCode: number, message: string): void {
     }
 
     // Call callback with error response
-    callback(mockRes as any)
+    const callback = _callback as ((res: IncomingMessage) => void) | undefined
+    if (callback) {
+      callback(mockRes as any)
+    }
 
     // Emit error event
     setTimeout(() => {
