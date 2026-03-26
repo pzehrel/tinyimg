@@ -268,7 +268,7 @@
 
 **Plans:**
 4 plans total
-- [ ] 08-01-PLAN.md — Verify build artifacts and publishing metadata (D-01, D-08, D-09, D-10)
+- [x] 08-01-PLAN.md — Verify build artifacts and publishing metadata (D-01, D-08, D-09, D-10)
 - [ ] 08-02-PLAN.md — Local publish simulation with npm pack (D-02)
 - [ ] 08-03-PLAN.md — Beta release setup and first beta publish (D-03, D-04, D-12, D-13)
 - [ ] 08-04-PLAN.md — Create demo projects for CLI and unplugin (D-05, D-06, D-07)
