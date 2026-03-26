@@ -69,15 +69,15 @@ tinyimg [options] <input...>
 
 ### Command Options
 
-| Option                    | Description                                          | Default  |
-| ------------------------- | ----------------------------------------------------- | -------- |
-| `-o, --output <dir>`      | Specify output directory                              | In-place |
-| `-k, --key <key>`         | Specify API Key (higher priority than env variable)   | -        |
+| Option                    | Description                                                 | Default  |
+| ------------------------- | ----------------------------------------------------------- | -------- |
+| `-o, --output <dir>`      | Specify output directory                                    | In-place |
+| `-k, --key <key>`         | Specify API Key (higher priority than env variable)         | -        |
 | `-m, --mode <mode>`       | Key usage strategy: `random` \| `round-robin` \| `priority` | `random` |
-| `-p, --parallel <number>` | Concurrency limit                                     | `8`      |
-| `-c, --cache`             | Enable cache                                          | `true`   |
-| `--no-cache`              | Disable cache                                         | -        |
-| `-h, --help`              | Show help information                                 | -        |
+| `-p, --parallel <number>` | Concurrency limit                                           | `8`      |
+| `-c, --cache`             | Enable cache                                                | `true`   |
+| `--no-cache`              | Disable cache                                               | -        |
+| `-h, --help`              | Show help information                                       | -        |
 
 ### Key Management Commands
 
@@ -211,10 +211,10 @@ TinyPNG free tier provides 500 compressions per month. TinyImg maximizes utiliza
 
 ## Error Handling
 
-| Error Type                 | Description                   | Solution                              |
-| --------------------------- | ------------------------------ | ------------------------------------- |
-| `NoValidKeysError`          | No valid API Key configured   | Run `tinyimg key add <key>` to add key |
-| `AllKeysExhaustedError`     | All keys quota exhausted      | Add new key or wait for monthly reset |
+| Error Type                  | Description                    | Solution                                |
+| --------------------------- | ------------------------------ | --------------------------------------- |
+| `NoValidKeysError`          | No valid API Key configured    | Run `tinyimg key add <key>` to add key  |
+| `AllKeysExhaustedError`     | All keys quota exhausted       | Add new key or wait for monthly reset   |
 | `AllCompressionFailedError` | All compression methods failed | Check network connection and API status |
 
 ## Related Packages
