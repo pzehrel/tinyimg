@@ -8,8 +8,8 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
-  contents: read
-  id-token: write
+  contents: write
+  id-token: write # Keep for provenance
 
 jobs:
   release:
@@ -38,8 +38,10 @@ jobs:
 
       - uses: changesets/action@v1
         with:
-          publish: pnpm changeset publish --access public --provenance
+          publish: pnpm changeset publish --access public
           commit: 'chore: version packages'
           title: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
