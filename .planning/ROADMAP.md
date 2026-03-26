@@ -266,6 +266,15 @@
 - 发布到 npm 的三个包
 - 自动发布流程
 
+**Plans:**
+4 plans total
+- [ ] 08-01-PLAN.md — Verify build artifacts and publishing metadata (D-01, D-08, D-09, D-10)
+- [ ] 08-02-PLAN.md — Local publish simulation with npm pack (D-02)
+- [ ] 08-03-PLAN.md — Beta release setup and first beta publish (D-03, D-04, D-12, D-13)
+- [ ] 08-04-PLAN.md — Create demo projects for CLI and unplugin (D-05, D-06, D-07)
+
+**Progress:** 0/4 plans complete (0%)
+
 ---
 
 ## Phase 9: 代码修复和文档完善
@@ -353,4 +362,4 @@ Phase 9 (代码修复和文档完善)
 
 ## Last Updated
 
-**2026-03-26**: Phase 9 plans created (3 plans for lint fixes, ROADMAP updates, and documentation)
+**2026-03-26**: Phase 8 plans created (4 plans for release preparation: build verification, local publish simulation, beta release, and demo projects)
