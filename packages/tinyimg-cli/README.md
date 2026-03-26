@@ -1,3 +1,5 @@
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 # tinyimg-cli
 
 Smart image compression CLI tool based on TinyPNG with multi-API key management, intelligent caching, and concurrent compression.
@@ -9,7 +11,6 @@ Smart image compression CLI tool based on TinyPNG with multi-API key management,
 - **Intelligent Caching** - MD5-based permanent cache to avoid redundant compression
 - **Concurrency Control** - Configurable parallel compression tasks
 - **Multiple Key Strategies** - Three modes: random, round-robin, priority
-- **Fallback Strategy** - Automatic degradation to online compression when API key quota is exhausted
 
 ## Installation
 
@@ -207,14 +208,13 @@ TinyPNG free tier provides 500 compressions per month. TinyImg maximizes utiliza
 - **Multi-Key Management** - Configure multiple keys for automatic rotation
 - **Intelligent Caching** - Avoid re-compressing identical content
 - **Quota Monitoring** - Real-time display of remaining quota for each key
-- **Fallback Strategy** - Automatically use online compression when all keys are exhausted
 
 ## Error Handling
 
 | Error Type                  | Description                    | Solution                                |
 | --------------------------- | ------------------------------ | --------------------------------------- |
 | `NoValidKeysError`          | No valid API Key configured    | Run `tinyimg key add <key>` to add key  |
-| `AllKeysExhaustedError`     | All keys quota exhausted       | Add new key or wait for monthly reset   |
+| `AllKeysExhaustedError`     | All keys quota exhausted       | Add new key                             |
 | `AllCompressionFailedError` | All compression methods failed | Check network connection and API status |
 
 ## Related Packages

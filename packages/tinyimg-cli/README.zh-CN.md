@@ -1,3 +1,5 @@
+[English](README.md) | 简体中文
+
 # tinyimg-cli
 
 基于 TinyPNG 的智能图片压缩 CLI 工具，支持多 API Key 管理、智能缓存和并发压缩。
@@ -5,11 +7,10 @@
 ## 特性
 
 - **批量压缩** - 支持文件、目录和 glob 模式
-- **多 API Key 管理** - 智能轮换策略最大化免费额度使用
-- **智能缓存** - MD5 based 永久缓存，避免重复压缩
+- **多 API Key 管理** - 支持多个 API Key 管理
+- **智能缓存** - 基于 MD5 的永久缓存，避免重复压缩
 - **并发控制** - 可配置的并行压缩任务数
 - **多种 Key 策略** - random、round-robin、priority 三种模式
-- **后备方案** - API Key 额度耗尽时自动降级到在线压缩
 
 ## 安装
 
@@ -202,19 +203,18 @@ TinyImg 使用两级缓存系统：
 
 ## 额度管理
 
-TinyPNG 免费版每月提供 500 张压缩额度。TinyImg 通过以下方式最大化利用：
+TinyImg 通过以下方式优化额度使用：
 
 - **多 Key 管理** - 配置多个 key 自动轮换
 - **智能缓存** - 避免重复压缩相同内容
 - **额度监控** - 实时显示各 key 的剩余额度
-- **后备方案** - 所有 key 耗尽后自动使用在线压缩
 
 ## 错误处理
 
 | 错误类型                    | 说明                   | 解决方案                              |
 | --------------------------- | ---------------------- | ------------------------------------- |
 | `NoValidKeysError`          | 没有配置有效的 API Key | 运行 `tinyimg key add <key>` 添加 key |
-| `AllKeysExhaustedError`     | 所有 key 额度已用完    | 添加新 key 或等待下月额度重置         |
+| `AllKeysExhaustedError`     | 所有 key 额度已用完    | 添加新 key                            |
 | `AllCompressionFailedError` | 所有压缩方式失败       | 检查网络连接和 API 状态               |
 
 ## 相关包
