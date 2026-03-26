@@ -1,226 +1,226 @@
 # tinyimg-cli
 
-基于 TinyPNG 的智能图片压缩 CLI 工具，支持多 API Key 管理、智能缓存和并发压缩。
+Smart image compression CLI tool based on TinyPNG with multi-API key management, intelligent caching, and concurrent compression.
 
-## 特性
+## Features
 
-- **批量压缩** - 支持文件、目录和 glob 模式
-- **多 API Key 管理** - 智能轮换策略最大化免费额度使用
-- **智能缓存** - MD5 based 永久缓存，避免重复压缩
-- **并发控制** - 可配置的并行压缩任务数
-- **多种 Key 策略** - random、round-robin、priority 三种模式
-- **后备方案** - API Key 额度耗尽时自动降级到在线压缩
+- **Batch Compression** - Supports files, directories, and glob patterns
+- **Multi-API Key Management** - Smart rotation strategies to maximize free quota usage
+- **Intelligent Caching** - MD5-based permanent cache to avoid redundant compression
+- **Concurrency Control** - Configurable parallel compression tasks
+- **Multiple Key Strategies** - Three modes: random, round-robin, priority
+- **Fallback Strategy** - Automatic degradation to online compression when API key quota is exhausted
 
-## 安装
+## Installation
 
-### 全局安装（推荐）
+### Global Installation (Recommended)
 
 ```bash
-# 使用 npm
+# Using npm
 npm install -g tinyimg-cli
 
-# 使用 pnpm
+# Using pnpm
 pnpm add -g tinyimg-cli
 
-# 使用 yarn
+# Using yarn
 yarn global add tinyimg-cli
 ```
 
-### 项目本地安装
+### Local Installation
 
 ```bash
-# 使用 npm
+# Using npm
 npm install -D tinyimg-cli
 
-# 使用 pnpm
+# Using pnpm
 pnpm add -D tinyimg-cli
 
-# 使用 yarn
+# Using yarn
 yarn add -D tinyimg-cli
 ```
 
-## 快速开始
+## Quick Start
 
 ```bash
-# 添加 API Key
+# Add API Key
 tinyimg key add YOUR_TINYPNG_API_KEY
 
-# 压缩当前目录所有图片
+# Compress all images in current directory
 tinyimg *.png *.jpg
 
-# 压缩指定目录
+# Compress specified directory
 tinyimg ./images/
 ```
 
-## 使用方法
+## Usage
 
-### 基本压缩命令
+### Basic Compression Command
 
 ```bash
 tinyimg [options] <input...>
 ```
 
-**输入参数支持：**
+**Input parameters support:**
 
-- 单个文件：`image.png`
-- 多个文件：`image1.png image2.jpg`
-- 目录：`./images/`
-- Glob 模式：`./assets/**/*.png`
+- Single file: `image.png`
+- Multiple files: `image1.png image2.jpg`
+- Directory: `./images/`
+- Glob pattern: `./assets/**/*.png`
 
-### 命令选项
+### Command Options
 
-| 选项                      | 说明                                                  | 默认值   |
+| Option                    | Description                                          | Default  |
 | ------------------------- | ----------------------------------------------------- | -------- |
-| `-o, --output <dir>`      | 指定输出目录                                          | 原地覆盖 |
-| `-k, --key <key>`         | 指定 API Key（优先级高于环境变量）                    | -        |
-| `-m, --mode <mode>`       | Key 使用策略：`random` \| `round-robin` \| `priority` | `random` |
-| `-p, --parallel <number>` | 并发数限制                                            | `8`      |
-| `-c, --cache`             | 启用缓存                                              | `true`   |
-| `--no-cache`              | 禁用缓存                                              | -        |
-| `-h, --help`              | 显示帮助信息                                          | -        |
+| `-o, --output <dir>`      | Specify output directory                              | In-place |
+| `-k, --key <key>`         | Specify API Key (higher priority than env variable)   | -        |
+| `-m, --mode <mode>`       | Key usage strategy: `random` \| `round-robin` \| `priority` | `random` |
+| `-p, --parallel <number>` | Concurrency limit                                     | `8`      |
+| `-c, --cache`             | Enable cache                                          | `true`   |
+| `--no-cache`              | Disable cache                                         | -        |
+| `-h, --help`              | Show help information                                 | -        |
 
-### Key 管理命令
+### Key Management Commands
 
 ```bash
-# 添加 API Key
+# Add API Key
 tinyimg key add <key>
 
-# 移除 API Key（交互式选择）
+# Remove API Key (interactive selection)
 tinyimg key remove
 
-# 移除指定 API Key
+# Remove specified API Key
 tinyimg key remove <key>
 
-# 列出所有 API Key 及额度信息
+# List all API Keys and quota information
 tinyimg key
 ```
 
-**Key 显示格式：** API Key 会以脱敏方式显示（前 4 位 + 后 4 位，如 `abcd****efgh`），方便识别同时保护敏感信息。
+**Key Display Format:** API keys are displayed in a masked format (first 4 chars + last 4 chars, e.g., `abcd****efgh`) for easy identification while protecting sensitive information.
 
-## 使用示例
+## Usage Examples
 
-### 压缩单个文件
+### Compress Single File
 
 ```bash
 tinyimg photo.png
 ```
 
-### 压缩多个文件
+### Compress Multiple Files
 
 ```bash
 tinyimg image1.png image2.jpg image3.jpeg
 ```
 
-### 压缩整个目录
+### Compress Entire Directory
 
 ```bash
 tinyimg ./assets/images/
 ```
 
-### 使用 Glob 模式
+### Use Glob Pattern
 
 ```bash
-# 压缩所有 PNG 文件
+# Compress all PNG files
 tinyimg "./src/**/*.png"
 
-# 压缩多种格式
+# Compress multiple formats
 tinyimg "./assets/**/*.{png,jpg,jpeg}"
 ```
 
-### 指定输出目录
+### Specify Output Directory
 
 ```bash
-# 压缩到 dist 目录，保持目录结构
+# Compress to dist directory, preserve directory structure
 tinyimg ./assets/ -o ./dist/
 
-# 压缩到指定目录
+# Compress to specified directory
 tinyimg photo.png -o ./compressed/
 ```
 
-### 使用特定 Key 策略
+### Use Specific Key Strategy
 
 ```bash
-# 轮询模式（均匀分配额度）
+# Round-robin mode (evenly distribute quota)
 tinyimg ./images/ -m round-robin
 
-# 优先级模式（优先使用指定 key）
+# Priority mode (prefer specified key)
 tinyimg ./images/ -m priority
 
-# 随机模式（默认）
+# Random mode (default)
 tinyimg ./images/ -m random
 ```
 
-### 调整并发数
+### Adjust Concurrency
 
 ```bash
-# 降低并发数（适合网络不稳定环境）
+# Lower concurrency (suitable for unstable network)
 tinyimg ./images/ -p 4
 
-# 提高并发数（适合高性能网络）
+# Higher concurrency (suitable for high-performance network)
 tinyimg ./images/ -p 16
 ```
 
-### 禁用缓存
+### Disable Cache
 
 ```bash
-# 强制重新压缩所有图片
+# Force re-compression of all images
 tinyimg ./images/ --no-cache
 ```
 
-### 指定 API Key
+### Specify API Key
 
 ```bash
-# 使用特定 key 进行压缩（优先级最高）
+# Use specific key for compression (highest priority)
 tinyimg ./images/ -k YOUR_API_KEY
 ```
 
-## 环境变量
+## Environment Variables
 
 ```bash
-# 设置 API Keys（多个 key 用逗号分隔）
+# Set API Keys (multiple keys separated by comma)
 export TINYPNG_KEYS="key1,key2,key3"
 
-# 运行压缩命令
+# Run compression command
 tinyimg ./images/
 ```
 
-## 缓存系统
+## Cache System
 
-TinyImg 使用两级缓存系统：
+TinyImg uses a two-level cache system:
 
-1. **项目级缓存** - `node_modules/.tinyimg_cache/`（优先）
-2. **全局缓存** - `~/.tinyimg/cache/`（后备）
+1. **Project-level cache** - `node_modules/.tinyimg_cache/` (priority)
+2. **Global cache** - `~/.tinyimg/cache/` (fallback)
 
-缓存基于文件内容的 MD5 哈希，相同内容的文件无论位置如何都会命中缓存。
+Cache is based on MD5 hash of file content. Files with same content will hit cache regardless of location.
 
-## 支持格式
+## Supported Formats
 
-- **PNG** - 包括透明 PNG
-- **JPG/JPEG** - 所有 JPEG 变体
+- **PNG** - Including transparent PNG
+- **JPG/JPEG** - All JPEG variants
 
-> 注意：TinyPNG 不支持 WebP、AVIF、SVG 等格式。
+> Note: TinyPNG does not support WebP, AVIF, SVG, or other formats.
 
-## 额度管理
+## Quota Management
 
-TinyPNG 免费版每月提供 500 张压缩额度。TinyImg 通过以下方式最大化利用：
+TinyPNG free tier provides 500 compressions per month. TinyImg maximizes utilization through:
 
-- **多 Key 管理** - 配置多个 key 自动轮换
-- **智能缓存** - 避免重复压缩相同内容
-- **额度监控** - 实时显示各 key 的剩余额度
-- **后备方案** - 所有 key 耗尽后自动使用在线压缩
+- **Multi-Key Management** - Configure multiple keys for automatic rotation
+- **Intelligent Caching** - Avoid re-compressing identical content
+- **Quota Monitoring** - Real-time display of remaining quota for each key
+- **Fallback Strategy** - Automatically use online compression when all keys are exhausted
 
-## 错误处理
+## Error Handling
 
-| 错误类型                    | 说明                   | 解决方案                              |
-| --------------------------- | ---------------------- | ------------------------------------- |
-| `NoValidKeysError`          | 没有配置有效的 API Key | 运行 `tinyimg key add <key>` 添加 key |
-| `AllKeysExhaustedError`     | 所有 key 额度已用完    | 添加新 key 或等待下月额度重置         |
-| `AllCompressionFailedError` | 所有压缩方式失败       | 检查网络连接和 API 状态               |
+| Error Type                 | Description                   | Solution                              |
+| --------------------------- | ------------------------------ | ------------------------------------- |
+| `NoValidKeysError`          | No valid API Key configured   | Run `tinyimg key add <key>` to add key |
+| `AllKeysExhaustedError`     | All keys quota exhausted      | Add new key or wait for monthly reset |
+| `AllCompressionFailedError` | All compression methods failed | Check network connection and API status |
 
-## 相关包
+## Related Packages
 
-- [tinyimg-core](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-core) - 核心压缩库
-- [tinyimg-unplugin](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-unplugin) - Vite/Webpack/Rolldown 插件
+- [tinyimg-core](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-core) - Core compression library
+- [tinyimg-unplugin](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-unplugin) - Vite/Webpack/Rolldown plugin
 
 ## License
 
