@@ -1,3 +1,5 @@
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 # tinyimg-core
 
 Core library for TinyPNG image compression with intelligent caching and multi-API key management.
@@ -6,7 +8,6 @@ Core library for TinyPNG image compression with intelligent caching and multi-AP
 
 - Multi-API key management with smart rotation strategies
 - MD5-based permanent caching system with two-level hierarchy
-- Fallback strategies for quota exhaustion
 - Concurrent compression with rate limiting
 - Cache statistics for monitoring and CLI display
 
@@ -508,7 +509,7 @@ type KeyStrategy = 'random' | 'round-robin' | 'priority'
 
 #### AllKeysExhaustedError
 
-Thrown when all API keys have exhausted their monthly quota.
+Thrown when all API keys have exhausted their quota.
 
 ```typescript
 import { AllKeysExhaustedError } from 'tinyimg-core'

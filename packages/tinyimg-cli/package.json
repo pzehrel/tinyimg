@@ -3,6 +3,34 @@
   "type": "module",
   "version": "0.0.0",
   "description": "CLI tool for TinyPNG image compression with batch processing and interactive key management",
+  "author": "pzehrel",
+  "license": "MIT",
+  "homepage": "https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pzehrel/tinyimg.git",
+    "directory": "packages/tinyimg-cli"
+  },
+  "bugs": {
+    "url": "https://github.com/pzehrel/tinyimg/issues"
+  },
+  "keywords": [
+    "tinypng",
+    "image",
+    "compression",
+    "compress",
+    "cli",
+    "command-line",
+    "optimize",
+    "optimization",
+    "img",
+    "minify",
+    "png",
+    "jpg",
+    "jpeg",
+    "batch",
+    "imagemin"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
