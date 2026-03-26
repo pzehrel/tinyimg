@@ -1,7 +1,7 @@
 import type { Buffer } from 'node:buffer'
 import type { KeyPool } from '../keys/pool'
 import type { ICompressor } from './types'
-import * as tinify from 'tinify'
+import tinify from 'tinify'
 import { logInfo, logWarning } from '../utils/logger'
 import { RetryManager } from './retry'
 
