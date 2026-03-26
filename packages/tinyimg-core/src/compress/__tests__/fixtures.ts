@@ -1,5 +1,5 @@
-import { Buffer } from 'node:buffer'
 import type { IncomingMessage } from 'node:http'
+import { Buffer } from 'node:buffer'
 import * as https from 'node:https'
 import tinify from 'tinify'
 import { vi } from 'vitest'

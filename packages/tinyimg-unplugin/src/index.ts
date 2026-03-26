@@ -10,7 +10,7 @@ import { normalizeOptions } from './options'
 // Regex for matching image file extensions
 const IMAGE_REGEX = /\.(png|jpg|jpeg|gif|webp|svg)$/i
 
-export default createUnplugin((options: TinyimgUnpluginOptions = {}) => {
+export default createUnplugin((options: TinyimgUnpluginOptions = {}): any => {
   // Normalize options
   const normalized = normalizeOptions(options)
 
@@ -30,7 +30,7 @@ export default createUnplugin((options: TinyimgUnpluginOptions = {}) => {
     name: 'tinyimg-unplugin',
     enforce: 'post', // Run after other transformations (D-02)
 
-    async transform(code, id) {
+    async transform(code: any, id: any) {
       // Filter non-image files
       const shouldProcess = shouldProcessImage(id, normalized)
       if (!shouldProcess) {
@@ -57,8 +57,7 @@ export default createUnplugin((options: TinyimgUnpluginOptions = {}) => {
         const compressed = await compressImage(buffer, {
           projectCacheOnly: true, // Only project cache (D-17)
           cache: normalized.cache,
-          parallel: normalized.parallel,
-          mode: normalized.mode,
+          mode: normalized.mode as any,
         })
 
         // Log success
