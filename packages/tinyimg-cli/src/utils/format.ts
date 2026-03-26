@@ -13,7 +13,7 @@ export function formatProgress(current: number, total: number): string {
  */
 export function formatResult(
   inputPath: string,
-  outputPath: string,
+  _outputPath: string,
   originalSize: number,
   compressedSize: number,
 ): string {

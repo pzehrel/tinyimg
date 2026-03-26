@@ -40,7 +40,7 @@ describe('vite Integration', () => {
   })
 
   it('builds fixture project successfully', () => {
-    const result = execSync('vite build', {
+    const result = execSync('npx vite build', {
       cwd: fixtureDir,
       env: {
         ...process.env,
@@ -55,7 +55,7 @@ describe('vite Integration', () => {
 
   it('outputs compressed images', () => {
     // First, run the build
-    execSync('vite build', {
+    execSync('npx vite build', {
       cwd: fixtureDir,
       env: {
         ...process.env,
@@ -88,7 +88,7 @@ describe('vite Integration', () => {
   })
 
   it('shows compression summary', () => {
-    const result = execSync('vite build', {
+    const result = execSync('npx vite build', {
       cwd: fixtureDir,
       env: {
         ...process.env,
@@ -108,7 +108,7 @@ describe('vite Integration', () => {
     execSync('rm -rf dist', { cwd: fixtureDir })
 
     // In dev mode, plugin should skip compression
-    const result = execSync('vite build', {
+    const result = execSync('npx vite build', {
       cwd: fixtureDir,
       env: {
         ...process.env,
@@ -126,7 +126,7 @@ describe('vite Integration', () => {
     execSync('rm -rf dist', { cwd: fixtureDir })
 
     // First build
-    execSync('vite build', {
+    execSync('npx vite build', {
       cwd: fixtureDir,
       env: {
         ...process.env,
@@ -135,7 +135,7 @@ describe('vite Integration', () => {
     })
 
     // Second build (should use cache)
-    const result = execSync('vite build', {
+    const result = execSync('npx vite build', {
       cwd: fixtureDir,
       env: {
         ...process.env,

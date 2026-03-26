@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { RetryManager } from '../retry'
 
-describe('RetryManager', () => {
+describe('retryManager', () => {
   beforeEach(() => {
     // Use fake timers for testing delay timing
     vi.useFakeTimers()

@@ -1,4 +1,5 @@
 import path from 'node:path'
+// @ts-expect-error - micromatch doesn't have types
 import micromatch from 'micromatch'
 
 export interface FilterOptions {

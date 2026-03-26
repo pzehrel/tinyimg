@@ -8,7 +8,12 @@ export interface TinyimgUnpluginOptions extends FilterOptions {
   verbose?: boolean
 }
 
-export interface NormalizedOptions extends Required<TinyimgUnpluginOptions> {
+export interface NormalizedOptions {
+  mode: 'random' | 'round-robin' | 'priority'
+  cache: boolean
+  parallel: number
+  strict: boolean
+  verbose: boolean
   include?: string[]
   exclude?: string[]
 }
