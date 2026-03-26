@@ -1,6 +1,6 @@
+import process from 'node:process'
 import { select } from '@clack/prompts'
 import kleur from 'kleur'
-import process from 'node:process'
 import { maskKey, queryQuota, readConfig, validateKey, writeConfig } from 'tinyimg-core'
 
 export async function keyAdd(key: string): Promise<void> {
@@ -123,7 +123,7 @@ export async function keyList(): Promise<void> {
         const quotaInfo = kleur.gray(`  Quota: ${remaining}/500 remaining | Last check: ${lastCheck}`)
         console.log(quotaInfo)
       }
-      catch (error: any) {
+      catch {
         const quotaInfo = kleur.yellow(`  Quota: Unable to query | Last check: ${lastCheck}`)
         console.log(quotaInfo)
       }

@@ -82,7 +82,6 @@ export const LARGE_PNG = createMockPngBuffer(6 * 1024 * 1024)
  * Mock tinify API for successful compression.
  *
  * @param responseBuffer - The buffer to return from toBuffer()
- * @returns Mocked tinify instance
  *
  * @example
  * ```ts
@@ -152,7 +151,6 @@ export function resetTinifyMocks(): void {
  * Mock HTTPS request for successful tinypng.com web interface response.
  *
  * @param responseBuffer - The compressed image buffer to return
- * @returns Mocked https.request function
  *
  * @example
  * ```ts
@@ -336,7 +334,7 @@ export function createMockClientRequest(): any {
     eventNames: vi.fn(() => {
       return Array.from(handlers.keys())
     }),
-    setMaxListeners: vi.fn((n: number) => {
+    setMaxListeners: vi.fn((_n: number) => {
       // No-op for mock
     }),
     listenerCount: vi.fn((event: string) => {
