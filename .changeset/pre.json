@@ -1,0 +1,12 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@pz4l/tinyimg-cli": "0.0.0",
+    "@pz4l/tinyimg-core": "0.0.0",
+    "@pz4l/tinyimg-unplugin": "0.0.0"
+  },
+  "changesets": [
+    "initial-beta-release"
+  ]
+}

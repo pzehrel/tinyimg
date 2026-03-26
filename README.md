@@ -18,7 +18,7 @@ Smart image compression tool powered by TinyPNG with intelligent caching and mul
 Install globally and compress images:
 
 ```bash
-npm install -g tinyimg-cli
+npm install -g @pz4l/tinyimg-cli
 tinyimg *.png *.jpg
 ```
 
@@ -28,7 +28,7 @@ Add to your Vite project:
 
 ```js
 // vite.config.js
-import tinyimg from 'tinyimg-unplugin/vite'
+import tinyimg from '@pz4l/tinyimg-unplugin/vite'
 
 export default {
   plugins: [tinyimg()]
@@ -43,9 +43,9 @@ export TINYPNG_KEYS=your_api_key_here
 
 ## Packages
 
-- **[tinyimg-core](packages/tinyimg-core/)** - Core compression library with caching and key management
-- **[tinyimg-cli](packages/tinyimg-cli/)** - Command-line interface for batch compression
-- **[tinyimg-unplugin](packages/tinyimg-unplugin/)** - Build tool plugin for Vite/Webpack/Rolldown
+- **[@pz4l/tinyimg-core](packages/tinyimg-core/)** - Core compression library with caching and key management
+- **[@pz4l/tinyimg-cli](packages/tinyimg-cli/)** - Command-line interface for batch compression
+- **[@pz4l/tinyimg-unplugin](packages/tinyimg-unplugin/)** - Build tool plugin for Vite/Webpack/Rolldown
 
 ## Documentation
 

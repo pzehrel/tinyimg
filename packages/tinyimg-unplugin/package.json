@@ -1,7 +1,7 @@
 {
-  "name": "tinyimg-unplugin",
+  "name": "@pz4l/tinyimg-unplugin",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.1.0-beta.0",
   "description": "unplugin for automatic image compression during build (Vite, Webpack, Rolldown)",
   "author": "pzehrel",
   "license": "MIT",
@@ -62,7 +62,7 @@
   },
   "dependencies": {
     "micromatch": "^4.0.8",
-    "tinyimg-core": "workspace:*",
+    "@pz4l/tinyimg-core": "workspace:*",
     "unplugin": "^1.0.0"
   },
   "devDependencies": {

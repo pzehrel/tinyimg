@@ -18,7 +18,7 @@
 
 ```bash
 # 使用 npm
-npm install -g tinyimg-cli
+npm install -g @pz4l/tinyimg-cli
 
 # 使用 pnpm
 pnpm add -g tinyimg-cli
@@ -31,7 +31,7 @@ yarn global add tinyimg-cli
 
 ```bash
 # 使用 npm
-npm install -D tinyimg-cli
+npm install -D @pz4l/tinyimg-cli
 
 # 使用 pnpm
 pnpm add -D tinyimg-cli
@@ -219,8 +219,8 @@ TinyImg 通过以下方式优化额度使用：
 
 ## 相关包
 
-- [tinyimg-core](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-core) - 核心压缩库
-- [tinyimg-unplugin](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-unplugin) - Vite/Webpack/Rolldown 插件
+- [@pz4l/tinyimg-core](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-core) - 核心压缩库
+- [@pz4l/tinyimg-unplugin](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-unplugin) - Vite/Webpack/Rolldown 插件
 
 ## License
 
