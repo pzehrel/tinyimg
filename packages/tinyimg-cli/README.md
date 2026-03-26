@@ -214,7 +214,7 @@ TinyPNG free tier provides 500 compressions per month. TinyImg maximizes utiliza
 | Error Type                  | Description                    | Solution                                |
 | --------------------------- | ------------------------------ | --------------------------------------- |
 | `NoValidKeysError`          | No valid API Key configured    | Run `tinyimg key add <key>` to add key  |
-| `AllKeysExhaustedError`     | All keys quota exhausted       | Add new key or wait for monthly reset   |
+| `AllKeysExhaustedError`     | All keys quota exhausted       | Add new key                                |
 | `AllCompressionFailedError` | All compression methods failed | Check network connection and API status |
 
 ## Related Packages

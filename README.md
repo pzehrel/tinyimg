@@ -6,7 +6,7 @@ Smart image compression tool powered by TinyPNG with intelligent caching and mul
 
 ## Features
 
-- **Multi-API Key Management** - Rotate multiple keys to maximize free quota (500 images/month per key)
+- **Multi-API Key Management** - Rotate multiple keys for load balancing and redundancy
 - **Intelligent Caching** - MD5-based permanent cache avoids redundant compression
 - **Concurrent Processing** - Configurable parallel compression (default: 8)
 - **Multiple Tools** - CLI tool and unplugin for Vite/Webpack/Rolldown

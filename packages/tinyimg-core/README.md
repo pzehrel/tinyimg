@@ -509,7 +509,7 @@ type KeyStrategy = 'random' | 'round-robin' | 'priority'
 
 #### AllKeysExhaustedError
 
-Thrown when all API keys have exhausted their monthly quota.
+Thrown when all API keys have exhausted their quota.
 
 ```typescript
 import { AllKeysExhaustedError } from 'tinyimg-core'
