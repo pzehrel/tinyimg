@@ -1,9 +1,7 @@
-import { readConfig, writeConfig } from 'tinyimg-core'
-import { validateKey, queryQuota } from 'tinyimg-core'
-import { maskKey } from 'tinyimg-core'
-import type { ConfigFile } from 'tinyimg-core'
 import { select } from '@clack/prompts'
 import kleur from 'kleur'
+import process from 'node:process'
+import { maskKey, queryQuota, readConfig, validateKey, writeConfig } from 'tinyimg-core'
 
 export async function keyAdd(key: string): Promise<void> {
   try {
