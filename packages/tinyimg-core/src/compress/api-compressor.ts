@@ -1,6 +1,6 @@
-import type { Buffer } from 'node:buffer'
 import type { KeyPool } from '../keys/pool'
 import type { ICompressor } from './types'
+import { Buffer } from 'node:buffer'
 import tinify from 'tinify'
 import { logInfo, logWarning } from '../utils/logger'
 import { RetryManager } from './retry'
@@ -52,7 +52,7 @@ export class TinyPngApiCompressor implements ICompressor {
       this.keyPool.decrementQuota()
       logInfo(`Compressed with [TinyPngApiCompressor]: ${originalSize} → ${compressedSize} (saved ${saved}%)`)
 
-      return result
+      return Buffer.from(result)
     })
   }
 
