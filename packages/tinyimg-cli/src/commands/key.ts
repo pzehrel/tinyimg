@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { select } from '@clack/prompts'
-import kleur from 'kleur'
 import { maskKey, queryQuota, readConfig, validateKey, writeConfig } from '@pz4l/tinyimg-core'
+import kleur from 'kleur'
 
 export async function keyAdd(key: string): Promise<void> {
   try {

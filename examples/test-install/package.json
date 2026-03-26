@@ -1,15 +1,15 @@
 {
   "name": "tinyimg-test-install",
-  "version": "0.0.0",
   "type": "module",
+  "version": "0.0.0",
   "private": true,
   "description": "Test project for validating tinyimg packages",
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
-    "@pz4l/tinyimg-core": "workspace:*",
     "@pz4l/tinyimg-cli": "workspace:*",
+    "@pz4l/tinyimg-core": "workspace:*",
     "@pz4l/tinyimg-unplugin": "workspace:*"
   }
 }

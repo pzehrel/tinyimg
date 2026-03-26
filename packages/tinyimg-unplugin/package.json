@@ -64,8 +64,8 @@
     }
   },
   "dependencies": {
-    "micromatch": "^4.0.8",
     "@pz4l/tinyimg-core": "workspace:*",
+    "micromatch": "^4.0.8",
     "unplugin": "^1.0.0"
   },
   "devDependencies": {
