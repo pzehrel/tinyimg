@@ -18,7 +18,7 @@ Smart image compression CLI tool based on TinyPNG with multi-API key management,
 
 ```bash
 # Using npm
-npm install -g tinyimg-cli
+npm install -g @pz4l/tinyimg-cli
 
 # Using pnpm
 pnpm add -g tinyimg-cli
@@ -31,7 +31,7 @@ yarn global add tinyimg-cli
 
 ```bash
 # Using npm
-npm install -D tinyimg-cli
+npm install -D @pz4l/tinyimg-cli
 
 # Using pnpm
 pnpm add -D tinyimg-cli
@@ -219,8 +219,8 @@ TinyPNG free tier provides 500 compressions per month. TinyImg maximizes utiliza
 
 ## Related Packages
 
-- [tinyimg-core](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-core) - Core compression library
-- [tinyimg-unplugin](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-unplugin) - Vite/Webpack/Rolldown plugin
+- [@pz4l/tinyimg-core](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-core) - Core compression library
+- [@pz4l/tinyimg-unplugin](https://github.com/pzehrel/tinyimg/tree/main/packages/tinyimg-unplugin) - Vite/Webpack/Rolldown plugin
 
 ## License
 

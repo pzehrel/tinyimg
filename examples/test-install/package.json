@@ -8,8 +8,8 @@
     "node": ">=18"
   },
   "dependencies": {
-    "tinyimg-core": "workspace:*",
-    "tinyimg-cli": "workspace:*",
-    "tinyimg-unplugin": "workspace:*"
+    "@pz4l/tinyimg-core": "workspace:*",
+    "@pz4l/tinyimg-cli": "workspace:*",
+    "@pz4l/tinyimg-unplugin": "workspace:*"
   }
 }

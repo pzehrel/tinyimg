@@ -7,7 +7,7 @@ import process from 'node:process'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock tinyimg-core before importing the plugin
-vi.mock('tinyimg-core', () => ({
+vi.mock('@pz4l/tinyimg-core', () => ({
   compressImage: vi.fn().mockResolvedValue(Buffer.from('mock-compressed-image-data')),
   compressImages: vi.fn().mockResolvedValue([]),
   loadKeys: vi.fn().mockReturnValue(['test-key-1', 'test-key-2']),
