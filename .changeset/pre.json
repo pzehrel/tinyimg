@@ -6,5 +6,7 @@
     "@pz4l/tinyimg-core": "0.0.0",
     "@pz4l/tinyimg-unplugin": "0.0.0"
   },
-  "changesets": []
+  "changesets": [
+    "initial-beta-release"
+  ]
 }
