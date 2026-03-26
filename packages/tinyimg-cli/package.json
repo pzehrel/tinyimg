@@ -1,5 +1,5 @@
 {
-  "name": "tinyimg-cli",
+  "name": "@pz4l/tinyimg-cli",
   "type": "module",
   "version": "0.0.0",
   "description": "CLI tool for TinyPNG image compression with batch processing and interactive key management",
@@ -54,7 +54,7 @@
     "cac": "^7.0.0",
     "fast-glob": "^3.3.3",
     "kleur": "^4.1.5",
-    "tinyimg-core": "workspace:*"
+    "@pz4l/tinyimg-core": "workspace:*"
   },
   "devDependencies": {
     "@clack/prompts": "^1.1.0"
