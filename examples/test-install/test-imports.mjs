@@ -1,6 +1,6 @@
 // Test core library imports
-import { compressImage, KeyPool } from 'tinyimg-core'
-import tinyimgUnplugin from 'tinyimg-unplugin'
+import { compressImage, KeyPool } from '@pz4l/tinyimg-core'
+import tinyimgUnplugin from '@pz4l/tinyimg-unplugin'
 
 console.log('✅ tinyimg-core imports successful')
 console.log('  - compressImage:', typeof compressImage)

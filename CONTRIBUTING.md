@@ -58,8 +58,8 @@ tinyimg/
 
 ### Package Dependencies
 
-- `tinyimg-cli` depends on `tinyimg-core`
-- `tinyimg-unplugin` depends on `tinyimg-core`
+- `@pz4l/tinyimg-cli` depends on `@pz4l/tinyimg-core`
+- `@pz4l/tinyimg-unplugin` depends on `@pz4l/tinyimg-core`
 
 When making changes, consider the dependency graph to ensure dependent packages are rebuilt.
 
@@ -82,13 +82,13 @@ pnpm test
 
 ```bash
 # Test only the core package
-pnpm --filter tinyimg-core test
+pnpm --filter @pz4l/tinyimg-core test
 
 # Test only the CLI package
-pnpm --filter tinyimg-cli test
+pnpm --filter @pz4l/tinyimg-cli test
 
 # Test only the unplugin package
-pnpm --filter tinyimg-unplugin test
+pnpm --filter @pz4l/tinyimg-unplugin test
 ```
 
 ### Test Structure
@@ -163,9 +163,9 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/) for commi
 
 Use package names as scopes:
 
-- `core` - Changes to `tinyimg-core`
-- `cli` - Changes to `tinyimg-cli`
-- `unplugin` - Changes to `tinyimg-unplugin`
+- `core` - Changes to `@pz4l/tinyimg-core`
+- `cli` - Changes to `@pz4l/tinyimg-cli`
+- `unplugin` - Changes to `@pz4l/tinyimg-unplugin`
 
 ### Examples
 
@@ -260,8 +260,8 @@ refactor(core): simplify key rotation logic
 
 When making changes that affect multiple packages:
 
-1. Make changes to the dependency package first (e.g., `tinyimg-core`)
-2. Build the dependency: `pnpm --filter tinyimg-core build`
+1. Make changes to the dependency package first (e.g., `@pz4l/tinyimg-core`)
+2. Build the dependency: `pnpm --filter @pz4l/tinyimg-core build`
 3. Make changes to dependent packages
 4. Run tests for all affected packages
 
@@ -269,10 +269,10 @@ When making changes that affect multiple packages:
 
 ```bash
 # Add to a specific package
-pnpm --filter tinyimg-core add <package-name>
+pnpm --filter @pz4l/tinyimg-core add <package-name>
 
 # Add dev dependency to a specific package
-pnpm --filter tinyimg-core add -D <package-name>
+pnpm --filter @pz4l/tinyimg-core add -D <package-name>
 
 # Add to root (shared dev dependencies)
 pnpm add -D -w <package-name>

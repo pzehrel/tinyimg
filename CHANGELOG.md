@@ -8,19 +8,19 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 
 ### Added
 - Initial project structure with pnpm workspace monorepo setup
-- **tinyimg-core**: Core library for TinyPNG image compression
+- **@pz4l/tinyimg-core**: Core library for TinyPNG image compression
   - Multi-API key management with intelligent rotation
   - MD5-based caching system with project and global levels
   - Fallback compression via tinypng.com web interface
   - Configurable concurrency control (default: 8)
   - Automatic key exhaustion handling with fallback strategy
-- **tinyimg-cli**: Command-line tool for batch image compression
+- **@pz4l/tinyimg-cli**: Command-line tool for batch image compression
   - Multi-file/directory input with glob pattern support
   - Global key management commands (`key add`, `key remove`, `key list`)
   - Real-time API key usage display with masked output
   - Configurable output directory, key selection, mode, and parallel processing
   - Interactive prompts using @posva/prompts
-- **tinyimg-unplugin**: Universal plugin for Vite, Webpack, and Rolldown
+- **@pz4l/tinyimg-unplugin**: Universal plugin for Vite, Webpack, and Rolldown
   - Transform hook for automatic image compression during build
   - File filtering with configurable include/exclude patterns
   - Project-level caching integration
@@ -73,7 +73,7 @@ When making changes that affect the public API or fix bugs:
 
 ### Versioning and Releases
 
-All three packages (`tinyimg-core`, `tinyimg-cli`, `tinyimg-unplugin`) are versioned together using the `fixed` configuration in `.changeset/config.json`.
+All three packages (`@pz4l/tinyimg-core`, `@pz4l/tinyimg-cli`, `@pz4l/tinyimg-unplugin`) are versioned together using the `fixed` configuration in `.changeset/config.json`.
 
 To release a new version:
 
