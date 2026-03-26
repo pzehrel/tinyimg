@@ -1,5 +1,5 @@
 {
-  "name": "tinyimg-core",
+  "name": "@pz4l/tinyimg-core",
   "type": "module",
   "version": "0.0.0",
   "description": "Core library for TinyPNG image compression with multi-key management, intelligent caching, and fallback strategies",
