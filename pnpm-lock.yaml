@@ -44,9 +44,6 @@ importers:
 
   packages/tinyimg-cli:
     dependencies:
-      '@clack/prompts':
-        specifier: ^1.1.0
-        version: 1.1.0
       cac:
         specifier: ^7.0.0
         version: 7.0.0
@@ -59,6 +56,10 @@ importers:
       tinyimg-core:
         specifier: workspace:*
         version: link:../tinyimg-core
+    devDependencies:
+      '@clack/prompts':
+        specifier: ^1.1.0
+        version: 1.1.0
 
   packages/tinyimg-core:
     dependencies:

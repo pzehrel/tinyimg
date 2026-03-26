@@ -1,9 +1,7 @@
-import { readConfig, writeConfig } from 'tinyimg-core'
-import { validateKey, queryQuota } from 'tinyimg-core'
-import { maskKey } from 'tinyimg-core'
-import type { ConfigFile } from 'tinyimg-core'
+import process from 'node:process'
 import { select } from '@clack/prompts'
 import kleur from 'kleur'
+import { maskKey, queryQuota, readConfig, validateKey, writeConfig } from 'tinyimg-core'
 
 export async function keyAdd(key: string): Promise<void> {
   try {
@@ -125,7 +123,7 @@ export async function keyList(): Promise<void> {
         const quotaInfo = kleur.gray(`  Quota: ${remaining}/500 remaining | Last check: ${lastCheck}`)
         console.log(quotaInfo)
       }
-      catch (error: any) {
+      catch {
         const quotaInfo = kleur.yellow(`  Quota: Unable to query | Last check: ${lastCheck}`)
         console.log(quotaInfo)
       }

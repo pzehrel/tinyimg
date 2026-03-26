@@ -63,7 +63,7 @@ export async function compressCommand(inputs: string[], options: CompressOptions
 
   // Add mode if specified
   if (options.mode) {
-    compressOptions.mode = options.mode
+    compressOptions.mode = options.mode as any
   }
 
   // Create KeyPool if mode specified

@@ -19,7 +19,7 @@ const distDir = join(fixtureDir, 'dist')
 // Check if webpack CLI is available
 let webpackAvailable = false
 try {
-  execSync('webpack --version', { stdio: 'ignore' })
+  execSync('npx webpack --version', { stdio: 'ignore' })
   webpackAvailable = true
 }
 catch {
@@ -68,7 +68,7 @@ describe('webpack Integration', () => {
   }
 
   it('builds fixture project successfully (CLI available)', () => {
-    const result = execSync('webpack', {
+    const result = execSync('npx webpack', {
       cwd: fixtureDir,
       env: {
         ...process.env,
@@ -82,7 +82,7 @@ describe('webpack Integration', () => {
 
   it('outputs compressed images (CLI available)', () => {
     // First, run the build
-    execSync('webpack', {
+    execSync('npx webpack', {
       cwd: fixtureDir,
       env: {
         ...process.env,
@@ -111,7 +111,7 @@ describe('webpack Integration', () => {
   })
 
   it('shows compression summary (CLI available)', () => {
-    const result = execSync('webpack', {
+    const result = execSync('npx webpack', {
       cwd: fixtureDir,
       env: {
         ...process.env,
@@ -130,7 +130,7 @@ describe('webpack Integration', () => {
     execSync('rm -rf dist', { cwd: fixtureDir, shell: true })
 
     // In dev mode, plugin should skip compression
-    const result = execSync('webpack', {
+    const result = execSync('npx webpack', {
       cwd: fixtureDir,
       env: {
         ...process.env,
@@ -148,7 +148,7 @@ describe('webpack Integration', () => {
     execSync('rm -rf dist', { cwd: fixtureDir, shell: true })
 
     // First build
-    execSync('webpack', {
+    execSync('npx webpack', {
       cwd: fixtureDir,
       env: {
         ...process.env,
@@ -157,7 +157,7 @@ describe('webpack Integration', () => {
     })
 
     // Second build (should use cache)
-    const result = execSync('webpack', {
+    const result = execSync('npx webpack', {
       cwd: fixtureDir,
       env: {
         ...process.env,
