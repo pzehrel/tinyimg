@@ -8,7 +8,6 @@ Core library for TinyPNG image compression with intelligent caching and multi-AP
 
 - Multi-API key management with smart rotation strategies
 - MD5-based permanent caching system with two-level hierarchy
-- Fallback strategies for quota exhaustion
 - Concurrent compression with rate limiting
 - Cache statistics for monitoring and CLI display
 

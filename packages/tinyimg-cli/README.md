@@ -11,7 +11,6 @@ Smart image compression CLI tool based on TinyPNG with multi-API key management,
 - **Intelligent Caching** - MD5-based permanent cache to avoid redundant compression
 - **Concurrency Control** - Configurable parallel compression tasks
 - **Multiple Key Strategies** - Three modes: random, round-robin, priority
-- **Fallback Strategy** - Automatic degradation to online compression when API key quota is exhausted
 
 ## Installation
 
@@ -209,7 +208,6 @@ TinyPNG free tier provides 500 compressions per month. TinyImg maximizes utiliza
 - **Multi-Key Management** - Configure multiple keys for automatic rotation
 - **Intelligent Caching** - Avoid re-compressing identical content
 - **Quota Monitoring** - Real-time display of remaining quota for each key
-- **Fallback Strategy** - Automatically use online compression when all keys are exhausted
 
 ## Error Handling
 
