@@ -36,11 +36,15 @@ jobs:
       - name: Build all packages
         run: pnpm build
 
-      - uses: changesets/action@v1
-        with:
-          publish: pnpm changeset publish --access public
-          commit: 'chore: version packages'
-          title: 'chore: version packages'
+      - name: Publish to npm
+        run: |
+          for dir in packages/*; do
+            if [ -f "$dir/package.json" ]; then
+              cd "$dir"
+              echo "Publishing $(basename $dir)..."
+              npm publish --provenance --access public
+              cd -
+            fi
+          done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
