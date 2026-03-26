@@ -3,6 +3,25 @@
   "type": "module",
   "version": "0.0.0",
   "description": "unplugin for automatic image compression during build (Vite, Webpack, Rolldown)",
+  "author": "pzehrel",
+  "license": "MIT",
+  "keywords": [
+    "tinypng",
+    "image",
+    "compression",
+    "compress",
+    "optimize",
+    "optimization",
+    "img",
+    "minify",
+    "unplugin",
+    "vite",
+    "webpack",
+    "rolldown",
+    "build",
+    "plugin",
+    "imagemin"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",

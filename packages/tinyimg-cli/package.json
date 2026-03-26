@@ -3,6 +3,25 @@
   "type": "module",
   "version": "0.0.0",
   "description": "CLI tool for TinyPNG image compression with batch processing and interactive key management",
+  "author": "pzehrel",
+  "license": "MIT",
+  "keywords": [
+    "tinypng",
+    "image",
+    "compression",
+    "compress",
+    "cli",
+    "command-line",
+    "optimize",
+    "optimization",
+    "img",
+    "minify",
+    "png",
+    "jpg",
+    "jpeg",
+    "batch",
+    "imagemin"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
