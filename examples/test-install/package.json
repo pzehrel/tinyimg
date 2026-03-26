@@ -1,0 +1,15 @@
+{
+  "name": "tinyimg-test-install",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Test project for validating tinyimg packages",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "tinyimg-core": "workspace:*",
+    "tinyimg-cli": "workspace:*",
+    "tinyimg-unplugin": "workspace:*"
+  }
+}
