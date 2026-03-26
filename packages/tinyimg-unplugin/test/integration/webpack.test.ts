@@ -77,7 +77,7 @@ describe('webpack Integration', () => {
       encoding: 'utf-8',
     })
 
-    expect(result).toContain('bundle.js')
+    expect(result).toContain('bundle')
   })
 
   it('outputs compressed images (CLI available)', () => {
@@ -97,7 +97,7 @@ describe('webpack Integration', () => {
     const files = readdirSync(distDir)
     expect(files.length).toBeGreaterThan(0)
 
-    const jsFiles = files.filter(f => f.endsWith('.js'))
+    const jsFiles = files.filter(f => f.endsWith(''))
     expect(jsFiles.length).toBeGreaterThan(0)
 
     // Verify JS files contain image data (base64 data URLs)

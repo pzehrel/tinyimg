@@ -4,7 +4,7 @@ import path from 'node:path'
 import fastGlob from 'fast-glob'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { expandInputs, isImageFile, resolveOutputPath } from './files.js'
+import { expandInputs, isImageFile, resolveOutputPath } from './files'
 
 // Mock file system
 vi.mock('node:fs/promises')

@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import * as cliModule from './cli.js'
-import { compressCommand } from './commands/compress.js'
+import * as cliModule from './cli'
+import { compressCommand } from './commands/compress'
 
 // Mock dependencies
-vi.mock('./commands/compress.js')
+vi.mock('./commands/compress')
 
 // Mock key commands that don't exist yet
-vi.mock('./commands/key.js', () => ({
+vi.mock('./commands/key', () => ({
   keyAdd: vi.fn(),
   keyRemove: vi.fn(),
   keyList: vi.fn(),

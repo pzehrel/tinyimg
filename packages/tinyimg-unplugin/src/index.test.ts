@@ -41,7 +41,7 @@ describe('tinyimg-unplugin', () => {
 
   it('skips non-image files', async () => {
     const plugin = tinyimgUnplugin.raw()
-    const result = await plugin.transform('console.log("hello")', '/path/to/file.js')
+    const result = await plugin.transform('console.log("hello")', '/path/to/file')
 
     expect(result).toBeNull()
   })

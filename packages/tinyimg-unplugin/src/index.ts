@@ -1,11 +1,11 @@
-import type { TinyimgUnpluginOptions } from './options.js'
+import type { TinyimgUnpluginOptions } from './options'
 import { Buffer } from 'node:buffer'
 import process from 'node:process'
 import { compressImage, loadKeys } from 'tinyimg-core'
 import { createUnplugin } from 'unplugin'
-import { shouldProcessImage } from './filter.js'
-import { createLogger } from './logger.js'
-import { normalizeOptions } from './options.js'
+import { shouldProcessImage } from './filter'
+import { createLogger } from './logger'
+import { normalizeOptions } from './options'
 
 // Regex for matching image file extensions
 const IMAGE_REGEX = /\.(png|jpg|jpeg|gif|webp|svg)$/i

@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 import process from 'node:process'
 import { AllCompressionFailedError, AllKeysExhaustedError, compressImages, NoValidKeysError } from 'tinyimg-core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { compressCommand } from './compress.js'
+import { compressCommand } from './compress'
 
 // Mock dependencies
 vi.mock('tinyimg-core')
