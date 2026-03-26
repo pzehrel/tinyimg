@@ -1,3 +1,5 @@
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 # tinyimg-core
 
 Core library for TinyPNG image compression with intelligent caching and multi-API key management.

@@ -1,3 +1,5 @@
+[English](README.md) | 简体中文
+
 # tinyimg-core
 
 基于 TinyPNG 的图片压缩核心库，支持智能缓存和多 API 密钥管理。

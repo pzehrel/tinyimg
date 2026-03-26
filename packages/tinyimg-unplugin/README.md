@@ -1,3 +1,5 @@
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 # tinyimg-unplugin
 
 基于 TinyPNG 的图片压缩 unplugin，支持 Vite、Webpack、Rolldown 等构建工具。

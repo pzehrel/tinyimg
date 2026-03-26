@@ -1,3 +1,5 @@
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 # tinyimg-cli
 
 Smart image compression CLI tool based on TinyPNG with multi-API key management, intelligent caching, and concurrent compression.

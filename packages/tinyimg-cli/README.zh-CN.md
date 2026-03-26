@@ -1,3 +1,5 @@
+[English](README.md) | 简体中文
+
 # tinyimg-cli
 
 基于 TinyPNG 的智能图片压缩 CLI 工具，支持多 API Key 管理、智能缓存和并发压缩。
