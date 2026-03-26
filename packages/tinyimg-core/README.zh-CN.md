@@ -341,7 +341,7 @@ const compressed = await compressImage(imageBuffer, {
 })
 ```
 
-**签名：**
+**签名**
 
 ```typescript
 async function compressImage(
@@ -350,14 +350,14 @@ async function compressImage(
 ): Promise<Buffer>
 ```
 
-**参数：**
+**参数**
 
 - `buffer: Buffer` - 原始图片数据，Node.js Buffer 格式
 - `options?: CompressServiceOptions` - 压缩选项（见下文）
 
-**返回：** `Promise<Buffer>` - 压缩后的图片数据
+**返回值** `Promise<Buffer>` - 压缩后的图片数据
 
-**行为：**
+**行为**
 
 - 首先检查缓存（项目缓存，然后全局缓存）
 - 使用 API 密钥压缩，自动轮换
@@ -380,7 +380,7 @@ const compressed = await compressImages(images, {
 })
 ```
 
-**签名：**
+**签名**
 
 ```typescript
 async function compressImages(
@@ -389,14 +389,14 @@ async function compressImages(
 ): Promise<Buffer[]>
 ```
 
-**参数：**
+**参数**
 
 - `buffers: Buffer[]` - 要压缩的图片缓冲区数组
 - `options?: CompressServiceOptions` - 压缩选项
 
-**返回：** `Promise<Buffer[]>` - 压缩后的图片缓冲区数组（顺序与输入相同）
+**返回值** `Promise<Buffer[]>` - 压缩后的图片缓冲区数组（顺序与输入相同）
 
-**行为：**
+**行为**
 
 - 使用可配置的并发限制处理图片
 - 每张图片经过与 `compressImage` 相同的流程
@@ -420,20 +420,20 @@ const pool = new KeyPool('round-robin')
 const pool = new KeyPool('priority')
 ```
 
-**构造函数：**
+**构造函数**
 
 ```typescript
 new KeyPool(strategy?: KeyStrategy)
 ```
 
-**参数：**
+**参数**
 
 - `strategy: KeyStrategy` - 密钥选择策略：`'random'` | `'round-robin'` | `'priority'`
   - `random`（默认）：随机选择可用密钥
   - `round-robin`：按顺序循环使用密钥
   - `priority`：优先使用 API 密钥，后备到 web 压缩器
 
-**方法：**
+**方法**
 
 - `async selectKey(): Promise<string>` - 选择并返回一个可用的 API 密钥
 - `decrementQuota(): void` - 将当前密钥的额度标记为已使用
