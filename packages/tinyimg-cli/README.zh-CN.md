@@ -214,7 +214,7 @@ TinyImg 通过以下方式优化额度使用：
 | 错误类型                    | 说明                   | 解决方案                              |
 | --------------------------- | ---------------------- | ------------------------------------- |
 | `NoValidKeysError`          | 没有配置有效的 API Key | 运行 `tinyimg key add <key>` 添加 key |
-| `AllKeysExhaustedError`     | 所有 key 额度已用完    | 添加新 key                              |
+| `AllKeysExhaustedError`     | 所有 key 额度已用完    | 添加新 key                            |
 | `AllCompressionFailedError` | 所有压缩方式失败       | 检查网络连接和 API 状态               |
 
 ## 相关包
