@@ -1,0 +1,60 @@
+name: Install Test
+
+on:
+  pull_request:
+    paths:
+      - 'packages/**/package.json'
+      - '.changeset/**'
+      - '.github/workflows/install-test.yml'
+  workflow_dispatch:
+  release:
+    types: [published]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  install-test:
+    name: Test clean installation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Test install in clean directory
+        run: |
+          cd /tmp
+          rm -rf tinyimg-install-test
+          mkdir tinyimg-install-test
+          cd tinyimg-install-test
+
+          # Initialize test project
+          pnpm init
+
+          # Install all three packages from npm
+          pnpm add @pz4l/tinyimg-core@latest
+          pnpm add @pz4l/tinyimg-cli@latest
+          pnpm add @pz4l/tinyimg-unplugin@latest
+
+          # Verify packages are installed
+          pnpm list @pz4l/tinyimg-core @pz4l/tinyimg-cli @pz4l/tinyimg-unplugin
+
+          # Verify no workspace protocol in installed packages
+          if grep -r "workspace:*" node_modules/@pz4l/; then
+            echo "ERROR: Found workspace:* protocol in published packages!"
+            exit 1
+          fi
+
+          echo "SUCCESS: All packages installed without workspace protocol errors"
