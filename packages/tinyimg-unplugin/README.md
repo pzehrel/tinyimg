@@ -16,6 +16,24 @@
 npm install @pz4l/tinyimg-unplugin -D
 ```
 
+### Testing Installation
+
+To verify the package installs correctly without workspace dependency errors:
+
+```bash
+# Test in a clean directory outside the monorepo
+cd /tmp
+mkdir test-tinyimg && cd test-tinyimg
+pnpm init
+pnpm add @pz4l/tinyimg-unplugin@latest
+
+# Verify installation
+pnpm list @pz4l/tinyimg-unplugin @pz4l/tinyimg-core
+
+# Check that dependencies are resolved (no workspace:* protocol)
+cat node_modules/@pz4l/tinyimg-unplugin/package.json | grep dependencies
+```
+
 ## Environment Setup
 
 ### TINYPNG_KEYS 环境变量
