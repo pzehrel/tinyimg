@@ -61,19 +61,7 @@ export TINYPNG_KEYS=key1,key2,key3
 TINYPNG_KEYS=your_api_key_here
 ```
 
-**Webpack 项目**（`webpack.config.js`）：
-
-```javascript
-const webpack = require('webpack')
-
-module.exports = {
-  plugins: [
-    new webpack.DefinePlugin({
-      'process.env.TINYPNG_KEYS': JSON.stringify('your_api_key_here')
-    })
-  ]
-}
-```
+Vite 会自动加载 `.env` 文件，无需额外配置。
 
 ## Usage
 
