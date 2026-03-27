@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    projects: ['./packages/*'],
+    projects: ['./packages/tinyimg-cli', './packages/tinyimg-core', './packages/tinyimg-unplugin'],
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
