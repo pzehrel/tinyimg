@@ -55,13 +55,67 @@ export TINYPNG_KEYS=key1,key2,key3
 
 ### 在项目中配置环境变量
 
-**Vite 项目**（`.env` 文件）：
+#### Vite 项目
+
+创建 `.env` 文件：
 
 ```bash
 TINYPNG_KEYS=your_api_key_here
 ```
 
 Vite 会自动加载 `.env` 文件，无需额外配置。
+
+#### Webpack 项目
+
+创建 `.env` 文件：
+
+```bash
+TINYPNG_KEYS=your_api_key_here
+```
+
+安装 dotenv-webpack 插件：
+
+```bash
+npm install dotenv-webpack -D
+```
+
+在 `webpack.config.js` 中配置：
+
+```javascript
+const Dotenv = require('dotenv-webpack')
+
+module.exports = {
+  plugins: [
+    new Dotenv()
+  ]
+}
+```
+
+#### Rolldown 项目
+
+创建 `.env` 文件：
+
+```bash
+TINYPNG_KEYS=your_api_key_here
+```
+
+安装 @rollup/plugin-dotsenv 插件：
+
+```bash
+npm install @rollup/plugin-dotsenv -D
+```
+
+在 `rolldown.config.js` 中配置：
+
+```javascript
+import dotsenv from '@rollup/plugin-dotsenv'
+
+export default {
+  plugins: [
+    dotsenv()
+  ]
+}
+```
 
 ## Usage
 
