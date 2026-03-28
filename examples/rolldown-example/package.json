@@ -1,0 +1,14 @@
+{
+  "name": "rolldown-example",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "build": "rolldown"
+  },
+  "dependencies": {
+    "@pz4l/tinyimg-unplugin": "latest",
+    "rolldown": "^1.0.0-rc.12",
+    "@rollup/plugin-replace": "^6.0.0",
+    "dotenv": "^17.3.0"
+  }
+}
