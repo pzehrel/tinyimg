@@ -3,7 +3,7 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [
-    ["@pz4l/tinyimg-core", "@pz4l/tinyimg-cli", "@pz4l/tinyimg-unplugin"]
+    ["@pz4l/tinyimg"]
   ],
   "linked": [],
   "access": "public",

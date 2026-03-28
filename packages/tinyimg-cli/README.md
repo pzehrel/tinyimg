@@ -40,6 +40,24 @@ pnpm add -D tinyimg-cli
 yarn add -D tinyimg-cli
 ```
 
+### Testing Installation
+
+To verify the package installs correctly without workspace dependency errors:
+
+```bash
+# Test in a clean directory outside the monorepo
+cd /tmp
+mkdir test-tinyimg && cd test-tinyimg
+pnpm init
+pnpm add @pz4l/tinyimg-cli@latest
+
+# Verify installation
+pnpm list @pz4l/tinyimg-cli @pz4l/tinyimg-core
+
+# Check that dependencies are resolved (no workspace:* protocol)
+cat node_modules/@pz4l/tinyimg-cli/package.json | grep dependencies
+```
+
 ## Quick Start
 
 ```bash

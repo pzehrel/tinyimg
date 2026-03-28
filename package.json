@@ -1,5 +1,5 @@
 {
-  "name": "tinyimg-monorepo",
+  "name": "@pz4l/tinyimg",
   "type": "module",
   "version": "0.0.0",
   "private": true,
@@ -22,6 +22,11 @@
     "version": "changeset version",
     "release": "pnpm build && changeset publish",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pz4l/tinyimg-cli": "workspace:*",
+    "@pz4l/tinyimg-core": "workspace:*",
+    "@pz4l/tinyimg-unplugin": "workspace:*"
   },
   "devDependencies": {
     "@antfu/eslint-config": "7.7.3",

@@ -17,6 +17,21 @@ Core library for TinyPNG image compression with intelligent caching and multi-AP
 npm install @pz4l/tinyimg-core
 ```
 
+### Testing Installation
+
+To verify the package installs correctly:
+
+```bash
+# Test in a clean directory
+cd /tmp
+mkdir test-tinyimg && cd test-tinyimg
+pnpm init
+pnpm add @pz4l/tinyimg-core@latest
+
+# Verify installation
+pnpm list @pz4l/tinyimg-core
+```
+
 ## Cache System
 
 ### Overview
