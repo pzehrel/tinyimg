@@ -7,11 +7,6 @@
   "description": "TinyPNG image compression tool with multi-architecture support",
   "author": "pzehrel",
   "license": "MIT",
-  "dependencies": {
-    "@pz4l/tinyimg-core": "workspace:*",
-    "@pz4l/tinyimg-cli": "workspace:*",
-    "@pz4l/tinyimg-unplugin": "workspace:*"
-  },
   "engines": {
     "node": ">=18"
   },
@@ -27,6 +22,11 @@
     "version": "changeset version",
     "release": "pnpm build && changeset publish",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pz4l/tinyimg-cli": "workspace:*",
+    "@pz4l/tinyimg-core": "workspace:*",
+    "@pz4l/tinyimg-unplugin": "workspace:*"
   },
   "devDependencies": {
     "@antfu/eslint-config": "7.7.3",

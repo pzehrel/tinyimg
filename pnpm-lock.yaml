@@ -7,6 +7,16 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@pz4l/tinyimg-cli':
+        specifier: workspace:*
+        version: link:packages/tinyimg-cli
+      '@pz4l/tinyimg-core':
+        specifier: workspace:*
+        version: link:packages/tinyimg-core
+      '@pz4l/tinyimg-unplugin':
+        specifier: workspace:*
+        version: link:packages/tinyimg-unplugin
     devDependencies:
       '@antfu/eslint-config':
         specifier: 7.7.3
