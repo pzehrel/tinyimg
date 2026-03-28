@@ -6,7 +6,7 @@ import tinyimgUnplugin from './index'
 
 // Mock the core modules
 vi.mock('@pz4l/tinyimg-core', async () => {
-  const actual = await vi.importActual('tinyimg-core')
+  const actual = await vi.importActual('@pz4l/tinyimg-core')
   return {
     ...actual,
     compressImage: vi.fn(),
