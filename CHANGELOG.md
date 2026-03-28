@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.0.1-beta.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @pz4l/tinyimg-core@0.1.0-beta.2
+  - @pz4l/tinyimg-cli@0.1.0-beta.2
+  - @pz4l/tinyimg-unplugin@0.1.0-beta.2
+
 All notable changes to this project will be documented in this file.
 
 This project uses [Changesets](https://github.com/changesets/changesets) for version management. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -7,6 +16,7 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 ## [Unreleased]
 
 ### Added
+
 - Initial project structure with pnpm workspace monorepo setup
 - **@pz4l/tinyimg-core**: Core library for TinyPNG image compression
   - Multi-API key management with intelligent rotation
@@ -27,18 +37,23 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
   - Build statistics logging
 
 ### Changed
+
 - N/A
 
 ### Deprecated
+
 - N/A
 
 ### Removed
+
 - N/A
 
 ### Fixed
+
 - N/A
 
 ### Security
+
 - N/A
 
 ## [0.0.0] - 2026-03-25
@@ -56,11 +71,13 @@ This project uses [Changesets](https://github.com/changesets/changesets) to mana
 When making changes that affect the public API or fix bugs:
 
 1. Run the changeset command:
+
    ```bash
    pnpm changeset
    ```
 
 2. Follow the interactive prompts to:
+
    - Select the packages affected by your changes
    - Choose the semver bump type (major, minor, patch)
    - Write a summary of the changes
@@ -78,6 +95,7 @@ All three packages (`@pz4l/tinyimg-core`, `@pz4l/tinyimg-cli`, `@pz4l/tinyimg-un
 To release a new version:
 
 1. Run the version command to update package versions and changelog:
+
    ```bash
    pnpm version
    ```
