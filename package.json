@@ -1,5 +1,5 @@
 {
-  "name": "tinyimg-monorepo",
+  "name": "@pz4l/tinyimg",
   "type": "module",
   "version": "0.0.0",
   "private": true,
@@ -7,6 +7,11 @@
   "description": "TinyPNG image compression tool with multi-architecture support",
   "author": "pzehrel",
   "license": "MIT",
+  "dependencies": {
+    "@pz4l/tinyimg-core": "workspace:*",
+    "@pz4l/tinyimg-cli": "workspace:*",
+    "@pz4l/tinyimg-unplugin": "workspace:*"
+  },
   "engines": {
     "node": ">=18"
   },
