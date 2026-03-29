@@ -8,6 +8,7 @@
     "@pz4l/tinyimg": "0.0.0"
   },
   "changesets": [
+    "beta-2-release",
     "fix-vite-test-fixture"
   ]
 }

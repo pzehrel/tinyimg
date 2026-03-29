@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.0.1-beta.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @pz4l/tinyimg-core@0.1.1-beta.2
+  - @pz4l/tinyimg-cli@0.1.1-beta.2
+  - @pz4l/tinyimg-unplugin@0.1.1-beta.2
+
 ## 0.0.1-beta.0
 
 ### Patch Changes
