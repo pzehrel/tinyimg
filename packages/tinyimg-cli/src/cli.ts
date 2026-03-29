@@ -4,6 +4,7 @@ import cac from 'cac'
 import kleur from 'kleur'
 import { compressCommand } from './commands/compress'
 import { keyAdd, keyList, keyRemove } from './commands/key'
+import { listCommand } from './commands/list'
 
 const cli = cac('tinyimg')
 
@@ -60,6 +61,31 @@ cli
   .action(async () => {
     try {
       await keyList()
+    }
+    catch (error: any) {
+      console.error(kleur.red(`Error: ${error.message}`))
+      process.exit(1)
+    }
+  })
+
+// List compressible images
+cli
+  .command('list [...inputs]', 'List compressible images')
+  .action(async (inputs: string[], options: any) => {
+    try {
+      await listCommand(inputs, options)
+    }
+    catch (error: any) {
+      console.error(kleur.red(`Error: ${error.message}`))
+      process.exit(1)
+    }
+  })
+
+cli
+  .command('ls [...inputs]', 'Alias for list command')
+  .action(async (inputs: string[], options: any) => {
+    try {
+      await listCommand(inputs, options)
     }
     catch (error: any) {
       console.error(kleur.red(`Error: ${error.message}`))
