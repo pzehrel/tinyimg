@@ -1,0 +1,6 @@
+{
+  "*.{js,ts}": [
+    "eslint --fix",
+    "tsc --noEmit"
+  ]
+}
