@@ -37,9 +37,20 @@ describe('files utilities', () => {
       expect(isImageFile('test.Jpg')).toBe(true)
     })
 
+    it('returns true for .webp files (case insensitive)', () => {
+      expect(isImageFile('test.webp')).toBe(true)
+      expect(isImageFile('test.WEBP')).toBe(true)
+      expect(isImageFile('test.Webp')).toBe(true)
+    })
+
+    it('returns true for .avif files (case insensitive)', () => {
+      expect(isImageFile('test.avif')).toBe(true)
+      expect(isImageFile('test.AVIF')).toBe(true)
+      expect(isImageFile('test.Avif')).toBe(true)
+    })
+
     it('returns false for other extensions', () => {
       expect(isImageFile('test.txt')).toBe(false)
-      expect(isImageFile('test.webp')).toBe(false)
       expect(isImageFile('test.gif')).toBe(false)
       expect(isImageFile('test.pdf')).toBe(false)
     })

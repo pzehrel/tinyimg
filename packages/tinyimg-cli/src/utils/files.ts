@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import fastGlob from 'fast-glob'
 
-const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg'] as const
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.avif'] as const
 
 // Regex for normalizing path separators in glob patterns
 const BACKSLASH_REGEX = /\\/g
