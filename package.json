@@ -21,7 +21,8 @@
     "changeset": "changeset",
     "version": "changeset version",
     "release": "pnpm build && changeset publish",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@antfu/eslint-config": "7.7.3",
@@ -32,6 +33,7 @@
     "@vitest/coverage-v8": "^4.1.0",
     "@vitest/ui": "^4.1.0",
     "eslint": "9.x",
+    "husky": "^9.1.7",
     "tsdown": "0.21.4",
     "typescript": "5.9.3",
     "vitest": "4.1.0"
