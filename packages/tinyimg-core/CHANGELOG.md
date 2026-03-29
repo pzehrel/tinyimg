@@ -1,5 +1,14 @@
 # @pz4l/tinyimg-core
 
+## 0.1.0
+
+### Patch Changes
+
+- Fix test fixtures and package references
+
+  - Add missing test fixture image symlinks for vite and webpack
+  - Fix package name in test mock (@pz4l/tinyimg-core)
+
 ## 0.1.0-beta.1
 
 ### Patch Changes
