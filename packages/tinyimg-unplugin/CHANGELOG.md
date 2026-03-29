@@ -1,5 +1,15 @@
 # @pz4l/tinyimg-unplugin
 
+## 0.1.0-beta.1
+
+### Patch Changes
+
+- 发布 0.1.1-beta.2 测试版本
+- Fix Vite integration test fixture and test imports
+- Updated dependencies
+- Updated dependencies
+  - @pz4l/tinyimg-core@0.1.0-beta.1
+
 ## 0.1.0-beta.0
 
 ### Minor Changes
