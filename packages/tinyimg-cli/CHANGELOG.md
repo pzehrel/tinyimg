@@ -1,5 +1,23 @@
 # @pz4l/tinyimg-cli
 
+## 0.4.0
+
+### Minor Changes
+
+- v0.3.1: CLI bug fixes and environment variable support
+
+  - Fix `tinyimg key add` argument parsing error
+  - Auto-fallback to free web interface when no API keys configured
+  - Show relative paths in `list` command output
+  - Add `--convertible` flag to filter convertible PNG files
+  - Support 4 environment variable variants (TINYIMG_KEY, TINYIMG_KEYS, TINYPNG_KEY, TINYPNG_KEYS)
+  - Add full test suite to pre-commit hook
+
+### Patch Changes
+
+- Updated dependencies
+  - @pz4l/tinyimg-core@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes
