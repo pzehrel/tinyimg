@@ -305,12 +305,9 @@ describe('v0.3.0 Milestone Requirements Verification', () => {
   })
 
   describe('iNFRA-03: Publish Prevention', () => {
-    it('.npmrc exists and points to localhost', () => {
+    it('.npmrc does not exist (publish protection via prepublishOnly)', () => {
       const npmrcPath = join(projectRoot, '.npmrc')
-      expect(existsSync(npmrcPath)).toBe(true)
-
-      const content = readFileSync(npmrcPath, 'utf-8')
-      expect(content).toContain('localhost:4873')
+      expect(existsSync(npmrcPath)).toBe(false)
     })
 
     it('prepublishOnly script exists in package.json', () => {
