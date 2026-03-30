@@ -23,7 +23,7 @@ const filesUtilsPath = join(projectRoot, 'packages/tinyimg-cli/src/utils/files.t
  */
 
 describe('v0.3.0 Milestone Requirements Verification', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     // Ensure temp directory exists for cross-package tests
     const testTmpDir = join(tmpdir(), 'tinyimg-milestone-test')
     if (!existsSync(testTmpDir)) {
@@ -31,8 +31,11 @@ describe('v0.3.0 Milestone Requirements Verification', () => {
     }
 
     // Ensure fixture directory exists for detect tests
-    // This is needed because other tests might have cleaned it up
+    // and create all fixtures fresh to avoid cleanup conflicts
     getFixtureDir()
+    await createPngWithAlpha()
+    await createOpaquePngNoAlpha()
+    await createOpaquePngWithAlphaChannel()
   })
 
   afterAll(() => {
