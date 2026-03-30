@@ -16,6 +16,7 @@ interface CompressOptions {
   parallel?: string
   cache?: boolean
   convert?: boolean
+  deleteOriginal?: boolean
 }
 
 /**
