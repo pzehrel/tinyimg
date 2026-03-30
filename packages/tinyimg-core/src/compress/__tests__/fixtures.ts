@@ -305,14 +305,14 @@ export function resetHttpsMocks(): void {
 export function createMockClientRequest(): any {
   const handlers: Map<string, Array<(...args: any[]) => void>> = new Map()
 
-  return {
+  const mockReq = {
     // Event methods (required for error handling)
     on: vi.fn((event: string, fn: (...args: any[]) => void) => {
       if (!handlers.has(event)) {
         handlers.set(event, [])
       }
       handlers.get(event)!.push(fn)
-      return this
+      return mockReq as any
     }),
     emit: vi.fn((event: string, ...args: any[]) => {
       const eventHandlers = handlers.get(event)
@@ -337,4 +337,6 @@ export function createMockClientRequest(): any {
     path: '/backend/opt/shrink',
     headers: {},
   }
+
+  return mockReq
 }

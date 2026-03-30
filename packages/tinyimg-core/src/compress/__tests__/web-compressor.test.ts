@@ -1,3 +1,4 @@
+import type { Buffer } from 'node:buffer'
 import https from 'node:https'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TinyPngWebCompressor } from '../web-compressor'
@@ -6,7 +7,7 @@ import { createMockClientRequest, createMockPngBuffer, resetHttpsMocks, SMALL_PN
 describe('tinyPngWebCompressor', () => {
   let compressor: TinyPngWebCompressor
   let requestSpy: ReturnType<typeof vi.spyOn>
-  let getSpy: ReturnType<typeof vi.spyOn>
+  let _getSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
     // Reset all HTTPS mocks before each test
@@ -15,7 +16,7 @@ describe('tinyPngWebCompressor', () => {
 
     // Spy on https methods
     requestSpy = vi.spyOn(https, 'request')
-    getSpy = vi.spyOn(https, 'get')
+    _getSpy = vi.spyOn(https, 'get')
   })
 
   afterEach(() => {
