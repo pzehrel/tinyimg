@@ -9,6 +9,9 @@ vi.mock('../utils/files', () => ({
   expandInputs: vi.fn(),
 }))
 vi.mock('node:fs/promises')
+vi.mock('@pz4l/tinyimg-core', () => ({
+  detectAlphas: vi.fn(),
+}))
 
 describe('list command', () => {
   let consoleErrorSpy: any
@@ -180,6 +183,144 @@ describe('list command', () => {
       // Alphabetical order: src/b.png < src/images/a.png < z.png
       expect(srcBIndex).toBeLessThan(srcImagesIndex)
       expect(srcImagesIndex).toBeLessThan(zIndex)
+
+      cwdSpy.mockRestore()
+    })
+  })
+
+  describe('--convertible flag', () => {
+    it('shows all files when --convertible is not set', async () => {
+      const { expandInputs } = await import('../utils/files')
+      const { detectAlphas } = await import('@pz4l/tinyimg-core')
+      const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue('/project')
+
+      vi.mocked(expandInputs).mockResolvedValue([
+        '/project/image1.png',
+        '/project/image2.jpg',
+      ])
+      vi.mocked(fs.stat)
+        .mockResolvedValueOnce({ size: 1024 } as any)
+        .mockResolvedValueOnce({ size: 2048 } as any)
+      vi.mocked(detectAlphas).mockResolvedValue(new Map())
+
+      await listCommand(['./src'], {})
+
+      // Should show both PNG and JPG files
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('image1.png'))
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('image2.jpg'))
+      expect(detectAlphas).not.toHaveBeenCalled()
+
+      cwdSpy.mockRestore()
+    })
+
+    it('filters to only non-alpha PNGs when --convertible is set', async () => {
+      const { expandInputs } = await import('../utils/files')
+      const { detectAlphas } = await import('@pz4l/tinyimg-core')
+      const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue('/project')
+
+      vi.mocked(expandInputs).mockResolvedValue([
+        '/project/with-alpha.png',
+        '/project/without-alpha.png',
+      ])
+      vi.mocked(fs.stat)
+        .mockResolvedValueOnce({ size: 1024 } as any)
+        .mockResolvedValueOnce({ size: 2048 } as any)
+      vi.mocked(detectAlphas).mockResolvedValue(
+        new Map([
+          ['/project/with-alpha.png', true], // has alpha
+          ['/project/without-alpha.png', false], // no alpha
+        ]),
+      )
+
+      await listCommand(['./src'], { convertible: true })
+
+      // Should only show PNG without alpha
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('without-alpha.png'))
+      expect(consoleLogSpy).not.toHaveBeenCalledWith(expect.stringContaining('with-alpha.png'))
+      expect(detectAlphas).toHaveBeenCalledWith(
+        ['/project/with-alpha.png', '/project/without-alpha.png'],
+        { concurrency: 8 },
+      )
+
+      cwdSpy.mockRestore()
+    })
+
+    it('excludes non-PNG files when --convertible is set', async () => {
+      const { expandInputs } = await import('../utils/files')
+      const { detectAlphas } = await import('@pz4l/tinyimg-core')
+      const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue('/project')
+
+      vi.mocked(expandInputs).mockResolvedValue([
+        '/project/image.png',
+        '/project/image.jpg',
+        '/project/image.jpeg',
+      ])
+      vi.mocked(fs.stat)
+        .mockResolvedValueOnce({ size: 1024 } as any)
+        .mockResolvedValueOnce({ size: 2048 } as any)
+        .mockResolvedValueOnce({ size: 512 } as any)
+      vi.mocked(detectAlphas).mockResolvedValue(
+        new Map([['/project/image.png', false]]),
+      )
+
+      await listCommand(['./src'], { convertible: true })
+
+      // Should only show PNG, not JPG/JPEG
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('image.png'))
+      expect(consoleLogSpy).not.toHaveBeenCalledWith(expect.stringContaining('image.jpg'))
+      expect(consoleLogSpy).not.toHaveBeenCalledWith(expect.stringContaining('image.jpeg'))
+      // detectAlphas should only be called for PNG files
+      expect(detectAlphas).toHaveBeenCalledWith(
+        ['/project/image.png'],
+        { concurrency: 8 },
+      )
+
+      cwdSpy.mockRestore()
+    })
+
+    it('shows message when no convertible PNGs found', async () => {
+      const { expandInputs } = await import('../utils/files')
+      const { detectAlphas } = await import('@pz4l/tinyimg-core')
+      const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue('/project')
+
+      vi.mocked(expandInputs).mockResolvedValue([
+        '/project/with-alpha1.png',
+        '/project/with-alpha2.png',
+      ])
+      vi.mocked(fs.stat)
+        .mockResolvedValueOnce({ size: 1024 } as any)
+        .mockResolvedValueOnce({ size: 2048 } as any)
+      vi.mocked(detectAlphas).mockResolvedValue(
+        new Map([
+          ['/project/with-alpha1.png', true],
+          ['/project/with-alpha2.png', true],
+        ]),
+      )
+
+      await listCommand(['./src'], { convertible: true })
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('No convertible PNG files found'))
+
+      cwdSpy.mockRestore()
+    })
+
+    it('shows message when no PNG files found with --convertible', async () => {
+      const { expandInputs } = await import('../utils/files')
+      const { detectAlphas } = await import('@pz4l/tinyimg-core')
+      const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue('/project')
+
+      vi.mocked(expandInputs).mockResolvedValue([
+        '/project/image1.jpg',
+        '/project/image2.jpeg',
+      ])
+      vi.mocked(fs.stat)
+        .mockResolvedValueOnce({ size: 1024 } as any)
+        .mockResolvedValueOnce({ size: 2048 } as any)
+      vi.mocked(detectAlphas).mockResolvedValue(new Map())
+
+      await listCommand(['./src'], { convertible: true })
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('No PNG files found'))
 
       cwdSpy.mockRestore()
     })
