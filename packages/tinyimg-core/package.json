@@ -49,7 +49,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "form-data": "4.0.5",
     "p-limit": "7.3.0",
     "sharp": "^0.34.5",
     "tinify": "1.8.2"

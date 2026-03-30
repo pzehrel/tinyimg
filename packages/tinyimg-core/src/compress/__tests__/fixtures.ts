@@ -278,15 +278,18 @@ export function resetHttpsMocks(): void {
 }
 
 /**
- * Create a mock HTTPS ClientRequest object with all required stream methods.
+ * Create a mock HTTPS ClientRequest object with methods required for raw body uploads.
  *
- * This mock includes all methods required by FormData.pipe() and Node.js streams:
- * - removeListener, on, emit, once (event handling)
- * - write, end, destroy (stream control)
- * - eventNames, setMaxListeners, listenerCount (EventEmitter API)
+ * This mock includes only methods required by raw buffer uploads (req.write() + req.end()):
+ * - write, end (raw body upload)
+ * - on, emit (event handling for errors)
+ * - writable, aborted, method, path, headers (property checks)
  *
  * The emit() method is connected to the on() spy, so when you emit an event,
  * it will call any registered handlers.
+ *
+ * FormData-specific methods removed (no longer needed for raw body uploads):
+ * - removeListener, once, eventNames, setMaxListeners, listenerCount, destroy
  *
  * @returns Mock ClientRequest object
  *
@@ -295,29 +298,21 @@ export function resetHttpsMocks(): void {
  * const mockReq = createMockClientRequest()
  * mockReq.on('error', handler)
  * mockReq.emit('error', error) // Will call handler
+ * mockReq.write(buffer) // Raw body upload
+ * mockReq.end() // Complete request
  * ```
  */
 export function createMockClientRequest(): any {
   const handlers: Map<string, Array<(...args: any[]) => void>> = new Map()
 
   const mockReq = {
-    // Event methods (required by FormData.pipe())
-    removeListener: vi.fn((event: string, fn: (...args: any[]) => void) => {
-      const eventHandlers = handlers.get(event)
-      if (eventHandlers) {
-        const index = eventHandlers.indexOf(fn)
-        if (index > -1) {
-          eventHandlers.splice(index, 1)
-        }
-      }
-      return mockReq
-    }),
+    // Event methods (required for error handling)
     on: vi.fn((event: string, fn: (...args: any[]) => void) => {
       if (!handlers.has(event)) {
         handlers.set(event, [])
       }
       handlers.get(event)!.push(fn)
-      return mockReq
+      return mockReq as any
     }),
     emit: vi.fn((event: string, ...args: any[]) => {
       const eventHandlers = handlers.get(event)
@@ -330,31 +325,12 @@ export function createMockClientRequest(): any {
       }
       return true
     }),
-    once: vi.fn((event: string, fn: (...args: any[]) => void) => {
-      const onceWrapper = (...args: any[]) => {
-        mockReq.removeListener(event, onceWrapper)
-        fn(...args)
-      }
-      mockReq.on(event, onceWrapper)
-      return mockReq
-    }),
-    // EventEmitter methods required by streams
-    eventNames: vi.fn(() => {
-      return Array.from(handlers.keys())
-    }),
-    setMaxListeners: vi.fn((_n: number) => {
-      // No-op for mock
-    }),
-    listenerCount: vi.fn((event: string) => {
-      return handlers.get(event)?.length || 0
-    }),
 
-    // Stream methods (required by FormData.pipe())
+    // Stream methods (required for raw body upload)
     write: vi.fn(),
     end: vi.fn(),
-    destroy: vi.fn(),
 
-    // Additional ClientRequest properties
+    // ClientRequest properties
     writable: true,
     aborted: false,
     method: 'POST',
