@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import sharp from 'sharp'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { cleanupFixtures, createJpgFile, createLargePng, createOpaquePngNoAlpha, createOpaquePngWithAlphaChannel, createPngWithAlpha } from '../detect/__tests__/fixtures'
+import { cleanupFixtures, createLargePng, createOpaquePngNoAlpha, createOpaquePngWithAlphaChannel, createPngWithAlpha, getFixtureDir } from '../detect/__tests__/fixtures'
 import { detectAlpha, detectAlphas } from '../detect/service'
 
 // Find the project root by looking for package.json
@@ -29,6 +29,10 @@ describe('v0.3.0 Milestone Requirements Verification', () => {
     if (!existsSync(testTmpDir)) {
       mkdirSync(testTmpDir, { recursive: true })
     }
+
+    // Ensure fixture directory exists for detect tests
+    // This is needed because other tests might have cleaned it up
+    getFixtureDir()
   })
 
   afterAll(() => {
@@ -64,15 +68,26 @@ describe('v0.3.0 Milestone Requirements Verification', () => {
     })
 
     it('detectAlphas handles batch with mixed transparency', async () => {
-      const transparentPath = await createPngWithAlpha()
-      const opaquePath = await createOpaquePngNoAlpha()
-      const jpgPath = await createJpgFile()
+      // Create fixtures in a dedicated directory to avoid conflicts
+      const testDir = join(tmpdir(), 'tinyimg-milestone-batch-test')
+      mkdirSync(testDir, { recursive: true })
+
+      const transparentPath = join(testDir, 'transparent.png')
+      const opaquePath = join(testDir, 'opaque.png')
+      const jpgPath = join(testDir, 'test.jpg')
+
+      await sharp({ create: { width: 10, height: 10, channels: 4, background: { r: 255, g: 0, b: 0, alpha: 0.5 } } }).png().toFile(transparentPath)
+      await sharp({ create: { width: 10, height: 10, channels: 3, background: { r: 0, g: 0, b: 255 } } }).png().toFile(opaquePath)
+      await sharp({ create: { width: 10, height: 10, channels: 3, background: { r: 128, g: 128, b: 128 } } }).jpeg().toFile(jpgPath)
 
       const results = await detectAlphas([transparentPath, opaquePath, jpgPath])
 
       expect(results.get(transparentPath)).toBe(true)
       expect(results.get(opaquePath)).toBe(false)
       expect(results.get(jpgPath)).toBe(false)
+
+      // Clean up
+      rmSync(testDir, { recursive: true, force: true })
     })
   })
 
