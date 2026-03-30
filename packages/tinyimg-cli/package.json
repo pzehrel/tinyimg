@@ -1,7 +1,7 @@
 {
   "name": "@pz4l/tinyimg-cli",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "CLI tool for TinyPNG image compression with batch processing and interactive key management",
   "author": "pzehrel",
   "license": "MIT",
