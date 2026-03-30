@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises'
 import process from 'node:process'
+import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { listCommand } from './list'
 
@@ -105,5 +106,77 @@ describe('list command', () => {
     vi.mocked(fs.stat).mockRejectedValue(new Error('Stat failed'))
 
     await expect(listCommand(['./src'], {})).rejects.toThrow('Stat failed')
+  })
+
+  describe('relative path display', () => {
+    it('displays relative path for files in subdirectories', async () => {
+      const { expandInputs } = await import('../utils/files')
+      const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue('/project')
+
+      vi.mocked(expandInputs).mockResolvedValue(['/project/src/images/logo.png'])
+      vi.mocked(fs.stat).mockResolvedValue({ size: 1024 } as any)
+
+      await listCommand(['./src'], {})
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('src/images/logo.png'))
+      expect(consoleLogSpy).not.toHaveBeenCalledWith(expect.stringContaining('logo.png -'))
+
+      cwdSpy.mockRestore()
+    })
+
+    it('displays just filename for files in root directory', async () => {
+      const { expandInputs } = await import('../utils/files')
+      const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue('/project')
+
+      vi.mocked(expandInputs).mockResolvedValue(['/project/image.png'])
+      vi.mocked(fs.stat).mockResolvedValue({ size: 2048 } as any)
+
+      await listCommand(['.'], {})
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('image.png'))
+
+      cwdSpy.mockRestore()
+    })
+
+    it('displays traversal paths for files outside cwd', async () => {
+      const { expandInputs } = await import('../utils/files')
+      const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue('/project')
+
+      vi.mocked(expandInputs).mockResolvedValue(['/other/dir/image.png'])
+      vi.mocked(fs.stat).mockResolvedValue({ size: 512 } as any)
+
+      await listCommand(['.'], {})
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('../other/dir/image.png'))
+
+      cwdSpy.mockRestore()
+    })
+
+    it('sorts files by relative path alphabetically', async () => {
+      const { expandInputs } = await import('../utils/files')
+      const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue('/project')
+
+      vi.mocked(expandInputs).mockResolvedValue([
+        '/project/z.png',
+        '/project/src/images/a.png',
+        '/project/src/b.png',
+      ])
+      vi.mocked(fs.stat)
+        .mockResolvedValueOnce({ size: 1024 } as any)
+        .mockResolvedValueOnce({ size: 2048 } as any)
+        .mockResolvedValueOnce({ size: 512 } as any)
+
+      await listCommand(['.'], {})
+
+      const calls = consoleLogSpy.mock.calls
+      const srcImagesIndex = calls.findIndex(call => call[0]?.includes('src/images/a.png'))
+      const srcBIndex = calls.findIndex(call => call[0]?.includes('src/b.png'))
+      const zIndex = calls.findIndex(call => call[0]?.includes('z.png'))
+
+      expect(srcImagesIndex).toBeLessThan(srcBIndex)
+      expect(srcBIndex).toBeLessThan(zIndex)
+
+      cwdSpy.mockRestore()
+    })
   })
 })
