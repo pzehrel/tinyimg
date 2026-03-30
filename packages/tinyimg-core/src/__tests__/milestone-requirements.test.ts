@@ -296,11 +296,11 @@ describe('v0.3.0 Milestone Requirements Verification', () => {
       expect(existsSync(workflowPath)).toBe(true)
     })
 
-    it('test matrix includes Node 18, 20, 22', () => {
+    it('test matrix includes Node 20, 22', () => {
       const workflowPath = join(projectRoot, '.github/workflows/test-matrix.yml')
       const content = readFileSync(workflowPath, 'utf-8')
 
-      expect(content).toContain('node-version: [18, 20, 22]')
+      expect(content).toContain('node-version: [20, 22]')
     })
   })
 
