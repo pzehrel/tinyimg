@@ -77,8 +77,15 @@ export async function compressCommand(inputs: string[], options: CompressOptions
       compressOptions.keyPool = pool
     }
     catch (error: any) {
-      console.error(kleur.red(`Error: ${error.message}`))
-      process.exit(1)
+      if (error instanceof NoValidKeysError) {
+        console.log(kleur.yellow('ℹ No API keys configured. Using free web interface (slower, no quota).'))
+        compressOptions.mode = 'web'
+        // Don't set keyPool — web mode doesn't need it
+      }
+      else {
+        console.error(kleur.red(`Error: ${error.message}`))
+        process.exit(1)
+      }
     }
   }
 
@@ -118,10 +125,6 @@ export async function compressCommand(inputs: string[], options: CompressOptions
     if (error instanceof AllKeysExhaustedError) {
       console.error(kleur.red('Error: All API keys have exhausted quota'))
       console.log('Please add more keys or wait for quota to reset')
-    }
-    else if (error instanceof NoValidKeysError) {
-      console.error(kleur.red('Error: No valid API keys configured'))
-      console.log('Please add API keys using: tinyimg key add <key>')
     }
     else if (error instanceof AllCompressionFailedError) {
       console.error(kleur.red('Error: All compression methods failed'))

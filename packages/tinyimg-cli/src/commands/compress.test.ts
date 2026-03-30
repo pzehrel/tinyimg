@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
 import process from 'node:process'
-import { AllCompressionFailedError, AllKeysExhaustedError, compressImages, NoValidKeysError } from '@pz4l/tinyimg-core'
+import { AllCompressionFailedError, AllKeysExhaustedError, compressImages } from '@pz4l/tinyimg-core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { compressCommand } from './compress'
 
@@ -129,17 +129,6 @@ describe('compress command', () => {
     await compressCommand(['image.png'], {})
 
     expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('All API keys have exhausted quota'))
-    expect(processExitSpy).toHaveBeenCalledWith(1)
-  })
-
-  it('handles NoValidKeysError', async () => {
-    vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
-    vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('png'))
-    vi.mocked(compressImages).mockRejectedValue(new NoValidKeysError('No valid keys'))
-
-    await compressCommand(['image.png'], {})
-
-    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('No valid API keys configured'))
     expect(processExitSpy).toHaveBeenCalledWith(1)
   })
 

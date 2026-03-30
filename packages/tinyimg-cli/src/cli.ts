@@ -33,36 +33,36 @@ cli
     }
   })
 
-// Key management subcommands
+// Key management - unified command with subcommand handling
 cli
-  .command('key add <key>', 'Add API key')
-  .action(async (key: string) => {
+  .command('key [...subcommands]', 'Key management: add, remove, list')
+  .action(async (_subcommands: string[], _options: any) => {
     try {
-      await keyAdd(key)
-    }
-    catch (error: any) {
-      console.error(kleur.red(`Error: ${error.message}`))
-      process.exit(1)
-    }
-  })
+      // Get the raw arguments to determine subcommand
+      const rawArgs = cli.rawArgs.slice(2) // Skip node and script path
+      const subcommand = rawArgs[1] // rawArgs[0] is 'key', rawArgs[1] is 'add'/'remove'/'list'
 
-cli
-  .command('key remove [key]', 'Remove API key (interactive if not specified)')
-  .action(async (key?: string) => {
-    try {
-      await keyRemove(key)
-    }
-    catch (error: any) {
-      console.error(kleur.red(`Error: ${error.message}`))
-      process.exit(1)
-    }
-  })
-
-cli
-  .command('key', 'List all API keys with quota info')
-  .action(async () => {
-    try {
-      await keyList()
+      if (subcommand === 'add') {
+        const key = rawArgs[2]
+        if (!key) {
+          console.error(kleur.red('Error: API key is required'))
+          console.log(kleur.gray('Usage: tinyimg key add <key>'))
+          process.exit(1)
+        }
+        await keyAdd(key)
+      }
+      else if (subcommand === 'remove') {
+        const key = rawArgs[2]
+        await keyRemove(key)
+      }
+      else if (subcommand === 'list' || !subcommand) {
+        await keyList()
+      }
+      else {
+        console.error(kleur.red(`Error: Unknown key subcommand "${subcommand}"`))
+        console.log(kleur.gray('Usage: tinyimg key <add|remove|list>'))
+        process.exit(1)
+      }
     }
     catch (error: any) {
       console.error(kleur.red(`Error: ${error.message}`))
@@ -73,6 +73,7 @@ cli
 // List compressible images
 cli
   .command('list [...inputs]', 'List compressible images')
+  .option('-t, --convertible', 'Show only PNG files convertible to JPG (no alpha channel)')
   .action(async (inputs: string[], options: any) => {
     try {
       await listCommand(inputs, options)
@@ -85,6 +86,7 @@ cli
 
 cli
   .command('ls [...inputs]', 'Alias for list command')
+  .option('-t, --convertible', 'Show only PNG files convertible to JPG (no alpha channel)')
   .action(async (inputs: string[], options: any) => {
     try {
       await listCommand(inputs, options)
