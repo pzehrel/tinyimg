@@ -1,5 +1,5 @@
 import type { DetectOptions } from '../types'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { detectAlpha, detectAlphas } from '../service'
 import {
   cleanupFixtures,
@@ -18,15 +18,18 @@ let jpgFile: string
 let largePng: string
 
 beforeEach(async () => {
-  // Clean up before each test
-  cleanupFixtures()
-
-  // Create fresh fixtures
+  // Create fresh fixtures for each test
+  // Note: Don't call cleanupFixtures() here as it interferes with parallel tests
   alphaPng = await createPngWithAlpha()
   opaqueNoAlphaPng = await createOpaquePngNoAlpha()
   opaqueWithAlphaPng = await createOpaquePngWithAlphaChannel()
   jpgFile = await createJpgFile()
   largePng = await createLargePng()
+})
+
+afterAll(() => {
+  // Clean up all fixtures after all tests complete
+  cleanupFixtures()
 })
 
 describe('detectAlpha', () => {

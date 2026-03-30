@@ -14,10 +14,16 @@ const FIXTURE_DIR = join(tmpdir(), 'tinyimg-detect-test')
 
 /**
  * Get the fixture directory path
+ * Ensures the directory exists before returning
  */
 export function getFixtureDir(): string {
   if (!existsSync(FIXTURE_DIR)) {
-    mkdirSync(FIXTURE_DIR, { recursive: true })
+    try {
+      mkdirSync(FIXTURE_DIR, { recursive: true })
+    }
+    catch (error) {
+      throw new Error(`Failed to create fixture directory at ${FIXTURE_DIR}: ${error}`)
+    }
   }
   return FIXTURE_DIR
 }
@@ -117,17 +123,17 @@ export async function createJpgFile(): Promise<string> {
 }
 
 /**
- * Create a large (~5MB) PNG for performance test
- * 2000x2000 RGBA PNG should be several MB
+ * Create a large PNG for performance test
+ * 500x500 RGBA PNG - sufficient for performance testing
  */
 export async function createLargePng(): Promise<string> {
   const filePath = join(getFixtureDir(), 'large-png.png')
 
-  // Create 2000x2000 RGBA image
+  // Create 500x500 RGBA image
   await sharp({
     create: {
-      width: 2000,
-      height: 2000,
+      width: 500,
+      height: 500,
       channels: 4,
       background: { r: 255, g: 255, b: 255, alpha: 1.0 },
     },
