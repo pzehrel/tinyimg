@@ -25,7 +25,7 @@ export async function listCommand(inputs: string[], _options?: any): Promise<voi
   const fileStats = await Promise.all(
     files.map(async (file) => {
       const stat = await fs.stat(file)
-      return { path: file, name: path.basename(file), size: stat.size }
+      return { path: file, name: path.relative(process.cwd(), file), size: stat.size }
     }),
   )
 

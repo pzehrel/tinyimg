@@ -118,8 +118,12 @@ describe('list command', () => {
 
       await listCommand(['./src'], {})
 
-      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('src/images/logo.png'))
-      expect(consoleLogSpy).not.toHaveBeenCalledWith(expect.stringContaining('logo.png -'))
+      // Should display the full relative path, not just the basename
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('src/images/logo.png -'))
+      // Should NOT display just "logo.png -" (the basename format)
+      const calls = consoleLogSpy.mock.calls.map(call => call[0])
+      const hasBasenameOnly = calls.some(call => call.includes('logo.png -') && !call.includes('src/images/logo.png'))
+      expect(hasBasenameOnly).toBe(false)
 
       cwdSpy.mockRestore()
     })
@@ -169,12 +173,13 @@ describe('list command', () => {
       await listCommand(['.'], {})
 
       const calls = consoleLogSpy.mock.calls
-      const srcImagesIndex = calls.findIndex(call => call[0]?.includes('src/images/a.png'))
       const srcBIndex = calls.findIndex(call => call[0]?.includes('src/b.png'))
+      const srcImagesIndex = calls.findIndex(call => call[0]?.includes('src/images/a.png'))
       const zIndex = calls.findIndex(call => call[0]?.includes('z.png'))
 
-      expect(srcImagesIndex).toBeLessThan(srcBIndex)
-      expect(srcBIndex).toBeLessThan(zIndex)
+      // Alphabetical order: src/b.png < src/images/a.png < z.png
+      expect(srcBIndex).toBeLessThan(srcImagesIndex)
+      expect(srcImagesIndex).toBeLessThan(zIndex)
 
       cwdSpy.mockRestore()
     })
