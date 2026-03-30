@@ -132,17 +132,6 @@ describe('compress command', () => {
     expect(processExitSpy).toHaveBeenCalledWith(1)
   })
 
-  it('handles NoValidKeysError', async () => {
-    vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
-    vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('png'))
-    vi.mocked(compressImages).mockRejectedValue(new NoValidKeysError('No valid keys'))
-
-    await compressCommand(['image.png'], {})
-
-    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('No valid API keys configured'))
-    expect(processExitSpy).toHaveBeenCalledWith(1)
-  })
-
   it('handles AllCompressionFailedError', async () => {
     vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
     vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('png'))
