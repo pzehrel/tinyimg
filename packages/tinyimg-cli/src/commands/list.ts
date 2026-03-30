@@ -2,10 +2,11 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
 import kleur from 'kleur'
+import { detectAlphas } from '@pz4l/tinyimg-core'
 import { expandInputs } from '../utils/files'
 import { formatBytes } from '../utils/format'
 
-export async function listCommand(inputs: string[], _options?: any): Promise<void> {
+export async function listCommand(inputs: string[], options?: any): Promise<void> {
   // Default to current directory if no inputs
   if (inputs.length === 0) {
     inputs = ['.']
@@ -21,9 +22,37 @@ export async function listCommand(inputs: string[], _options?: any): Promise<voi
     process.exit(1)
   }
 
+  // Filter files based on --convertible flag
+  let filteredFiles = files
+
+  if (options?.convertible) {
+    // Filter to only PNG files first
+    const pngFiles = files.filter(f => path.extname(f).toLowerCase() === '.png')
+
+    if (pngFiles.length === 0) {
+      console.log(kleur.yellow('No PNG files found.'))
+      console.log(kleur.gray('The --convertible flag only applies to PNG files.'))
+      process.exit(0)
+    }
+
+    // Detect alpha for PNG files
+    const alphaResults = await detectAlphas(pngFiles, { concurrency: 8 })
+
+    // Keep only PNGs WITHOUT alpha (convertible to JPG)
+    filteredFiles = pngFiles.filter(file => {
+      const hasAlpha = alphaResults.get(file) ?? false
+      return !hasAlpha
+    })
+
+    if (filteredFiles.length === 0) {
+      console.log(kleur.yellow('No convertible PNG files found (all have alpha channel).'))
+      process.exit(0)
+    }
+  }
+
   // Get file stats (sizes)
   const fileStats = await Promise.all(
-    files.map(async (file) => {
+    filteredFiles.map(async (file) => {
       const stat = await fs.stat(file)
       return { path: file, name: path.relative(process.cwd(), file), size: stat.size }
     }),

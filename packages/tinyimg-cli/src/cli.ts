@@ -73,6 +73,7 @@ cli
 // List compressible images
 cli
   .command('list [...inputs]', 'List compressible images')
+  .option('-t, --convertible', 'Show only PNG files convertible to JPG (no alpha channel)')
   .action(async (inputs: string[], options: any) => {
     try {
       await listCommand(inputs, options)
@@ -85,6 +86,7 @@ cli
 
 cli
   .command('ls [...inputs]', 'Alias for list command')
+  .option('-t, --convertible', 'Show only PNG files convertible to JPG (no alpha channel)')
   .action(async (inputs: string[], options: any) => {
     try {
       await listCommand(inputs, options)
