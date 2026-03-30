@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
-import kleur from 'kleur'
 import { detectAlphas } from '@pz4l/tinyimg-core'
+import kleur from 'kleur'
 import { expandInputs } from '../utils/files'
 import { formatBytes } from '../utils/format'
 
@@ -39,7 +39,7 @@ export async function listCommand(inputs: string[], options?: any): Promise<void
     const alphaResults = await detectAlphas(pngFiles, { concurrency: 8 })
 
     // Keep only PNGs WITHOUT alpha (convertible to JPG)
-    filteredFiles = pngFiles.filter(file => {
+    filteredFiles = pngFiles.filter((file) => {
       const hasAlpha = alphaResults.get(file) ?? false
       return !hasAlpha
     })

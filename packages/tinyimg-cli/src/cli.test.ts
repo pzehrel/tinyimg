@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as cliModule from './cli'
 import { compressCommand } from './commands/compress'
-import { listCommand } from './commands/list'
 import { keyAdd } from './commands/key'
+import { listCommand } from './commands/list'
 
 // Mock dependencies
 vi.mock('./commands/compress')
