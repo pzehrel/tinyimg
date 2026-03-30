@@ -18,6 +18,11 @@ vi.mock('./commands/list', () => ({
   listCommand: vi.fn(),
 }))
 
+// Mock convert command
+vi.mock('./commands/convert', () => ({
+  convertCommand: vi.fn(),
+}))
+
 describe('cLI entry point', () => {
   let _consoleErrorSpy: any
   let _processExitSpy: any
@@ -83,6 +88,12 @@ describe('cLI entry point', () => {
   it('has ls subcommand as alias for list', () => {
     // List command is mocked and configured at module load time
     expect(typeof listCommand).toBe('function')
+  })
+
+  it('has convert subcommand for PNG to JPG conversion', async () => {
+    // Convert command is mocked and configured at module load time
+    const { convertCommand } = await import('./commands/convert')
+    expect(typeof convertCommand).toBe('function')
   })
 
   it('calls compressCommand with correct arguments', async () => {
