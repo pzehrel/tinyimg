@@ -136,15 +136,16 @@ function createCompressors(options: CompressServiceOptions): ICompressor[] {
   const { mode = 'auto', maxRetries = 8, keyPool } = options
   const compressors: ICompressor[] = []
 
-  // Create or use provided KeyPool for API compressor
-  // Note: This will use keys from env var or config file (from Phase 2)
-  const pool = keyPool || new KeyPool('random') // Could be made configurable
+  // Only create/use KeyPool when mode requires API compression
+  const needsApiCompressor = mode === 'auto' || mode === 'api'
+  const needsWebCompressor = mode === 'auto' || mode === 'web'
 
-  if (mode === 'auto' || mode === 'api') {
+  if (needsApiCompressor) {
+    const pool = keyPool || new KeyPool('random')
     compressors.push(new TinyPngApiCompressor(pool, maxRetries))
   }
 
-  if (mode === 'auto' || mode === 'web') {
+  if (needsWebCompressor) {
     compressors.push(new TinyPngWebCompressor(maxRetries))
   }
 
