@@ -1,5 +1,0 @@
-{
-  "@pz4l/tinyimg-cli": "patch",
-  "@pz4l/tinyimg-core": "patch",
-  "@pz4l/tinyimg-unplugin": "patch"
-}

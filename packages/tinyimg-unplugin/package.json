@@ -1,7 +1,7 @@
 {
   "name": "@pz4l/tinyimg-unplugin",
   "type": "module",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "unplugin for automatic image compression during build (Vite, Webpack, Rolldown)",
   "author": "pzehrel",
   "license": "MIT",
