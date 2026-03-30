@@ -20,6 +20,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Fix .npmrc for CI
+        run: rm -f .npmrc
+
       - uses: pnpm/action-setup@v4
         with:
           version: 10.32.1
