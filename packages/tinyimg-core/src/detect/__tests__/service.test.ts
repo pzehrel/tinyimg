@@ -19,7 +19,7 @@ let largePng: string
 
 beforeEach(async () => {
   // Create fresh fixtures for each test
-  // Note: Don't call cleanupFixtures() here as it interferes with parallel tests
+  // Await each fixture creation sequentially to avoid race conditions
   alphaPng = await createPngWithAlpha()
   opaqueNoAlphaPng = await createOpaquePngNoAlpha()
   opaqueWithAlphaPng = await createOpaquePngWithAlphaChannel()
