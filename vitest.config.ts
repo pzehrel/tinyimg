@@ -9,6 +9,7 @@ export default defineConfig({
       '**/*.config.ts',
       '**/.claude/worktrees/**',
     ],
+    fileParallelism: false, // Run test files sequentially to avoid fixture conflicts
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json'],

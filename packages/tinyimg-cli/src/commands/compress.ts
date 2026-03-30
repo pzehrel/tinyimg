@@ -1,11 +1,13 @@
 import type { CompressServiceOptions, KeyStrategy } from '@pz4l/tinyimg-core'
 import type { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
+import path from 'node:path'
 import process from 'node:process'
 import { AllCompressionFailedError, AllKeysExhaustedError, compressImages, KeyPool, NoValidKeysError } from '@pz4l/tinyimg-core'
 import kleur from 'kleur'
 import { expandInputs, resolveOutputPath } from '../utils/files'
 import { formatProgress, formatResult } from '../utils/format'
+import { convertCommand } from './convert'
 
 interface CompressOptions {
   output?: string
@@ -13,6 +15,8 @@ interface CompressOptions {
   mode?: KeyStrategy
   parallel?: string
   cache?: boolean
+  convert?: boolean
+  deleteOriginal?: boolean
 }
 
 /**
@@ -31,7 +35,7 @@ export async function compressCommand(inputs: string[], options: CompressOptions
 
   if (files.length === 0) {
     console.error(kleur.red('Error: No valid image files found'))
-    console.log('Supported formats: PNG, JPG, JPEG')
+    console.log('Supported formats: PNG, JPG, JPEG, WebP, AVIF')
     process.exit(1)
   }
 
@@ -100,6 +104,15 @@ export async function compressCommand(inputs: string[], options: CompressOptions
     }
 
     console.log(kleur.green('\n✓ Compression complete'))
+
+    // Handle --convert flag: convert compressed PNGs to JPG
+    if (options.convert) {
+      const pngFiles = files.filter(f => path.extname(f).toLowerCase() === '.png')
+      if (pngFiles.length > 0) {
+        console.log(kleur.cyan('\nConverting compressed PNGs to JPG...'))
+        await convertCommand(pngFiles, { deleteOriginal: options.deleteOriginal, quality: 85 })
+      }
+    }
   }
   catch (error: any) {
     if (error instanceof AllKeysExhaustedError) {

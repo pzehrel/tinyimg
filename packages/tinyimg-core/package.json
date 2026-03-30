@@ -1,7 +1,7 @@
 {
   "name": "@pz4l/tinyimg-core",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Core library for TinyPNG image compression with multi-key management, intelligent caching, and fallback strategies",
   "author": "pzehrel",
   "license": "MIT",
@@ -51,6 +51,7 @@
   "dependencies": {
     "form-data": "4.0.5",
     "p-limit": "7.3.0",
+    "sharp": "^0.34.5",
     "tinify": "1.8.2"
   }
 }
