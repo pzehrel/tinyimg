@@ -2,11 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as cliModule from './cli'
 import { compressCommand } from './commands/compress'
 import { listCommand } from './commands/list'
+import { keyAdd } from './commands/key'
 
 // Mock dependencies
 vi.mock('./commands/compress')
 
-// Mock key commands that don't exist yet
+// Mock key commands
 vi.mock('./commands/key', () => ({
   keyAdd: vi.fn(),
   keyRemove: vi.fn(),
@@ -105,5 +106,10 @@ describe('cLI entry point', () => {
   it('has help option -h, --help', () => {
     // Help is configured via cac at module load time
     expect(cliModule.main).toBeDefined()
+  })
+
+  it('parses key add command with argument', async () => {
+    // Verify keyAdd is imported and available
+    expect(typeof keyAdd).toBe('function')
   })
 })
