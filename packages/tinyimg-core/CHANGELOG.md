@@ -1,5 +1,17 @@
 # @pz4l/tinyimg-core
 
+## 0.3.0
+
+### Minor Changes
+
+- v0.3.0 — Feature enhancements and quality assurance
+
+  - CLI list command for previewing compressible images
+  - PNG transparency detection for intelligent format conversion
+  - Format conversion expansion (opaque PNG → JPG, WebP, AVIF support)
+  - Infrastructure quality gates and safety mechanisms
+  - Comprehensive test coverage
+
 ## 0.1.0
 
 ### Patch Changes

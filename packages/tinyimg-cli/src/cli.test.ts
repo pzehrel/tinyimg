@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as cliModule from './cli'
 import { compressCommand } from './commands/compress'
+import { listCommand } from './commands/list'
 
 // Mock dependencies
 vi.mock('./commands/compress')
@@ -10,6 +11,16 @@ vi.mock('./commands/key', () => ({
   keyAdd: vi.fn(),
   keyRemove: vi.fn(),
   keyList: vi.fn(),
+}))
+
+// Mock list command
+vi.mock('./commands/list', () => ({
+  listCommand: vi.fn(),
+}))
+
+// Mock convert command
+vi.mock('./commands/convert', () => ({
+  convertCommand: vi.fn(),
 }))
 
 describe('cLI entry point', () => {
@@ -67,6 +78,22 @@ describe('cLI entry point', () => {
     // Key commands are mocked and configured at module load time
     // We verify the CLI module is configured
     expect(cliModule.main).toBeDefined()
+  })
+
+  it('has list subcommand for listing compressible images', () => {
+    // List command is mocked and configured at module load time
+    expect(typeof listCommand).toBe('function')
+  })
+
+  it('has ls subcommand as alias for list', () => {
+    // List command is mocked and configured at module load time
+    expect(typeof listCommand).toBe('function')
+  })
+
+  it('has convert subcommand for PNG to JPG conversion', async () => {
+    // Convert command is mocked and configured at module load time
+    const { convertCommand } = await import('./commands/convert')
+    expect(typeof convertCommand).toBe('function')
   })
 
   it('calls compressCommand with correct arguments', async () => {

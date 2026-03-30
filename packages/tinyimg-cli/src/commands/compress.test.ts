@@ -8,6 +8,9 @@ import { compressCommand } from './compress'
 // Mock dependencies
 vi.mock('@pz4l/tinyimg-core')
 vi.mock('node:fs/promises')
+vi.mock('./convert', () => ({
+  convertCommand: vi.fn(),
+}))
 
 describe('compress command', () => {
   let consoleErrorSpy: any
@@ -160,5 +163,89 @@ describe('compress command', () => {
 
     expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Generic error'))
     expect(processExitSpy).toHaveBeenCalledWith(1)
+  })
+
+  it('calls convertCommand when --convert flag is set and PNGs are present', async () => {
+    const { convertCommand } = await import('./convert')
+
+    vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
+    vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('png'))
+    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed')])
+    vi.mocked(fs.writeFile).mockResolvedValue(undefined)
+
+    await compressCommand(['image.png'], { convert: true })
+
+    expect(convertCommand).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.stringContaining('image.png')]),
+      { deleteOriginal: undefined, quality: 85 },
+    )
+  })
+
+  it('does not call convertCommand when --convert flag is set but no PNGs present', async () => {
+    const { convertCommand } = await import('./convert')
+
+    vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
+    vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('jpg'))
+    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed')])
+    vi.mocked(fs.writeFile).mockResolvedValue(undefined)
+
+    await compressCommand(['image.jpg'], { convert: true })
+
+    expect(convertCommand).not.toHaveBeenCalled()
+  })
+
+  it('does not call convertCommand when --convert flag is not set', async () => {
+    const { convertCommand } = await import('./convert')
+
+    vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
+    vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('png'))
+    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed')])
+    vi.mocked(fs.writeFile).mockResolvedValue(undefined)
+
+    await compressCommand(['image.png'], {})
+
+    expect(convertCommand).not.toHaveBeenCalled()
+  })
+
+  it('calls convertCommand with multiple PNG files', async () => {
+    const { convertCommand } = await import('./convert')
+
+    vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
+    vi.mocked(fs.readFile)
+      .mockResolvedValueOnce(Buffer.from('png1'))
+      .mockResolvedValueOnce(Buffer.from('png2'))
+    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed1'), Buffer.from('compressed2')])
+    vi.mocked(fs.writeFile).mockResolvedValue(undefined)
+
+    await compressCommand(['image1.png', 'image2.png'], { convert: true })
+
+    expect(convertCommand).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.stringContaining('image1.png'),
+        expect.stringContaining('image2.png'),
+      ]),
+      { deleteOriginal: undefined, quality: 85 },
+    )
+    expect(convertCommand).toHaveBeenCalledTimes(1)
+  })
+
+  it('filters only PNG files when calling convertCommand', async () => {
+    const { convertCommand } = await import('./convert')
+
+    vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
+    vi.mocked(fs.readFile)
+      .mockResolvedValueOnce(Buffer.from('png'))
+      .mockResolvedValueOnce(Buffer.from('jpg'))
+      .mockResolvedValueOnce(Buffer.from('webp'))
+    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed1'), Buffer.from('compressed2'), Buffer.from('compressed3')])
+    vi.mocked(fs.writeFile).mockResolvedValue(undefined)
+
+    await compressCommand(['image.png', 'image.jpg', 'image.webp'], { convert: true })
+
+    expect(convertCommand).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.stringContaining('image.png')]),
+      { deleteOriginal: undefined, quality: 85 },
+    )
+    expect(convertCommand).toHaveBeenCalledTimes(1)
   })
 })

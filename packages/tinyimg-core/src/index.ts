@@ -23,6 +23,10 @@ export type { LoadedKey } from './config/loader'
 export { ensureConfigFile, readConfig, writeConfig } from './config/storage'
 export type { ConfigFile, KeyMetadata } from './config/types'
 
+// Detection
+export { detectAlpha, detectAlphas } from './detect/service'
+export type { DetectOptions } from './detect/types'
+
 // Errors
 export { AllCompressionFailedError, AllKeysExhaustedError, NoValidKeysError } from './errors/types'
 
