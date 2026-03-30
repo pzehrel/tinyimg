@@ -305,7 +305,7 @@ describe('v0.3.0 Milestone Requirements Verification', () => {
   })
 
   describe('iNFRA-03: Publish Prevention', () => {
-    it('.npmrc does not exist (publish protection via prepublishOnly)', () => {
+    it('.npmrc does not exist (prepublishOnly provides protection)', () => {
       const npmrcPath = join(projectRoot, '.npmrc')
       expect(existsSync(npmrcPath)).toBe(false)
     })
