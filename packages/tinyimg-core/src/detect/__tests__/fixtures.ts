@@ -129,17 +129,27 @@ export async function createJpgFile(): Promise<string> {
 export async function createLargePng(): Promise<string> {
   const filePath = join(getFixtureDir(), 'large-png.png')
 
-  // Create 500x500 RGBA image
-  await sharp({
-    create: {
-      width: 500,
-      height: 500,
-      channels: 4,
-      background: { r: 255, g: 255, b: 255, alpha: 1.0 },
-    },
-  })
-    .png()
-    .toFile(filePath)
+  try {
+    // Create 500x500 RGBA image
+    await sharp({
+      create: {
+        width: 500,
+        height: 500,
+        channels: 4,
+        background: { r: 255, g: 255, b: 255, alpha: 1.0 },
+      },
+    })
+      .png()
+      .toFile(filePath)
 
-  return filePath
+    // Verify file was created
+    if (!existsSync(filePath)) {
+      throw new Error(`Failed to create large PNG file at ${filePath}`)
+    }
+
+    return filePath
+  }
+  catch (error) {
+    throw new Error(`Failed to create large PNG: ${error}`)
+  }
 }
