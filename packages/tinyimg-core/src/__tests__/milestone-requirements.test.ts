@@ -276,8 +276,8 @@ describe('v0.3.0 Milestone Requirements Verification', () => {
       const content = readFileSync(lintStagedPath, 'utf-8')
       const config = JSON.parse(content)
 
-      expect(config).toHaveProperty('*.{js,ts}')
-      expect(config['*.{js,ts}']).toContain('eslint --fix')
+      expect(config).toHaveProperty('*.{ts,tsx,js,jsx}')
+      expect(config['*.{ts,tsx,js,jsx}']).toContain('eslint --fix')
     })
 
     it('husky prepare script exists in package.json', () => {
