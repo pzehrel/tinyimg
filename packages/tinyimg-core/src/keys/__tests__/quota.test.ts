@@ -302,6 +302,10 @@ describe('queryQuota', () => {
 })
 
 describe('quotaTracker', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should create quota tracker with correct initial values', () => {
     const tracker = createQuotaTracker('test-key', 100)
     expect(tracker.key).toBe('test-key')
@@ -358,7 +362,7 @@ describe('quotaTracker', () => {
     tracker.decrement() // This should trigger warning
 
     expect(consoleWarnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('⚠ Key **** quota exhausted, switching to next key'),
+      '⚠ Key test****-key quota exhausted, switching to next key',
     )
   })
 
