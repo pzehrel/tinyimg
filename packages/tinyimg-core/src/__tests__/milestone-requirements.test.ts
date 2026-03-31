@@ -276,8 +276,23 @@ describe('v0.3.0 Milestone Requirements Verification', () => {
       const content = readFileSync(lintStagedPath, 'utf-8')
       const config = JSON.parse(content)
 
-      expect(config).toHaveProperty('*.{js,ts}')
-      expect(config['*.{js,ts}']).toContain('eslint --fix')
+      expect(config).toHaveProperty('*.{ts,tsx,js,jsx}')
+      expect(config['*.{ts,tsx,js,jsx}']).toContain('eslint --fix')
+    })
+
+    it('pre-commit hook contains typecheck command', () => {
+      const preCommitPath = join(projectRoot, '.husky/pre-commit')
+      const content = readFileSync(preCommitPath, 'utf-8')
+
+      expect(content).toContain('pnpm run typecheck')
+      expect(content).not.toContain('pnpm test')
+    })
+
+    it('pre-commit hook contains lint-staged command', () => {
+      const preCommitPath = join(projectRoot, '.husky/pre-commit')
+      const content = readFileSync(preCommitPath, 'utf-8')
+
+      expect(content).toContain('npx lint-staged')
     })
 
     it('husky prepare script exists in package.json', () => {
@@ -305,12 +320,9 @@ describe('v0.3.0 Milestone Requirements Verification', () => {
   })
 
   describe('iNFRA-03: Publish Prevention', () => {
-    it('.npmrc exists and points to localhost', () => {
+    it('.npmrc does not exist (prepublishOnly provides protection)', () => {
       const npmrcPath = join(projectRoot, '.npmrc')
-      expect(existsSync(npmrcPath)).toBe(true)
-
-      const content = readFileSync(npmrcPath, 'utf-8')
-      expect(content).toContain('localhost:4873')
+      expect(existsSync(npmrcPath)).toBe(false)
     })
 
     it('prepublishOnly script exists in package.json', () => {
