@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": ".",
+    "paths": {
+      "@pz4l/tinyimg-core": ["../../packages/tinyimg-core/dist/index.d.mts"]
+    },
+    "noEmit": true
+  },
+  "include": ["examples/**/*"]
+}

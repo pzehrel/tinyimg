@@ -43,6 +43,7 @@ Demonstrates single image compression with caching and error handling.
 **Run:** `pnpm 01-basic`
 
 **What you'll learn:**
+
 - Using `compressImage` API
 - Reading and writing image files
 - Calculating compression savings
@@ -57,6 +58,7 @@ Demonstrates concurrent compression of multiple images with progress reporting.
 **Run:** `pnpm 02-batch`
 
 **What you'll learn:**
+
 - Using `compressImages` API for batch processing
 - Controlling concurrency for rate-limited APIs
 - Progress reporting during batch operations
@@ -71,6 +73,7 @@ Demonstrates cache inspection and statistics retrieval.
 **Run:** `pnpm 03-cache`
 
 **What you'll learn:**
+
 - Using `getAllCacheStats` to read cache statistics
 - Understanding the two-level cache hierarchy
 - Using `formatBytes` for human-readable display
@@ -85,6 +88,7 @@ Demonstrates the three API key selection strategies.
 **Run:** `pnpm 04-keypool`
 
 **What you'll learn:**
+
 - Creating `KeyPool` with different strategies
 - Random vs round-robin vs priority key selection
 - Custom KeyPool usage with `compressImage`

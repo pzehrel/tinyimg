@@ -16,8 +16,10 @@
  * Or directly: npx tsx examples/02-batch-compression.ts
  */
 
+import type { Buffer } from 'node:buffer'
 import { readFile, writeFile } from 'node:fs/promises'
-import { join, dirname } from 'node:path'
+import { dirname, join } from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 import {
@@ -37,12 +39,6 @@ const IMAGE_FILES = [
   'sample.jpg',
   'sample.png',
 ]
-
-interface BatchProgress {
-  completed: number
-  total: number
-  currentFile: string
-}
 
 async function main() {
   console.log('=== Batch Compression Example ===\n')
@@ -87,7 +83,7 @@ async function main() {
     // Create a wrapper function for progress reporting
     const compressWithProgress = async (
       buffers: Buffer[],
-      options: { concurrency?: number } = {},
+      _options: { concurrency?: number } = {},
     ): Promise<Buffer[]> => {
       const results: Buffer[] = []
       let completed = 0

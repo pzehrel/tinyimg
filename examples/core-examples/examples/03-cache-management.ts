@@ -18,10 +18,10 @@
  * Or directly: npx tsx examples/03-cache-management.ts
  */
 
-import { readdir } from 'node:fs/promises'
-import { join, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
+import { readdir } from 'node:fs/promises'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import {
   formatBytes,
@@ -37,7 +37,7 @@ const PROJECT_ROOT = join(__dirname, '../..')
 interface CacheInfo {
   path: string
   exists: boolean
-  stats?: { count: number; size: number }
+  stats?: { count: number, size: number }
   files?: string[]
 }
 

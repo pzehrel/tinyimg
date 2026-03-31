@@ -21,8 +21,7 @@
  * Or directly: npx tsx examples/04-key-pool-strategies.ts
  */
 
-import { join, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import process from 'node:process'
 
 import {
   AllKeysExhaustedError,
@@ -30,9 +29,6 @@ import {
   maskKey,
   NoValidKeysError,
 } from '@pz4l/tinyimg-core'
-
-// Paths relative to this example file
-const __dirname = dirname(fileURLToPath(import.meta.url))
 
 /**
  * Simulate key selection to demonstrate strategy behavior
@@ -197,7 +193,7 @@ async function main() {
   console.log('Example: TINYPNG_KEYS=key1,key2,key3 pnpm 04-keypool')
 
   // Check if keys are configured
-  const hasKeys = process.env.TINYPNG_KEYS?.length > 0
+  const hasKeys = process.env.TINYPNG_KEYS && process.env.TINYPNG_KEYS.length > 0
 
   if (!hasKeys) {
     console.log('\n⚠ No API keys detected. Showing example behavior with mock data.\n')
