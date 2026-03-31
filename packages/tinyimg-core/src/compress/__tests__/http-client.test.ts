@@ -1,10 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import https from 'node:https'
-import { Buffer } from 'node:buffer'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TinyPngHttpClient } from '../http-client'
-import { createMockPngBuffer, createMockClientRequest } from './fixtures'
+import { createMockClientRequest, createMockPngBuffer } from './fixtures'
 
-describe('TinyPngHttpClient', () => {
+describe('tinyPngHttpClient', () => {
   let client: TinyPngHttpClient
   let requestSpy: any
 

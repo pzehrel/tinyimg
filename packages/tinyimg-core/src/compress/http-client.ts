@@ -1,6 +1,6 @@
+import { Buffer } from 'node:buffer'
 import https from 'node:https'
-import { logWarning, logInfo } from '../../utils/logger'
-import { maskKey } from '../../keys/masker'
+import { maskKey } from '../keys/masker'
 
 const TINYPNG_API_URL = 'https://api.tinify.com/shrink'
 const MAX_REDIRECTS = 5
@@ -119,7 +119,7 @@ export class TinyPngHttpClient {
                 const count = response.compressionCount || 0
                 return resolve(count)
               }
-              catch (error) {
+              catch {
                 // If JSON parse fails, return 0
                 return resolve(0)
               }
@@ -307,7 +307,7 @@ export class TinyPngHttpClient {
         {
           method: 'GET',
           headers: {
-            'Authorization': authHeader,
+            Authorization: authHeader,
           },
         },
         (res) => {
