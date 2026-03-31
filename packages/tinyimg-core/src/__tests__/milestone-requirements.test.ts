@@ -280,6 +280,21 @@ describe('v0.3.0 Milestone Requirements Verification', () => {
       expect(config['*.{ts,tsx,js,jsx}']).toContain('eslint --fix')
     })
 
+    it('pre-commit hook contains typecheck command', () => {
+      const preCommitPath = join(projectRoot, '.husky/pre-commit')
+      const content = readFileSync(preCommitPath, 'utf-8')
+
+      expect(content).toContain('pnpm run typecheck')
+      expect(content).not.toContain('pnpm test')
+    })
+
+    it('pre-commit hook contains lint-staged command', () => {
+      const preCommitPath = join(projectRoot, '.husky/pre-commit')
+      const content = readFileSync(preCommitPath, 'utf-8')
+
+      expect(content).toContain('npx lint-staged')
+    })
+
     it('husky prepare script exists in package.json', () => {
       const packageJsonPath = join(projectRoot, 'package.json')
       const content = readFileSync(packageJsonPath, 'utf-8')
