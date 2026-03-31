@@ -6,7 +6,7 @@
     "build": "rolldown"
   },
   "dependencies": {
-    "@pz4l/tinyimg-unplugin": "latest",
+    "@pz4l/tinyimg-unplugin": "workspace:*",
     "@rollup/plugin-replace": "^6.0.0",
     "dotenv": "^17.3.0",
     "rolldown": "^1.0.0-rc.12"

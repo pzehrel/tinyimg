@@ -8,7 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@pz4l/tinyimg-unplugin": "latest",
+    "@pz4l/tinyimg-unplugin": "workspace:*",
     "vite": "^8.0.0"
   }
 }

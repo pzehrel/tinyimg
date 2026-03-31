@@ -1,0 +1,22 @@
+{
+  "name": "core-examples",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Examples for using @pz4l/tinyimg-core",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "01-basic": "tsx examples/01-basic-compression.ts",
+    "02-batch": "tsx examples/02-batch-compression.ts",
+    "03-cache": "tsx examples/03-cache-management.ts",
+    "04-keypool": "tsx examples/04-key-pool-strategies.ts"
+  },
+  "dependencies": {
+    "@pz4l/tinyimg-core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  }
+}
