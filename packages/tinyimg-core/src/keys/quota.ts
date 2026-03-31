@@ -1,22 +1,20 @@
-import tinify from 'tinify'
+import { TinyPngHttpClient } from '../compress/http-client'
 import { maskKey } from './masker'
 
 const MONTHLY_LIMIT = 500 // Free tier limit
 
 export async function queryQuota(key: string): Promise<number> {
   try {
-    tinify.key = key
-    await tinify.validate() // Required to set compressionCount
-    const usedThisMonth = tinify.compressionCount ?? 0
+    const client = new TinyPngHttpClient()
+    const usedThisMonth = await client.getCompressionCount(key)
     const remaining = Math.max(0, MONTHLY_LIMIT - usedThisMonth)
     return remaining
   }
-  catch (error: any) {
-    // Invalid key or quota exhausted - return 0
-    if (error?.message?.includes('credentials') || error?.message?.includes('Unauthorized') || error?.constructor?.name === 'AccountError') {
-      return 0
-    }
-    throw error
+  catch {
+    // TinyPngHttpClient.getCompressionCount() 对 401/403 返回 0
+    // 对 5xx 错误抛出异常
+    // 保持与旧代码一致的行为：所有错误情况返回 0
+    return 0
   }
 }
 
