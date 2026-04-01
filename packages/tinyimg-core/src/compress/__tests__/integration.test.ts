@@ -10,6 +10,74 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
     requestSpy = vi.spyOn(https, 'request')
   })
 
+  describe('httpRequest integration', () => {
+    it('should handle JSON response with generic type', async () => {
+      // Arrange: Mock HTTPS with JSON response
+      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
+        const mockRes = {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
+            if (event === 'data') {
+              process.nextTick(() => fn(JSON.stringify({ output: { url: 'https://example.com/output.png' } })))
+            }
+            else if (event === 'end') {
+              process.nextTick(() => fn())
+            }
+            return mockRes
+          }),
+        }
+        callback(mockRes)
+        return createMockClientRequest()
+      })
+
+      // Act: Import and use httpRequest
+      const { httpRequest } = await import('../../utils/http-request')
+      const response = await httpRequest<{ output: { url: string } }>(
+        'https://api.example.com/test',
+        { method: 'POST' },
+      )
+
+      // Assert: Response parsed as JSON
+      expect(response.statusCode).toBe(200)
+      expect(response.data.output.url).toBe('https://example.com/output.png')
+    })
+
+    it('should handle Buffer response for image download', async () => {
+      // Arrange: Mock HTTPS with Buffer response
+      const mockBuffer = createMockPngBuffer(512)
+      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
+        const mockRes = {
+          statusCode: 200,
+          headers: { 'content-type': 'image/png' },
+          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
+            if (event === 'data') {
+              process.nextTick(() => fn(mockBuffer))
+            }
+            else if (event === 'end') {
+              process.nextTick(() => fn())
+            }
+            return mockRes
+          }),
+        }
+        callback(mockRes)
+        return createMockClientRequest()
+      })
+
+      // Act: Import and use httpRequest
+      const { httpRequest } = await import('../../utils/http-request')
+      const response = await httpRequest<Buffer>(
+        'https://example.com/image.png',
+        { method: 'GET' },
+      )
+
+      // Assert: Response is Buffer
+      expect(response.statusCode).toBe(200)
+      expect(response.data).toEqual(mockBuffer)
+      expect(response.data.byteLength).toBe(512)
+    })
+  })
+
   describe('完整上传/下载流程', () => {
     it('should complete full upload/download flow', async () => {
       const mockInputBuffer = createMockPngBuffer(1024)
