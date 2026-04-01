@@ -1,43 +1,448 @@
-import { describe, it } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import https from 'node:https'
+import { httpRequest, type RequestOptions, type HttpResponse } from '../http-request'
+
+// Mock https.request
+vi.mock('node:https', () => ({
+  default: {
+    request: vi.fn(),
+  },
+}))
 
 describe('httpRequest', () => {
-  it('should send POST request and return JSON response with output.url', () => {
-    // Test 1: httpRequest 发送 POST 请求并返回 JSON 响应（包含 output.url）
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
 
-  it('should send GET request and return Buffer response (image data)', () => {
-    // Test 2: httpRequest 发送 GET 请求并返回 Buffer 响应（图片数据）
+  it('should send POST request and return JSON response with output.url', async () => {
+    const mockResponse = {
+      statusCode: 200,
+      headers: {
+        'content-type': 'application/json',
+      },
+      data: Buffer.from(JSON.stringify({ output: { url: 'https://example.com/compressed.png' } })),
+    }
+
+    vi.mocked(https.request).mockImplementationOnce((url, options, callback) => {
+      // Simulate async response
+      setTimeout(() => {
+        const res = {
+          statusCode: mockResponse.statusCode,
+          headers: mockResponse.headers,
+          on: vi.fn((event, cb) => {
+            if (event === 'data') {
+              cb(mockResponse.data)
+            } else if (event === 'end') {
+              cb()
+            }
+          }),
+        }
+        callback(res)
+      }, 0)
+      return {
+        write: vi.fn(),
+        end: vi.fn(),
+        on: vi.fn(),
+      } as any
+    })
+
+    const options: RequestOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/octet-stream',
+      },
+      body: Buffer.from('test data'),
+    }
+
+    const result = await httpRequest<any>('https://api.tinify.com/shrink', options)
+
+    expect(result.statusCode).toBe(200)
+    expect(result.data).toEqual({ output: { url: 'https://example.com/compressed.png' } })
   })
 
-  it('should follow 302 redirects (up to 5 times)', () => {
-    // Test 3: httpRequest 跟随 302 重定向（最多 5 次）
+  it('should send GET request and return Buffer response (image data)', async () => {
+    const imageData = Buffer.from([0x89, 0x50, 0x4e, 0x47]) // PNG signature
+
+    const mockResponse = {
+      statusCode: 200,
+      headers: {
+        'content-type': 'image/png',
+      },
+      data: imageData,
+    }
+
+    vi.mocked(https.request).mockImplementationOnce((url, options, callback) => {
+      setTimeout(() => {
+        const res = {
+          statusCode: mockResponse.statusCode,
+          headers: mockResponse.headers,
+          on: vi.fn((event, cb) => {
+            if (event === 'data') {
+              cb(mockResponse.data)
+            } else if (event === 'end') {
+              cb()
+            }
+          }),
+        }
+        callback(res)
+      }, 0)
+      return {
+        write: vi.fn(),
+        end: vi.fn(),
+        on: vi.fn(),
+      } as any
+    })
+
+    const options: RequestOptions = {
+      method: 'GET',
+      headers: {},
+    }
+
+    const result = await httpRequest<Buffer>('url', options)
+
+    expect(result.statusCode).toBe(200)
+    expect(result.data).toEqual(imageData)
   })
 
-  it('should throw error when exceeding 5 redirects', () => {
-    // Test 4: httpRequest 超过 5 次重定向时抛出错误
+  it('should follow 302 redirects (up to 5 times)', async () => {
+    let requestCount = 0
+
+    vi.mocked(https.request).mockImplementation((url, options, callback) => {
+      requestCount++
+
+      setTimeout(() => {
+        // First 3 requests return 302, last one returns 200
+        if (requestCount <= 3) {
+          const res = {
+            statusCode: 302,
+            headers: {
+              location: `https://redirect-${requestCount}.example.com`,
+            },
+            on: vi.fn((event, cb) => {
+              if (event === 'end') {
+                cb()
+              }
+            }),
+          }
+          callback(res)
+        } else {
+          const res = {
+            statusCode: 200,
+            headers: {},
+            on: vi.fn((event, cb) => {
+              if (event === 'data') {
+                cb(Buffer.from('final response'))
+              } else if (event === 'end') {
+                cb()
+              }
+            }),
+          }
+          callback(res)
+        }
+      }, 0)
+
+      return {
+        write: vi.fn(),
+        end: vi.fn(),
+        on: vi.fn(),
+      } as any
+    })
+
+    const options: RequestOptions = {
+      method: 'GET',
+    }
+
+    const result = await httpRequest('https://example.com', options)
+
+    expect(requestCount).toBe(4) // 3 redirects + 1 final
+    expect(result.statusCode).toBe(200)
   })
 
-  it('should accept all 2xx status codes as success', () => {
-    // Test 5: httpRequest 接受所有 2xx 状态码作为成功
+  it('should throw error when exceeding 5 redirects', async () => {
+    vi.mocked(https.request).mockImplementation((url, options, callback) => {
+      setTimeout(() => {
+        const res = {
+          statusCode: 302,
+          headers: {
+            location: 'https://redirect.example.com',
+          },
+          on: vi.fn((event, cb) => {
+            if (event === 'end') {
+              cb()
+            }
+          }),
+        }
+        callback(res)
+      }, 0)
+
+      return {
+        write: vi.fn(),
+        end: vi.fn(),
+        on: vi.fn(),
+      } as any
+    })
+
+    const options: RequestOptions = {
+      method: 'GET',
+    }
+
+    await expect(httpRequest('https://example.com', options)).rejects.toThrow('Maximum redirects (5) exceeded')
   })
 
-  it('should accept all 3xx status codes and follow redirects', () => {
-    // Test 6: httpRequest 接受所有 3xx 状态码并跟随重定向
+  it('should accept all 2xx status codes as success', async () => {
+    const statusCodes = [200, 201, 204, 206]
+
+    for (const statusCode of statusCodes) {
+      vi.mocked(https.request).mockImplementationOnce((url, options, callback) => {
+        setTimeout(() => {
+          const res = {
+            statusCode,
+            headers: {},
+            on: vi.fn((event, cb) => {
+              if (event === 'data') {
+                cb(Buffer.from('{"success":true}'))
+              } else if (event === 'end') {
+                cb()
+              }
+            }),
+          }
+          callback(res)
+        }, 0)
+
+        return {
+          write: vi.fn(),
+          end: vi.fn(),
+          on: vi.fn(),
+        } as any
+      })
+
+      const options: RequestOptions = {
+        method: 'GET',
+      }
+
+      const result = await httpRequest('https://example.com', options)
+
+      expect(result.statusCode).toBe(statusCode)
+    }
   })
 
-  it('should handle 4xx errors and create error object with statusCode', () => {
-    // Test 7: httpRequest 正确处理 4xx 错误并创建包含 statusCode 的错误对象
+  it('should accept all 3xx status codes and follow redirects', async () => {
+    const redirectCodes = [301, 302, 303, 307, 308]
+
+    for (const code of redirectCodes) {
+      let requestCount = 0
+
+      vi.mocked(https.request).mockImplementation((url, options, callback) => {
+        requestCount++
+
+        setTimeout(() => {
+          if (requestCount === 1) {
+            const res = {
+              statusCode: code,
+              headers: {
+                location: 'https://final.example.com',
+              },
+              on: vi.fn((event, cb) => {
+                if (event === 'end') {
+                  cb()
+                }
+              }),
+            }
+            callback(res)
+          } else {
+            const res = {
+              statusCode: 200,
+              headers: {},
+              on: vi.fn((event, cb) => {
+                if (event === 'data') {
+                  cb(Buffer.from('success'))
+                } else if (event === 'end') {
+                  cb()
+                }
+              }),
+            }
+            callback(res)
+          }
+        }, 0)
+
+        return {
+          write: vi.fn(),
+          end: vi.fn(),
+          on: vi.fn(),
+        } as any
+      })
+
+      const options: RequestOptions = {
+        method: 'GET',
+      }
+
+      const result = await httpRequest('https://example.com', options)
+
+      expect(requestCount).toBe(2)
+      expect(result.statusCode).toBe(200)
+    }
   })
 
-  it('should handle 5xx errors and create error object with statusCode', () => {
-    // Test 8: httpRequest 正确处理 5xx 错误并创建包含 statusCode 的错误对象
+  it('should handle 4xx errors and create error object with statusCode', async () => {
+    const clientErrors = [400, 401, 403, 404]
+
+    for (const statusCode of clientErrors) {
+      vi.mocked(https.request).mockImplementationOnce((url, options, callback) => {
+        setTimeout(() => {
+          const res = {
+            statusCode,
+            headers: {},
+            on: vi.fn((event, cb) => {
+              if (event === 'data') {
+                cb('error message')
+              } else if (event === 'end') {
+                cb()
+              }
+            }),
+          }
+          callback(res)
+        }, 0)
+
+        return {
+          write: vi.fn(),
+          end: vi.fn(),
+          on: vi.fn(),
+        } as any
+      })
+
+      const options: RequestOptions = {
+        method: 'GET',
+      }
+
+      await expect(httpRequest('https://example.com', options)).rejects.toMatchObject({
+        statusCode,
+      })
+    }
   })
 
-  it('should handle network errors and preserve error.code', () => {
-    // Test 9: httpRequest 正确处理网络错误并保留 error.code
+  it('should handle 5xx errors and create error object with statusCode', async () => {
+    const serverErrors = [500, 502, 503]
+
+    for (const statusCode of serverErrors) {
+      vi.mocked(https.request).mockImplementationOnce((url, options, callback) => {
+        setTimeout(() => {
+          const res = {
+            statusCode,
+            headers: {},
+            on: vi.fn((event, cb) => {
+              if (event === 'data') {
+                cb('server error')
+              } else if (event === 'end') {
+                cb()
+              }
+            }),
+          }
+          callback(res)
+        }, 0)
+
+        return {
+          write: vi.fn(),
+          end: vi.fn(),
+          on: vi.fn(),
+        } as any
+      })
+
+      const options: RequestOptions = {
+        method: 'GET',
+      }
+
+      await expect(httpRequest('https://example.com', options)).rejects.toMatchObject({
+        statusCode,
+      })
+    }
   })
 
-  it('should support custom headers', () => {
-    // Test 10: httpRequest 支持自定义 headers
+  it('should handle network errors and preserve error.code', async () => {
+    const networkError = new Error('Network error')
+    ;(networkError as any).code = 'ECONNREFUSED'
+
+    vi.mocked(https.request).mockImplementationOnce((url, options, callback) => {
+      setTimeout(() => {
+        const req = {
+          write: vi.fn(),
+          end: vi.fn(),
+          on: vi.fn((event, cb) => {
+            if (event === 'error') {
+              cb(networkError)
+            }
+          }),
+        }
+        // Simulate error on request
+        setTimeout(() => {
+          const listeners = req.on.mock.calls
+          const errorCall = listeners.find(call => call[0] === 'error')
+          if (errorCall) {
+            errorCall[1](networkError)
+          }
+        }, 0)
+      }, 0)
+
+      return {
+        write: vi.fn(),
+        end: vi.fn(),
+        on: vi.fn((event, cb) => {
+          if (event === 'error') {
+            setTimeout(() => cb(networkError), 0)
+          }
+        }),
+      } as any
+    })
+
+    const options: RequestOptions = {
+      method: 'GET',
+    }
+
+    await expect(httpRequest('https://example.com', options)).rejects.toMatchObject({
+      code: 'ECONNREFUSED',
+    })
+  })
+
+  it('should support custom headers', async () => {
+    const capturedOptions: any[] = []
+
+    vi.mocked(https.request).mockImplementationOnce((url, options, callback) => {
+      capturedOptions.push(options)
+
+      setTimeout(() => {
+        const res = {
+          statusCode: 200,
+          headers: {},
+          on: vi.fn((event, cb) => {
+            if (event === 'data') {
+              cb(Buffer.from('success'))
+            } else if (event === 'end') {
+              cb()
+            }
+          }),
+        }
+        callback(res)
+      }, 0)
+
+      return {
+        write: vi.fn(),
+        end: vi.fn(),
+        on: vi.fn(),
+      } as any
+    })
+
+    const options: RequestOptions = {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Test-Agent',
+        'X-Custom-Header': 'custom-value',
+      },
+    }
+
+    await httpRequest('https://example.com', options)
+
+    expect(capturedOptions[0].headers).toMatchObject({
+      'User-Agent': 'Test-Agent',
+      'X-Custom-Header': 'custom-value',
+    })
   })
 })
