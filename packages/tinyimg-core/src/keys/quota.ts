@@ -53,7 +53,7 @@ export function updateCompressionCountCache(key: string, count: number): void {
  * Get the cached compression count for a given API key.
  * Returns undefined if not cached.
  *
- * @internal Exported for testing only
+ * @internal
  */
 export function getCachedCompressionCount(key: string): number | undefined {
   return compressionCountCache.get(key)
@@ -63,7 +63,7 @@ export function getCachedCompressionCount(key: string): number | undefined {
  * Clear the compression-count cache.
  * Useful for testing and resetting state.
  *
- * @internal Exported for testing only
+ * @internal
  */
 export function clearCompressionCountCache(): void {
   compressionCountCache.clear()

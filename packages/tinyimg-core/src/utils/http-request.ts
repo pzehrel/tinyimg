@@ -1,5 +1,5 @@
-import { Buffer } from 'node:buffer'
 import type { IncomingMessage } from 'node:http'
+import { Buffer } from 'node:buffer'
 import https from 'node:https'
 
 const MAX_REDIRECTS = 5
@@ -93,15 +93,36 @@ export async function httpRequest<T = Buffer>(
           return
         }
 
-        // Handle errors (4xx/5xx)
-        let data = ''
+        // Handle errors (4xx/5xx) - return response for caller to handle
+        const chunks: Buffer[] = []
+
         res.on('data', (chunk: Buffer) => {
-          data += chunk.toString()
+          chunks.push(chunk)
         })
 
         res.on('end', () => {
-          const error = new Error(`HTTP ${statusCode}: ${data}`)
-          ;(error as any).statusCode = statusCode
+          const buffer = Buffer.concat(chunks)
+
+          // Try to parse as JSON first
+          try {
+            const json = JSON.parse(buffer.toString()) as T
+            resolve({
+              statusCode,
+              headers: res.headers as Record<string, string | string[]>,
+              data: json,
+            })
+          }
+          catch {
+            // If JSON parse fails, return buffer
+            resolve({
+              statusCode,
+              headers: res.headers as Record<string, string | string[]>,
+              data: buffer as T,
+            })
+          }
+        })
+
+        res.on('error', (error: Error) => {
           reject(error)
         })
       },

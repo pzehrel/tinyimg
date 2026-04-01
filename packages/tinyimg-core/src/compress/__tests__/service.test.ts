@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { readCacheByHash } from '../../cache/buffer-storage'
 import { KeyPool } from '../../keys/pool'
+import { TinyPngHttpClient } from '../http-client'
 import { compressImage, compressImages } from '../service'
 import { createMockPngBuffer, SMALL_PNG } from './fixtures'
-import { TinyPngHttpClient } from '../http-client'
 
 // Mock the dependencies
 vi.mock('../../keys/pool')

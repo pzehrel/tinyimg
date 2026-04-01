@@ -130,6 +130,20 @@ export class TinyPngHttpClient {
     )
 
     if (!response.data.output?.url) {
+      // Determine error type based on statusCode
+      const error: any = new Error()
+      if (response.statusCode >= 400 && response.statusCode < 500) {
+        error.message = `TinyPNG 客户端错误: HTTP ${response.statusCode}`
+        error.statusCode = response.statusCode
+        error.errorCode = 'CLIENT_ERROR'
+        throw error
+      }
+      if (response.statusCode >= 500) {
+        error.message = `TinyPNG 服务器错误: HTTP ${response.statusCode}`
+        error.statusCode = response.statusCode
+        error.errorCode = 'SERVER_ERROR'
+        throw error
+      }
       throw new Error('No output URL in response')
     }
 

@@ -25,7 +25,7 @@ describe('queryQuota', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn(JSON.stringify({ compressionCount: 42 }))
+            fn(Buffer.from(JSON.stringify({ compressionCount: 42 })))
           }
           else if (event === 'end') {
             fn()
@@ -54,7 +54,7 @@ describe('queryQuota', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn(JSON.stringify({}))
+            fn(Buffer.from(JSON.stringify({})))
           }
           else if (event === 'end') {
             fn()
@@ -83,7 +83,7 @@ describe('queryQuota', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn(JSON.stringify({ compressionCount: 0 }))
+            fn(Buffer.from(JSON.stringify({ compressionCount: 0 })))
           }
           else if (event === 'end') {
             fn()
@@ -257,7 +257,7 @@ describe('queryQuota', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn(JSON.stringify({ compressionCount: 500 }))
+            fn(Buffer.from(JSON.stringify({ compressionCount: 500 })))
           }
           else if (event === 'end') {
             fn()
@@ -286,7 +286,7 @@ describe('queryQuota', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn(JSON.stringify({ compressionCount: 501 }))
+            fn(Buffer.from(JSON.stringify({ compressionCount: 501 })))
           }
           else if (event === 'end') {
             fn()
@@ -398,8 +398,9 @@ describe('compression-count cache', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn(JSON.stringify({ compressionCount: 42 }))
-          } else if (event === 'end') {
+            fn(Buffer.from(JSON.stringify({ compressionCount: 42 })))
+          }
+          else if (event === 'end') {
             fn()
           }
         })
@@ -438,8 +439,9 @@ describe('compression-count cache', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn(JSON.stringify({ compressionCount: count }))
-          } else if (event === 'end') {
+            fn(Buffer.from(JSON.stringify({ compressionCount: count })))
+          }
+          else if (event === 'end') {
             fn()
           }
         })

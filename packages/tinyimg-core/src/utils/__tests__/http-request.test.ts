@@ -292,7 +292,7 @@ describe('httpRequest', () => {
     }
   })
 
-  it('should handle 4xx errors and create error object with statusCode', async () => {
+  it('should handle 4xx errors and return response with statusCode', async () => {
     const clientErrors = [400, 401, 403, 404]
 
     for (const statusCode of clientErrors) {
@@ -303,7 +303,7 @@ describe('httpRequest', () => {
             headers: {},
             on: vi.fn((event, cb) => {
               if (event === 'data') {
-                cb('error message')
+                cb(Buffer.from('error message'))
               }
               else if (event === 'end') {
                 cb()
@@ -324,24 +324,24 @@ describe('httpRequest', () => {
         method: 'GET',
       }
 
-      await expect(httpRequest('https://example.com', options)).rejects.toMatchObject({
-        statusCode,
-      })
+      const result = await httpRequest('https://example.com', options)
+      expect(result.statusCode).toBe(statusCode)
+      expect(result.data).toBe('error message')
     }
   })
 
-  it('should handle 5xx errors and create error object with statusCode', async () => {
+  it('should handle 5xx errors and return response with statusCode', async () => {
     const serverErrors = [500, 502, 503]
 
     for (const statusCode of serverErrors) {
-      vi.mocked(https.request).mockImplementationOnce((url, options, callback) => {
+        vi.mocked(https.request).mockImplementationOnce((url, options, callback) => {
         setTimeout(() => {
           const res = {
             statusCode,
             headers: {},
             on: vi.fn((event, cb) => {
               if (event === 'data') {
-                cb('server error')
+                cb(Buffer.from('server error'))
               }
               else if (event === 'end') {
                 cb()
@@ -362,9 +362,9 @@ describe('httpRequest', () => {
         method: 'GET',
       }
 
-      await expect(httpRequest('https://example.com', options)).rejects.toMatchObject({
-        statusCode,
-      })
+      const result = await httpRequest('https://example.com', options)
+      expect(result.statusCode).toBe(statusCode)
+      expect(result.data).toBe('server error')
     }
   })
 

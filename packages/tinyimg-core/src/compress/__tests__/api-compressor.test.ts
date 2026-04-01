@@ -46,7 +46,7 @@ describe('tinyPngApiCompressor', () => {
             if (event === 'data') {
               if (requestCount === 1) {
                 // Upload request - return JSON
-                fn(JSON.stringify({ output: { url: mockOutputUrl } }))
+                fn(Buffer.from(JSON.stringify({ output: { url: mockOutputUrl } })))
               }
               else {
                 // Download request - return PNG buffer
@@ -106,7 +106,7 @@ describe('tinyPngApiCompressor', () => {
             if (event === 'data') {
               if (requestCount === 1) {
                 // Upload request - return JSON
-                fn(JSON.stringify({ output: { url: mockOutputUrl } }))
+                fn(Buffer.from(JSON.stringify({ output: { url: mockOutputUrl } })))
               }
               else {
                 // Download request - return PNG buffer
@@ -151,11 +151,11 @@ describe('tinyPngApiCompressor', () => {
             if (event === 'data') {
               if (attemptCount === 1) {
                 // First attempt - server error
-                fn('Internal Server Error')
+                fn(Buffer.from('Internal Server Error'))
               }
               else if (attemptCount === 2) {
                 // Second attempt - upload success
-                fn(JSON.stringify({ output: { url: mockOutputUrl } }))
+                fn(Buffer.from(JSON.stringify({ output: { url: mockOutputUrl } })))
               }
               else {
                 // Download request
@@ -190,7 +190,7 @@ describe('tinyPngApiCompressor', () => {
           const listeners = mockRes.on.mock.calls
           listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
             if (event === 'data') {
-              fn('Unauthorized')
+              fn(Buffer.from('Unauthorized'))
             }
             else if (event === 'end') {
               fn()

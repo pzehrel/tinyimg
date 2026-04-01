@@ -1,9 +1,9 @@
 import type { Buffer } from 'node:buffer'
 import type { KeyPool } from '../keys/pool'
 import type { ICompressor } from './types'
+import { updateCompressionCountCache } from '../keys/quota'
 import { logInfo, logWarning } from '../utils/logger'
 import { TinyPngHttpClient } from './http-client'
-import { updateCompressionCountCache } from '../keys/quota'
 import { RetryManager } from './retry'
 
 // Re-export TinyPngWebCompressor for convenience

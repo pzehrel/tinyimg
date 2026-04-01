@@ -24,11 +24,11 @@ describe('validateKey', () => {
 
       callback(mockRes)
 
-      setTimeout(() => {
+        setTimeout(() => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn('') // Empty response for validation
+            fn(Buffer.from('')) // Empty response for validation
           }
           else if (event === 'end') {
             fn()
@@ -59,7 +59,7 @@ describe('validateKey', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn('Unauthorized')
+            fn(Buffer.from('Unauthorized'))
           }
           else if (event === 'end') {
             fn()
@@ -90,7 +90,7 @@ describe('validateKey', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn('Forbidden')
+            fn(Buffer.from('Forbidden'))
           }
           else if (event === 'end') {
             fn()
@@ -120,7 +120,7 @@ describe('validateKey', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn('Bad Request')
+            fn(Buffer.from('Bad Request'))
           }
           else if (event === 'end') {
             fn()
@@ -150,7 +150,7 @@ describe('validateKey', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn('Internal Server Error')
+            fn(Buffer.from('Internal Server Error'))
           }
           else if (event === 'end') {
             fn()
@@ -178,7 +178,7 @@ describe('validateKey', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn('Service Unavailable')
+            fn(Buffer.from('Service Unavailable'))
           }
           else if (event === 'end') {
             fn()
