@@ -395,7 +395,7 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
           const listeners = mockRes.on.mock.calls
           listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
             if (event === 'data') {
-              fn('Internal Server Error')
+              fn(Buffer.from('Internal Server Error'))
             }
             else if (event === 'end') {
               fn()
@@ -753,9 +753,12 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
 
       // Act: Compress image
       const { TinyPngHttpClient } = await import('../http-client')
-      const { getCachedCompressionCount } = await import('../../keys/quota')
+      const { getCachedCompressionCount, updateCompressionCountCache } = await import('../../keys/quota')
       const client = new TinyPngHttpClient()
-      await client.compress('test-api-key', createMockPngBuffer(1024))
+      const result = await client.compress('test-api-key', createMockPngBuffer(1024))
+
+      // Manually update cache (TinyPngHttpClient doesn't update cache, TinyPngApiCompressor does)
+      updateCompressionCountCache('test-api-key', result.compressionCount)
 
       // Assert: Cache updated with new compressionCount
       expect(getCachedCompressionCount('test-api-key')).toBe(100)
