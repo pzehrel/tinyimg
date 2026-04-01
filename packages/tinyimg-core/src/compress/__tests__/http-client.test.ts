@@ -50,6 +50,35 @@ describe('tinyPngHttpClient', () => {
       expect(mockHttpRequest).toHaveBeenCalledTimes(2)
     })
 
+    it('should handle undefined compressionCount in upload response', async () => {
+      const mockInputBuffer = createMockPngBuffer(1024)
+      const mockCompressedBuffer = createMockPngBuffer(512)
+      const mockOutputUrl = 'https://api.tinify.com/output/abc123'
+
+      // Mock upload request without compressionCount field
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        data: {
+          output: { url: mockOutputUrl },
+          // compressionCount field missing
+        },
+      })
+
+      // Mock download request
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        data: mockCompressedBuffer,
+      })
+
+      const result = await client.compress('test-api-key', mockInputBuffer)
+
+      expect(result.buffer).toEqual(mockCompressedBuffer)
+      expect(result.compressionCount).toBe(0)
+      expect(mockHttpRequest).toHaveBeenCalledTimes(2)
+    })
+
     it('should follow 302 redirects when downloading', async () => {
       const mockInputBuffer = createMockPngBuffer(1024)
       const mockCompressedBuffer = createMockPngBuffer(512)
