@@ -1,9 +1,15 @@
 import { Buffer } from 'node:buffer'
 import https from 'node:https'
 import { maskKey } from '../keys/masker'
+import { httpRequest } from '../utils/http-request'
 
 const TINYPNG_API_URL = 'https://api.tinify.com/shrink'
 const MAX_REDIRECTS = 5
+
+export interface CompressResult {
+  buffer: Buffer
+  compressionCount: number
+}
 
 export class TinyPngHttpClient {
   private redirectCount = 0
@@ -232,62 +238,33 @@ export class TinyPngHttpClient {
    *
    * @param key - TinyPNG API key
    * @param buffer - Image buffer to upload
-   * @returns URL of compressed image
+   * @returns URL of compressed image and compression count
    */
-  private async uploadImage(key: string, buffer: Buffer): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const authHeader = this.createAuthHeader(key)
-
-      const req = https.request(
-        TINYPNG_API_URL,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': authHeader,
-            'Content-Type': 'application/octet-stream',
-            'Content-Length': buffer.byteLength,
-          },
+  private async uploadImage(key: string, buffer: Buffer): Promise<{ url: string, compressionCount: number }> {
+    const response = await httpRequest<{ output: { url: string }, compressionCount?: number }>(
+      TINYPNG_API_URL,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': this.createAuthHeader(key),
+          'Content-Type': 'application/octet-stream',
+          'Content-Length': buffer.byteLength,
         },
-        (res) => {
-          let data = ''
+        body: buffer,
+      },
+    )
 
-          res.on('data', (chunk) => {
-            data += chunk
-          })
+    if (!response.data.output?.url) {
+      throw new Error('No output URL in response')
+    }
 
-          res.on('end', () => {
-            const statusCode = res.statusCode || 0
+    // Handle undefined compressionCount (TinyPNG API may not return this field)
+    const compressionCount = response.data.compressionCount ?? 0
 
-            // Success: 2xx status codes
-            if (statusCode >= 200 && statusCode < 300) {
-              try {
-                const response = JSON.parse(data)
-                if (!response.output?.url) {
-                  return reject(new Error('No output URL in response'))
-                }
-                return resolve(response.output.url)
-              }
-              catch (error: any) {
-                return reject(new Error(`Failed to parse response: ${error.message}`))
-              }
-            }
-
-            // Error: non-2xx status codes
-            const error = this.createError(statusCode, data, key)
-            reject(error)
-          })
-        },
-      )
-
-      req.on('error', (error) => {
-        // Network errors preserve error.code
-        reject(error)
-      })
-
-      // Write buffer directly (not using stream.pipe)
-      req.write(buffer)
-      req.end()
-    })
+    return {
+      url: response.data.output.url,
+      compressionCount,
+    }
   }
 
   /**
