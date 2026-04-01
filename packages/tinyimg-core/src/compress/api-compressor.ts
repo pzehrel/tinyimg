@@ -3,6 +3,7 @@ import type { KeyPool } from '../keys/pool'
 import type { ICompressor } from './types'
 import { logInfo, logWarning } from '../utils/logger'
 import { TinyPngHttpClient } from './http-client'
+import { updateCompressionCountCache } from '../keys/quota'
 import { RetryManager } from './retry'
 
 // Re-export TinyPngWebCompressor for convenience
@@ -34,14 +35,20 @@ export class TinyPngApiCompressor implements ICompressor {
       const client = new TinyPngHttpClient()
 
       const originalSize = buffer.byteLength
-      const result = await client.compress(key, buffer)
-      const compressedSize = result.buffer.byteLength
+      const { buffer: compressedBuffer, compressionCount } = await client.compress(key, buffer)
+      const compressedSize = compressedBuffer.byteLength
       const saved = ((1 - compressedSize / originalSize) * 100).toFixed(1)
+
+      // Update compression-count cache (D-14, 解决 warning #2)
+      // compressionCount 可能为 undefined（如果 TinyPNG API 不返回该字段）
+      if (typeof compressionCount === 'number') {
+        updateCompressionCountCache(key, compressionCount)
+      }
 
       this.keyPool.decrementQuota()
       logInfo(`Compressed with [TinyPngApiCompressor]: ${originalSize} → ${compressedSize} (saved ${saved}%)`)
 
-      return result.buffer
+      return compressedBuffer
     })
   }
 
