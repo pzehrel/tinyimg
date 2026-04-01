@@ -1,6 +1,7 @@
 import type { ICompressor } from './types'
 import { Buffer } from 'node:buffer'
 import https from 'node:https'
+import UserAgent from 'user-agents'
 import { logInfo } from '../utils/logger'
 import { RetryManager } from './retry'
 
@@ -9,9 +10,12 @@ const TINYPNG_WEB_URL = 'https://tinypng.com/backend/opt/shrink'
 export class TinyPngWebCompressor implements ICompressor {
   private retryManager: RetryManager
   private requestHeaders?: Record<string, string>
+  private userAgentGenerator: UserAgent
 
   constructor(maxRetries: number = 8) {
     this.retryManager = new RetryManager(maxRetries)
+    // Initialize user-agents with desktop filter (UA-03)
+    this.userAgentGenerator = new UserAgent({ deviceCategory: 'desktop' })
   }
 
   async compress(buffer: Buffer): Promise<Buffer> {
@@ -40,31 +44,9 @@ export class TinyPngWebCompressor implements ICompressor {
   }
 
   private getRandomUserAgent(): string {
-    const userAgents = [
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 14.2; rv:121.0) Gecko/20100101 Firefox/121.0',
-      'Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0',
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0',
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 14.1; rv:120.0) Gecko/20100101 Firefox/120.0',
-      'Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0',
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:119.0) Gecko/20100101 Firefox/119.0',
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 14.0; rv:119.0) Gecko/20100101 Firefox/119.0',
-      'Mozilla/5.0 (X11; Linux x86_64; rv:119.0) Gecko/20100101 Firefox/119.0',
-    ]
-
-    const randomIndex = Math.floor(Math.random() * userAgents.length)
-    return userAgents[randomIndex]
+    // Generate new random user agent for each request (UA-02)
+    const userAgent = this.userAgentGenerator.random()
+    return userAgent.toString()
   }
 
   private getRandomIPv4(): string {
