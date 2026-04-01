@@ -612,4 +612,103 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
       expect(requestSpy).toHaveBeenCalled()
     })
   })
+
+  describe('compression-count cache integration', () => {
+    beforeEach(async () => {
+      // Clear cache before each test
+      const { clearCompressionCountCache } = await import('../../keys/quota')
+      clearCompressionCountCache()
+    })
+
+    it('should cache compression-count after queryQuota call', async () => {
+      // Arrange: Mock HTTPS response
+      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
+        const mockRes = {
+          statusCode: 200,
+          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
+            if (event === 'data') {
+              process.nextTick(() => fn(JSON.stringify({ compressionCount: 42 })))
+            }
+            else if (event === 'end') {
+              process.nextTick(() => fn())
+            }
+            return mockRes
+          }),
+        }
+        callback(mockRes)
+        return createMockClientRequest()
+      })
+
+      // Act: First queryQuota call
+      const { queryQuota, getCachedCompressionCount } = await import('../../keys/quota')
+      const result1 = await queryQuota('test-api-key')
+
+      // Assert: HTTP request sent, cache populated
+      expect(requestSpy).toHaveBeenCalled()
+      expect(result1).toBe(458) // 500 - 42
+      expect(getCachedCompressionCount('test-api-key')).toBe(42)
+
+      // Act: Second queryQuota call (should use cache)
+      vi.clearAllMocks()
+      const result2 = await queryQuota('test-api-key')
+
+      // Assert: No HTTP request sent, cache hit
+      expect(requestSpy).not.toHaveBeenCalled()
+      expect(result2).toBe(458)
+    })
+
+    it('should update cache after compress operation', async () => {
+      // Arrange: Setup mocks and compressor
+      let requestCount = 0
+      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
+        requestCount++
+
+        // Upload
+        if (requestCount === 1) {
+          const mockRes = {
+            statusCode: 200,
+            on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
+              if (event === 'data') {
+                process.nextTick(() => fn(JSON.stringify({
+                  output: { url: 'https://api.tinify.com/output/test.png' },
+                  compressionCount: 100,
+                })))
+              }
+              else if (event === 'end') {
+                process.nextTick(() => fn())
+              }
+              return mockRes
+            }),
+          }
+          callback(mockRes)
+          return createMockClientRequest()
+        }
+
+        // Download
+        const mockRes = {
+          statusCode: 200,
+          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
+            if (event === 'data') {
+              process.nextTick(() => fn(createMockPngBuffer(512)))
+            }
+            else if (event === 'end') {
+              process.nextTick(() => fn())
+            }
+            return mockRes
+          }),
+        }
+        callback(mockRes)
+        return createMockClientRequest()
+      })
+
+      // Act: Compress image
+      const { TinyPngHttpClient } = await import('../http-client')
+      const { getCachedCompressionCount } = await import('../../keys/quota')
+      const client = new TinyPngHttpClient()
+      await client.compress('test-api-key', createMockPngBuffer(1024))
+
+      // Assert: Cache updated with new compressionCount
+      expect(getCachedCompressionCount('test-api-key')).toBe(100)
+    })
+  })
 })
