@@ -46,7 +46,10 @@ describe('compressImage', () => {
     it('should compress and cache when cache miss', async () => {
       // Arrange: Set up empty cache, mock successful compression
       const compressedBuffer = createMockPngBuffer(512)
-      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue(compressedBuffer)
+      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue({
+        buffer: compressedBuffer,
+        compressionCount: 0,
+      })
 
       // Mock cache miss
       vi.mocked(readCacheByHash).mockResolvedValue(null)
@@ -81,7 +84,10 @@ describe('compressImage', () => {
       // Arrange: Mock cache to throw error (corruption simulation)
       vi.mocked(readCacheByHash).mockRejectedValue(new Error('Cache corrupted'))
       const compressedBuffer = createMockPngBuffer(512)
-      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue(compressedBuffer)
+      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue({
+        buffer: compressedBuffer,
+        compressionCount: 0,
+      })
 
       // Act: Call compressImage() despite cache error
       const result = await compressImage(SMALL_PNG, { cache: true, keyPool: mockKeyPool })
@@ -95,7 +101,10 @@ describe('compressImage', () => {
     it('should use API compressor when keys available', async () => {
       // Arrange: Set up KeyPool with valid keys, mock API compressor success
       const compressedBuffer = createMockPngBuffer(512)
-      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue(compressedBuffer)
+      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue({
+        buffer: compressedBuffer,
+        compressionCount: 0,
+      })
 
       // Act: Call compressImage() with test image
       const result = await compressImage(SMALL_PNG, { mode: 'api', keyPool: mockKeyPool })
@@ -111,7 +120,10 @@ describe('compressImage', () => {
       // Full fallback integration is tested in web-compressor.test.ts
       // Arrange: Mock API compressor to succeed
       const compressedBuffer = createMockPngBuffer(512)
-      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue(compressedBuffer)
+      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue({
+        buffer: compressedBuffer,
+        compressionCount: 0,
+      })
 
       // Act: Call compressImage() with API mode
       const result = await compressImage(SMALL_PNG, { mode: 'api', keyPool: mockKeyPool })
@@ -126,7 +138,10 @@ describe('compressImage', () => {
     it('should respect concurrency limit', async () => {
       // Arrange: Set up successful compression
       const compressedBuffer = createMockPngBuffer(512)
-      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue(compressedBuffer)
+      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue({
+        buffer: compressedBuffer,
+        compressionCount: 0,
+      })
 
       const buffers = [
         SMALL_PNG,
@@ -149,7 +164,10 @@ describe('compressImage', () => {
     it('should process all images with proper concurrency', async () => {
       // Arrange: Set up successful compression
       const compressedBuffer = createMockPngBuffer(512)
-      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue(compressedBuffer)
+      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue({
+        buffer: compressedBuffer,
+        compressionCount: 0,
+      })
 
       const buffers = [
         SMALL_PNG,
@@ -187,7 +205,10 @@ describe('compressImage', () => {
       // Full web compressor error handling is tested in web-compressor.test.ts
       // Arrange: Set up successful compression
       const compressedBuffer = createMockPngBuffer(512)
-      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue(compressedBuffer)
+      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue({
+        buffer: compressedBuffer,
+        compressionCount: 0,
+      })
 
       // Act: Call compressImage() - should handle errors gracefully
       const result = await compressImage(SMALL_PNG, { mode: 'api', keyPool: mockKeyPool })
@@ -203,7 +224,10 @@ describe('compressImage', () => {
       // This is an integration test with real cache operations
       // Arrange: Use actual cache operations
       const compressedBuffer = createMockPngBuffer(512)
-      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue(compressedBuffer)
+      vi.spyOn(TinyPngHttpClient.prototype, 'compress').mockResolvedValue({
+        buffer: compressedBuffer,
+        compressionCount: 0,
+      })
 
       // Act: First call - cache miss, compress and cache
       const result1 = await compressImage(SMALL_PNG, { cache: true, keyPool: mockKeyPool })
