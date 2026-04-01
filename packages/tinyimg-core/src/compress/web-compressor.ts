@@ -1,5 +1,5 @@
+import type { Buffer } from 'node:buffer'
 import type { ICompressor } from './types'
-import { Buffer } from 'node:buffer'
 import UserAgent from 'user-agents'
 import { httpRequest } from '../utils/http-request'
 import { logInfo } from '../utils/logger'
@@ -64,7 +64,7 @@ export class TinyPngWebCompressor implements ICompressor {
         method: 'POST',
         headers: {
           'Content-Type': 'application/octet-stream',
-          'Content-Length': buffer.byteLength,
+          'Content-Length': String(buffer.byteLength),
           ...this.requestHeaders,
         },
         body: buffer,
