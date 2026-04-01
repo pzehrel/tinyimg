@@ -112,7 +112,7 @@ describe('queryQuota', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn('Unauthorized')
+            fn(Buffer.from('Unauthorized'))
           }
           else if (event === 'end') {
             fn()
@@ -141,7 +141,7 @@ describe('queryQuota', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn('Forbidden')
+            fn(Buffer.from('Forbidden'))
           }
           else if (event === 'end') {
             fn()
@@ -170,7 +170,7 @@ describe('queryQuota', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn('Internal Server Error')
+            fn(Buffer.from('Internal Server Error'))
           }
           else if (event === 'end') {
             fn()
@@ -199,7 +199,7 @@ describe('queryQuota', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn('Service Unavailable')
+            fn(Buffer.from('Service Unavailable'))
           }
           else if (event === 'end') {
             fn()
@@ -228,7 +228,7 @@ describe('queryQuota', () => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
-            fn('Too Many Requests')
+            fn(Buffer.from('Too Many Requests'))
           }
           else if (event === 'end') {
             fn()
