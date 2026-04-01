@@ -1,7 +1,6 @@
 import type { IncomingMessage } from 'node:http'
 import { Buffer } from 'node:buffer'
 import * as https from 'node:https'
-import tinify from 'tinify'
 import { vi } from 'vitest'
 
 /**
@@ -78,75 +77,6 @@ export const SMALL_PNG = createMockPngBuffer(1024)
  * Exceeds the 5MB limit for TinyPngApiCompressor.
  */
 export const LARGE_PNG = createMockPngBuffer(6 * 1024 * 1024)
-
-/**
- * Mock tinify API for successful compression.
- *
- * @param responseBuffer - The buffer to return from toBuffer()
- *
- * @example
- * ```ts
- * const mockTinify = mockTinifySuccess(compressedBuffer)
- * // tinify.fromBuffer().toBuffer() will return compressedBuffer
- * ```
- */
-export function mockTinifySuccess(responseBuffer: Buffer): void {
-  const mockSource = {
-    toBuffer: vi.fn().mockResolvedValue(responseBuffer),
-  }
-
-  vi.spyOn(tinify, 'fromBuffer').mockReturnValue(mockSource as any)
-}
-
-/**
- * Mock tinify.compressionCount for quota testing.
- *
- * @param count - The compression count to return
- *
- * @example
- * ```ts
- * mockTinifyQuota(42)
- * console.log(tinify.compressionCount) // 42
- * ```
- */
-export function mockTinifyQuota(count: number): void {
-  Object.defineProperty(tinify, 'compressionCount', {
-    value: count,
-    writable: true,
-    configurable: true,
-  })
-}
-
-/**
- * Mock tinify API for validation errors.
- *
- * @param message - Error message to throw
- *
- * @example
- * ```ts
- * mockTinifyValidationError('Invalid API key')
- * // tinify.fromBuffer() will throw with message
- * ```
- */
-export function mockTinifyValidationError(message: string): void {
-  vi.spyOn(tinify, 'fromBuffer').mockImplementation(() => {
-    throw new Error(message)
-  })
-}
-
-/**
- * Reset all tinify mocks to their original behavior.
- *
- * @example
- * ```ts
- * afterEach(() => {
- *   resetTinifyMocks()
- * })
- * ```
- */
-export function resetTinifyMocks(): void {
-  vi.restoreAllMocks()
-}
 
 /**
  * Mock HTTPS request for successful tinypng.com web interface response.
