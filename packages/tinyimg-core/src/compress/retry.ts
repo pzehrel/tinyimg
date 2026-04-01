@@ -42,7 +42,12 @@ export class RetryManager {
       return true
     }
 
-    // Don't retry on 4xx client errors
+    // Rate limited (429) should be retried
+    if (error.statusCode === 429 || error.errorCode === 'RATE_LIMITED') {
+      return true
+    }
+
+    // Don't retry on other 4xx client errors
     return false
   }
 
