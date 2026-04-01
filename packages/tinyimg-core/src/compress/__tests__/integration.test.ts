@@ -576,4 +576,40 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
       expect(result.compressionCount).toBe(0)
     })
   })
+
+  describe('TinyPngWebCompressor user-agents integration', () => {
+    it('should compress image using user-agents generated headers', async () => {
+      // Arrange: Mock HTTPS with success response
+      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
+        const mockRes = {
+          statusCode: 200,
+          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
+            if (event === 'data') {
+              process.nextTick(() => fn(JSON.stringify({ output: { url: 'https://tinypng.com/output/test.png' } })))
+            }
+            else if (event === 'end') {
+              process.nextTick(() => fn())
+            }
+            return mockRes
+          }),
+        }
+        callback(mockRes)
+
+        // Verify headers contain User-Agent and X-Forwarded-For
+        expect(options.headers).toBeDefined()
+        expect(options.headers['User-Agent']).toBeDefined()
+        expect(options.headers['X-Forwarded-For']).toBeDefined()
+
+        return createMockClientRequest()
+      })
+
+      // Act: Compress image
+      const { TinyPngWebCompressor } = await import('../web-compressor')
+      const compressor = new TinyPngWebCompressor()
+      await compressor.compress(createMockPngBuffer(1024))
+
+      // Assert: Headers were generated and used
+      expect(requestSpy).toHaveBeenCalled()
+    })
+  })
 })
