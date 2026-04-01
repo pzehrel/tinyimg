@@ -1,7 +1,7 @@
 import type { ICompressor } from './types'
 import { Buffer } from 'node:buffer'
-import https from 'node:https'
 import UserAgent from 'user-agents'
+import { httpRequest } from '../utils/http-request'
 import { logInfo } from '../utils/logger'
 import { RetryManager } from './retry'
 
@@ -55,57 +55,27 @@ export class TinyPngWebCompressor implements ICompressor {
   }
 
   private async uploadToTinyPngWeb(buffer: Buffer): Promise<string> {
-    return new Promise((resolve, reject) => {
-      // Generate random headers for this request
-      this.requestHeaders = this.getRandomHeaders()
+    // Generate random headers for this request
+    this.requestHeaders = this.getRandomHeaders()
 
-      const req = https.request(
-        TINYPNG_WEB_URL,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/octet-stream',
-            'Content-Length': buffer.byteLength,
-            ...this.requestHeaders,
-          },
+    const response = await httpRequest<{ output: { url: string } }>(
+      TINYPNG_WEB_URL,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'Content-Length': buffer.byteLength,
+          ...this.requestHeaders,
         },
-        (res) => {
-          let data = ''
+        body: buffer,
+      },
+    )
 
-          res.on('data', (chunk) => {
-            data += chunk
-          })
+    if (!response.data.output?.url) {
+      throw new Error('No output URL in response')
+    }
 
-          res.on('end', () => {
-            if (res.statusCode !== 200) {
-              const error = new Error(`HTTP ${res.statusCode}: ${data}`)
-              ;(error as any).statusCode = res.statusCode
-              return reject(error)
-            }
-
-            try {
-              // Response contains JSON with output URL
-              const response = JSON.parse(data)
-              if (!response.output?.url) {
-                return reject(new Error('No output URL in response'))
-              }
-              resolve(response.output.url)
-            }
-            catch (error: any) {
-              reject(new Error(`Failed to parse response: ${error.message}`))
-            }
-          })
-        },
-      )
-
-      req.on('error', (error) => {
-        reject(error)
-      })
-
-      // Write raw buffer directly (not multipart)
-      req.write(buffer)
-      req.end()
-    })
+    return response.data.output.url
   }
 
   private async downloadCompressedImage(url: string): Promise<Buffer> {
