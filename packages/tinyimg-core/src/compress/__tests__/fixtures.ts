@@ -37,10 +37,10 @@ export function createMockHttpsResponse(options: MockResponseOptions): any {
     headers: options.headers || {},
     on: vi.fn((event: string, callback: (...args: any[]) => void) => {
       if (event === 'data') {
-        setTimeout(() => callback(data), 0)
+        setTimeout(callback, 0, data)
       }
       else if (event === 'end') {
-        setTimeout(() => callback(), 0)
+        setTimeout(callback, 0)
       }
       else if (event === 'error') {
         // Error handling - no-op by default

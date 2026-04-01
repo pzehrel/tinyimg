@@ -334,7 +334,7 @@ describe('httpRequest', () => {
     const serverErrors = [500, 502, 503]
 
     for (const statusCode of serverErrors) {
-        vi.mocked(https.request).mockImplementationOnce((url, options, callback) => {
+      vi.mocked(https.request).mockImplementationOnce((url, options, callback) => {
         setTimeout(() => {
           const res = {
             statusCode,

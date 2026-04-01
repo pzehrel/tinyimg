@@ -24,7 +24,7 @@ describe('validateKey', () => {
 
       callback(mockRes)
 
-        setTimeout(() => {
+      setTimeout(() => {
         const listeners = mockRes.on.mock.calls
         listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
           if (event === 'data') {
