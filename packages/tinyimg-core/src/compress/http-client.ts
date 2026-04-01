@@ -1,10 +1,8 @@
 import { Buffer } from 'node:buffer'
-import https from 'node:https'
 import { maskKey } from '../keys/masker'
 import { httpRequest } from '../utils/http-request'
 
 const TINYPNG_API_URL = 'https://api.tinify.com/shrink'
-const MAX_REDIRECTS = 5
 
 export interface CompressResult {
   buffer: Buffer
@@ -31,59 +29,40 @@ export class TinyPngHttpClient {
    * @returns true if key is valid, false otherwise
    */
   async validateKey(key: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      const authHeader = this.createAuthHeader(key)
-
-      const req = https.request(
+    try {
+      const response = await httpRequest<{}>(
         TINYPNG_API_URL,
         {
           method: 'POST',
           headers: {
-            'Authorization': authHeader,
+            'Authorization': this.createAuthHeader(key),
             'Content-Type': 'application/octet-stream',
           },
-        },
-        (res) => {
-          let data = ''
-
-          res.on('data', (chunk) => {
-            data += chunk
-          })
-
-          res.on('end', () => {
-            const statusCode = res.statusCode || 0
-
-            // Success: 2xx status codes
-            if (statusCode >= 200 && statusCode < 300) {
-              return resolve(true)
-            }
-
-            // Auth failed: 401/403 return false
-            if (statusCode === 401 || statusCode === 403) {
-              return resolve(false)
-            }
-
-            // Other 4xx errors return false
-            if (statusCode >= 400 && statusCode < 500) {
-              return resolve(false)
-            }
-
-            // 5xx errors should be retried
-            const error = this.createError(statusCode, data, key)
-            reject(error)
-          })
+          body: Buffer.alloc(0),
         },
       )
 
-      req.on('error', (error) => {
-        // Network errors preserve error.code
-        reject(error)
-      })
+      // Success: 2xx status codes
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return true
+      }
 
-      // Send empty buffer to trigger auth check
-      req.write(Buffer.alloc(0))
-      req.end()
-    })
+      // Auth failed: 401/403 return false
+      if (response.statusCode === 401 || response.statusCode === 403) {
+        return false
+      }
+
+      // Other 4xx errors return false
+      if (response.statusCode >= 400 && response.statusCode < 500) {
+        return false
+      }
+
+      return false
+    }
+    catch (error: any) {
+      // Network errors or 5xx errors - throw for retry
+      throw error
+    }
   }
 
   /**
@@ -93,67 +72,42 @@ export class TinyPngHttpClient {
    * @returns Number of compressions used this month
    */
   async getCompressionCount(key: string): Promise<number> {
-    return new Promise((resolve, reject) => {
-      const authHeader = this.createAuthHeader(key)
-
-      const req = https.request(
+    try {
+      const response = await httpRequest<{ compressionCount?: number }>(
         TINYPNG_API_URL,
         {
           method: 'POST',
           headers: {
-            'Authorization': authHeader,
+            'Authorization': this.createAuthHeader(key),
             'Content-Type': 'application/octet-stream',
           },
-        },
-        (res) => {
-          let data = ''
-
-          res.on('data', (chunk) => {
-            data += chunk
-          })
-
-          res.on('end', () => {
-            const statusCode = res.statusCode || 0
-
-            // Success: 2xx status codes
-            if (statusCode >= 200 && statusCode < 300) {
-              try {
-                const response = JSON.parse(data)
-                const count = response.compressionCount || 0
-                return resolve(count)
-              }
-              catch {
-                // If JSON parse fails, return 0
-                return resolve(0)
-              }
-            }
-
-            // Auth failed: 401/403 return 0
-            if (statusCode === 401 || statusCode === 403) {
-              return resolve(0)
-            }
-
-            // Other 4xx errors return 0
-            if (statusCode >= 400 && statusCode < 500) {
-              return resolve(0)
-            }
-
-            // 5xx errors should be retried
-            const error = this.createError(statusCode, data, key)
-            reject(error)
-          })
+          body: Buffer.alloc(0),
         },
       )
 
-      req.on('error', (error) => {
-        // Network errors preserve error.code
-        reject(error)
-      })
+      // Success: 2xx status codes
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        // Handle undefined compressionCount (TinyPNG API may not return this field)
+        return response.data.compressionCount ?? 0
+      }
 
-      // Send empty buffer to trigger request
-      req.write(Buffer.alloc(0))
-      req.end()
-    })
+      // Auth failed: 401/403 return 0
+      if (response.statusCode === 401 || response.statusCode === 403) {
+        return 0
+      }
+
+      // Other 4xx errors return 0
+      if (response.statusCode >= 400 && response.statusCode < 500) {
+        return 0
+      }
+
+      // 5xx errors should be retried
+      throw new Error(`HTTP ${response.statusCode}: Server error`)
+    }
+    catch (error: any) {
+      // Network errors preserve error.code
+      throw error
+    }
   }
 
   /**
@@ -165,69 +119,6 @@ export class TinyPngHttpClient {
   private createAuthHeader(key: string): string {
     const auth = Buffer.from(`api:${key}`).toString('base64')
     return `Basic ${auth}`
-  }
-
-  /**
-   * Create a structured error object with status code and error code.
-   *
-   * @param statusCode - HTTP status code
-   * @param responseBody - Response body string
-   * @param key - API key (for masking in error message)
-   * @returns Error object with statusCode and errorCode properties
-   */
-  private createError(statusCode: number, responseBody: string, key: string): Error {
-    const maskedKey = maskKey(key)
-    const truncatedBody = responseBody.length > 200
-      ? `${responseBody.substring(0, 200)}... (truncated)`
-      : responseBody
-
-    // Auth failed: 401/403
-    if (statusCode === 401 || statusCode === 403) {
-      const error = new Error(
-        `API key ${maskedKey} 认证失败（${statusCode}）: ${truncatedBody}`,
-      )
-      ;(error as any).statusCode = statusCode
-      ;(error as any).errorCode = 'AUTH_FAILED'
-      return error
-    }
-
-    // Rate limited: 429
-    if (statusCode === 429) {
-      const error = new Error(
-        `API 速率限制已超出（429 Too Many Requests）`,
-      )
-      ;(error as any).statusCode = statusCode
-      ;(error as any).errorCode = 'RATE_LIMITED'
-      return error
-    }
-
-    // Server error: 5xx
-    if (statusCode >= 500 && statusCode < 600) {
-      const error = new Error(
-        `TinyPNG 服务器错误（${statusCode}）: ${truncatedBody}`,
-      )
-      ;(error as any).statusCode = statusCode
-      ;(error as any).errorCode = 'SERVER_ERROR'
-      return error
-    }
-
-    // Other client errors: 4xx
-    if (statusCode >= 400 && statusCode < 500) {
-      const error = new Error(
-        `HTTP ${statusCode}: ${truncatedBody}`,
-      )
-      ;(error as any).statusCode = statusCode
-      ;(error as any).errorCode = 'CLIENT_ERROR'
-      return error
-    }
-
-    // Unknown error
-    const error = new Error(
-      `Unknown error (${statusCode}): ${truncatedBody}`,
-    )
-    ;(error as any).statusCode = statusCode
-    ;(error as any).errorCode = 'UNKNOWN'
-    return error
   }
 
   /**
