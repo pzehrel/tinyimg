@@ -326,7 +326,7 @@ describe('httpRequest', () => {
 
       const result = await httpRequest('https://example.com', options)
       expect(result.statusCode).toBe(statusCode)
-      expect(result.data).toBe('error message')
+      expect(result.data).toEqual(Buffer.from('error message'))
     }
   })
 
@@ -364,7 +364,7 @@ describe('httpRequest', () => {
 
       const result = await httpRequest('https://example.com', options)
       expect(result.statusCode).toBe(statusCode)
-      expect(result.data).toBe('server error')
+      expect(result.data).toEqual(Buffer.from('server error'))
     }
   })
 
