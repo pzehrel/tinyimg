@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import https from 'node:https'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TinyPngApiCompressor } from '../api-compressor'
@@ -17,17 +18,22 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
         const mockRes = {
           statusCode: 200,
           headers: { 'content-type': 'application/json' },
-          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
-            if (event === 'data') {
-              process.nextTick(() => fn(JSON.stringify({ output: { url: 'https://example.com/output.png' } })))
-            }
-            else if (event === 'end') {
-              process.nextTick(() => fn())
-            }
-            return mockRes
-          }),
+          on: vi.fn(),
         }
         callback(mockRes)
+
+        setTimeout(() => {
+          const listeners = mockRes.on.mock.calls
+          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
+            if (event === 'data') {
+              fn(JSON.stringify({ output: { url: 'https://example.com/output.png' } }))
+            }
+            else if (event === 'end') {
+              fn()
+            }
+          })
+        }, 0)
+
         return createMockClientRequest()
       })
 
@@ -50,17 +56,22 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
         const mockRes = {
           statusCode: 200,
           headers: { 'content-type': 'image/png' },
-          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
-            if (event === 'data') {
-              process.nextTick(() => fn(mockBuffer))
-            }
-            else if (event === 'end') {
-              process.nextTick(() => fn())
-            }
-            return mockRes
-          }),
+          on: vi.fn(),
         }
         callback(mockRes)
+
+        setTimeout(() => {
+          const listeners = mockRes.on.mock.calls
+          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
+            if (event === 'data') {
+              fn(mockBuffer)
+            }
+            else if (event === 'end') {
+              fn()
+            }
+          })
+        }, 0)
+
         return createMockClientRequest()
       })
 
@@ -464,7 +475,7 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
     })
   })
 
-  describe('TinyPngHttpClient compressionCount integration', () => {
+  describe('tinyPngHttpClient compressionCount integration', () => {
     it('should return compressionCount in compress result', async () => {
       // Arrange: Mock upload with compressionCount, download with buffer
       let requestCount = 0
@@ -476,37 +487,47 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
         if (requestCount === 1) {
           const mockRes = {
             statusCode: 200,
-            on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
-              if (event === 'data') {
-                process.nextTick(() => fn(JSON.stringify({
-                  output: { url: 'https://api.tinify.com/output/test.png' },
-                  compressionCount: 123,
-                })))
-              }
-              else if (event === 'end') {
-                process.nextTick(() => fn())
-              }
-              return mockRes
-            }),
+            on: vi.fn(),
           }
           callback(mockRes)
+
+          setTimeout(() => {
+            const listeners = mockRes.on.mock.calls
+            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
+              if (event === 'data') {
+                fn(JSON.stringify({
+                  output: { url: 'https://api.tinify.com/output/test.png' },
+                  compressionCount: 123,
+                }))
+              }
+              else if (event === 'end') {
+                fn()
+              }
+            })
+          }, 0)
+
           return createMockClientRequest()
         }
 
         // Download request
         const mockRes = {
           statusCode: 200,
-          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
-            if (event === 'data') {
-              process.nextTick(() => fn(createMockPngBuffer(512)))
-            }
-            else if (event === 'end') {
-              process.nextTick(() => fn())
-            }
-            return mockRes
-          }),
+          on: vi.fn(),
         }
         callback(mockRes)
+
+        setTimeout(() => {
+          const listeners = mockRes.on.mock.calls
+          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
+            if (event === 'data') {
+              fn(createMockPngBuffer(512))
+            }
+            else if (event === 'end') {
+              fn()
+            }
+          })
+        }, 0)
+
         return createMockClientRequest()
       })
 
@@ -532,37 +553,47 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
         if (requestCount === 1) {
           const mockRes = {
             statusCode: 200,
-            on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
-              if (event === 'data') {
-                process.nextTick(() => fn(JSON.stringify({
-                  output: { url: 'https://api.tinify.com/output/test.png' },
-                  // No compressionCount field
-                })))
-              }
-              else if (event === 'end') {
-                process.nextTick(() => fn())
-              }
-              return mockRes
-            }),
+            on: vi.fn(),
           }
           callback(mockRes)
+
+          setTimeout(() => {
+            const listeners = mockRes.on.mock.calls
+            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
+              if (event === 'data') {
+                fn(JSON.stringify({
+                  output: { url: 'https://api.tinify.com/output/test.png' },
+                  // No compressionCount field
+                }))
+              }
+              else if (event === 'end') {
+                fn()
+              }
+            })
+          }, 0)
+
           return createMockClientRequest()
         }
 
         // Download request
         const mockRes = {
           statusCode: 200,
-          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
-            if (event === 'data') {
-              process.nextTick(() => fn(createMockPngBuffer(512)))
-            }
-            else if (event === 'end') {
-              process.nextTick(() => fn())
-            }
-            return mockRes
-          }),
+          on: vi.fn(),
         }
         callback(mockRes)
+
+        setTimeout(() => {
+          const listeners = mockRes.on.mock.calls
+          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
+            if (event === 'data') {
+              fn(createMockPngBuffer(512))
+            }
+            else if (event === 'end') {
+              fn()
+            }
+          })
+        }, 0)
+
         return createMockClientRequest()
       })
 
@@ -577,21 +608,13 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
     })
   })
 
-  describe('TinyPngWebCompressor user-agents integration', () => {
+  describe('tinyPngWebCompressor user-agents integration', () => {
     it('should compress image using user-agents generated headers', async () => {
       // Arrange: Mock HTTPS with success response
       requestSpy.mockImplementation((url: any, options: any, callback: any) => {
         const mockRes = {
           statusCode: 200,
-          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
-            if (event === 'data') {
-              process.nextTick(() => fn(JSON.stringify({ output: { url: 'https://tinypng.com/output/test.png' } })))
-            }
-            else if (event === 'end') {
-              process.nextTick(() => fn())
-            }
-            return mockRes
-          }),
+          on: vi.fn(),
         }
         callback(mockRes)
 
@@ -599,6 +622,18 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
         expect(options.headers).toBeDefined()
         expect(options.headers['User-Agent']).toBeDefined()
         expect(options.headers['X-Forwarded-For']).toBeDefined()
+
+        setTimeout(() => {
+          const listeners = mockRes.on.mock.calls
+          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
+            if (event === 'data') {
+              fn(JSON.stringify({ output: { url: 'https://tinypng.com/output/test.png' } }))
+            }
+            else if (event === 'end') {
+              fn()
+            }
+          })
+        }, 0)
 
         return createMockClientRequest()
       })
@@ -625,17 +660,22 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
       requestSpy.mockImplementation((url: any, options: any, callback: any) => {
         const mockRes = {
           statusCode: 200,
-          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
-            if (event === 'data') {
-              process.nextTick(() => fn(JSON.stringify({ compressionCount: 42 })))
-            }
-            else if (event === 'end') {
-              process.nextTick(() => fn())
-            }
-            return mockRes
-          }),
+          on: vi.fn(),
         }
         callback(mockRes)
+
+        setTimeout(() => {
+          const listeners = mockRes.on.mock.calls
+          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
+            if (event === 'data') {
+              fn(JSON.stringify({ compressionCount: 42 }))
+            }
+            else if (event === 'end') {
+              fn()
+            }
+          })
+        }, 0)
+
         return createMockClientRequest()
       })
 
@@ -667,37 +707,47 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
         if (requestCount === 1) {
           const mockRes = {
             statusCode: 200,
-            on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
-              if (event === 'data') {
-                process.nextTick(() => fn(JSON.stringify({
-                  output: { url: 'https://api.tinify.com/output/test.png' },
-                  compressionCount: 100,
-                })))
-              }
-              else if (event === 'end') {
-                process.nextTick(() => fn())
-              }
-              return mockRes
-            }),
+            on: vi.fn(),
           }
           callback(mockRes)
+
+          setTimeout(() => {
+            const listeners = mockRes.on.mock.calls
+            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
+              if (event === 'data') {
+                fn(JSON.stringify({
+                  output: { url: 'https://api.tinify.com/output/test.png' },
+                  compressionCount: 100,
+                }))
+              }
+              else if (event === 'end') {
+                fn()
+              }
+            })
+          }, 0)
+
           return createMockClientRequest()
         }
 
         // Download
         const mockRes = {
           statusCode: 200,
-          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
-            if (event === 'data') {
-              process.nextTick(() => fn(createMockPngBuffer(512)))
-            }
-            else if (event === 'end') {
-              process.nextTick(() => fn())
-            }
-            return mockRes
-          }),
+          on: vi.fn(),
         }
         callback(mockRes)
+
+        setTimeout(() => {
+          const listeners = mockRes.on.mock.calls
+          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
+            if (event === 'data') {
+              fn(createMockPngBuffer(512))
+            }
+            else if (event === 'end') {
+              fn()
+            }
+          })
+        }, 0)
+
         return createMockClientRequest()
       })
 
