@@ -4,6 +4,52 @@ import * as https from 'node:https'
 import { vi } from 'vitest'
 
 /**
+ * Options for creating a mock HTTPS response.
+ */
+export interface MockResponseOptions {
+  statusCode: number
+  headers?: Record<string, string>
+  data?: string | Buffer
+}
+
+/**
+ * Create a complete mock HTTPS response object.
+ *
+ * @param options - Response options (status code, headers, data)
+ * @returns Mock response object with on() method for event handling
+ *
+ * @example
+ * ```ts
+ * const mockRes = createMockHttpsResponse({
+ *   statusCode: 200,
+ *   headers: { 'content-type': 'application/json' },
+ *   data: '{"success":true}'
+ * })
+ * ```
+ */
+export function createMockHttpsResponse(options: MockResponseOptions): any {
+  const data = typeof options.data === 'string'
+    ? Buffer.from(options.data)
+    : (options.data || Buffer.alloc(0))
+
+  return {
+    statusCode: options.statusCode,
+    headers: options.headers || {},
+    on: vi.fn((event: string, callback: (...args: any[]) => void) => {
+      if (event === 'data') {
+        setTimeout(() => callback(data), 0)
+      }
+      else if (event === 'end') {
+        setTimeout(() => callback(), 0)
+      }
+      else if (event === 'error') {
+        // Error handling - no-op by default
+      }
+    }),
+  }
+}
+
+/**
  * Create a mock PNG buffer with valid PNG magic bytes.
  *
  * PNG magic bytes: 89 50 4E 47 0D 0A 1A 0A
@@ -269,4 +315,42 @@ export function createMockClientRequest(): any {
   }
 
   return mockReq
+}
+
+/**
+ * Setup a unified HTTPS request mock with response builder.
+ *
+ * This helper reduces boilerplate in tests by providing a standard way to mock
+ * https.request with custom response logic.
+ *
+ * @param responseCallback - Function that returns MockResponseOptions for each request
+ * @returns Vitest spy mock for https.request
+ *
+ * @example
+ * ```ts
+ * setupHttpsRequestMock((url, options) => ({
+ *   statusCode: 200,
+ *   headers: { 'content-type': 'image/png' },
+ *   data: compressedBuffer
+ * }))
+ * ```
+ */
+export function setupHttpsRequestMock(
+  responseCallback: (url: any, options: any) => MockResponseOptions,
+): ReturnType<typeof vi.spyOn> {
+  return vi.spyOn(https, 'request').mockImplementation((
+    _url: any,
+    _options: any,
+    _callback?: any,
+  ) => {
+    const mockResponse = createMockHttpsResponse(responseCallback(_url, _options))
+
+    // Call the response callback if provided
+    const callback = _callback as ((res: IncomingMessage) => void) | undefined
+    if (callback) {
+      setTimeout(() => callback(mockResponse as any), 0)
+    }
+
+    return createMockClientRequest()
+  })
 }
