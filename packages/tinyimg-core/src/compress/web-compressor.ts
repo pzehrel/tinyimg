@@ -71,6 +71,13 @@ export class TinyPngWebCompressor implements ICompressor {
       },
     )
 
+    // Check for HTTP errors (4xx/5xx)
+    if (response.statusCode >= 400) {
+      const error = new Error(`HTTP ${response.statusCode}: ${JSON.stringify(response.data)}`)
+      ;(error as any).statusCode = response.statusCode
+      throw error
+    }
+
     if (!response.data.output?.url) {
       throw new Error('No output URL in response')
     }
@@ -89,6 +96,13 @@ export class TinyPngWebCompressor implements ICompressor {
         },
       },
     )
+
+    // Check for HTTP errors (4xx/5xx)
+    if (response.statusCode >= 400) {
+      const error = new Error(`HTTP ${response.statusCode} downloading compressed image`)
+      ;(error as any).statusCode = response.statusCode
+      throw error
+    }
 
     return response.data
   }
