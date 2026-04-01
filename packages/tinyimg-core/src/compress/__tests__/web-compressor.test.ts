@@ -11,7 +11,7 @@ vi.mock('../../utils/http-request', () => ({
 
 // Mock user-agents package
 vi.mock('user-agents', () => ({
-  default: vi.fn().mockImplementation(function() {
+  default: vi.fn().mockImplementation(() => {
     return {
       random: vi.fn().mockReturnValue({
         toString: vi.fn().mockReturnValue('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'),
@@ -56,7 +56,7 @@ describe('tinyPngWebCompressor', () => {
       }
 
       let uploadCallCount = 0
-      mockHttpRequest.mockImplementation(async (url, options) => {
+      mockHttpRequest.mockImplementation(async (url, _options) => {
         // Upload URL is TINYPNG_WEB_URL
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
@@ -85,7 +85,7 @@ describe('tinyPngWebCompressor', () => {
       // Arrange: First 2 attempts fail, 3rd succeeds
       let attemptCount = 0
 
-      mockHttpRequest.mockImplementation(async (url, options) => {
+      mockHttpRequest.mockImplementation(async (url, _options) => {
         // Upload URL is TINYPNG_WEB_URL
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
@@ -129,7 +129,7 @@ describe('tinyPngWebCompressor', () => {
       // Arrange: Mock upload and download
       const compressedBuffer = createMockPngBuffer(512)
 
-      mockHttpRequest.mockImplementation(async (url, options) => {
+      mockHttpRequest.mockImplementation(async (url, _options) => {
         // Upload URL is TINYPNG_WEB_URL
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
@@ -176,7 +176,7 @@ describe('tinyPngWebCompressor', () => {
       let attemptCount = 0
       const maxRetries = 3
 
-      mockHttpRequest.mockImplementation(async (url, options) => {
+      mockHttpRequest.mockImplementation(async (url, _options) => {
         // Upload URL is TINYPNG_WEB_URL
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
@@ -225,7 +225,7 @@ describe('tinyPngWebCompressor', () => {
 
       let capturedBody: Buffer | null = null
 
-      mockHttpRequest.mockImplementation(async (url, options) => {
+      mockHttpRequest.mockImplementation(async (url, _options) => {
         // Upload URL is TINYPNG_WEB_URL
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
@@ -266,7 +266,7 @@ describe('tinyPngWebCompressor', () => {
 
       let capturedHeaders: any = null
 
-      mockHttpRequest.mockImplementation(async (url, options) => {
+      mockHttpRequest.mockImplementation(async (url, _options) => {
         // Upload URL is TINYPNG_WEB_URL
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
@@ -309,7 +309,7 @@ describe('tinyPngWebCompressor', () => {
       let uploadHeaders: any = null
       let downloadHeaders: any = null
 
-      mockHttpRequest.mockImplementation(async (url, options) => {
+      mockHttpRequest.mockImplementation(async (url, _options) => {
         // Upload URL is TINYPNG_WEB_URL
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
@@ -351,7 +351,7 @@ describe('tinyPngWebCompressor', () => {
 
       let downloadRequestOptions: any = null
 
-      mockHttpRequest.mockImplementation(async (url, options) => {
+      mockHttpRequest.mockImplementation(async (url, _options) => {
         // Upload URL is TINYPNG_WEB_URL
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
@@ -410,7 +410,7 @@ describe('tinyPngWebCompressor', () => {
         data: compressedBuffer,
       }
 
-      mockHttpRequest.mockImplementation(async (url, options) => {
+      mockHttpRequest.mockImplementation(async (url, _options) => {
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
 
@@ -421,9 +421,6 @@ describe('tinyPngWebCompressor', () => {
           return downloadResponse
         }
       })
-
-      // Act: Create compressor (initializes user-agents with desktop filter)
-      const testCompressor = new TinyPngWebCompressor()
 
       // Assert: UserAgent was called with desktop filter
       const UserAgentMock = await import('user-agents')
@@ -446,7 +443,7 @@ describe('tinyPngWebCompressor', () => {
 
       const capturedHeaders: any[] = []
 
-      mockHttpRequest.mockImplementation(async (url, options) => {
+      mockHttpRequest.mockImplementation(async (url, _options) => {
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
 
@@ -481,7 +478,7 @@ describe('tinyPngWebCompressor', () => {
         data: { output: { url: 'https://tinypng.com/output/compressed.png' } },
       }
 
-      mockHttpRequest.mockImplementation(async (url, options) => {
+      mockHttpRequest.mockImplementation(async (url, _options) => {
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
 
@@ -514,7 +511,7 @@ describe('tinyPngWebCompressor', () => {
         data: { output: { url: 'https://tinypng.com/output/compressed.png' } },
       }
 
-      mockHttpRequest.mockImplementation(async (url, options) => {
+      mockHttpRequest.mockImplementation(async (url, _options) => {
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
 
