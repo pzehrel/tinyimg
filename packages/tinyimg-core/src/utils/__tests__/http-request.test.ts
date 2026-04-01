@@ -1,6 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { RequestOptions } from '../http-request'
+import { Buffer } from 'node:buffer'
 import https from 'node:https'
-import { httpRequest, type RequestOptions, type HttpResponse } from '../http-request'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { httpRequest } from '../http-request'
 
 // Mock https.request
 vi.mock('node:https', () => ({
@@ -32,7 +34,8 @@ describe('httpRequest', () => {
           on: vi.fn((event, cb) => {
             if (event === 'data') {
               cb(mockResponse.data)
-            } else if (event === 'end') {
+            }
+            else if (event === 'end') {
               cb()
             }
           }),
@@ -61,7 +64,7 @@ describe('httpRequest', () => {
   })
 
   it('should send GET request and return Buffer response (image data)', async () => {
-    const imageData = Buffer.from([0x89, 0x50, 0x4e, 0x47]) // PNG signature
+    const imageData = Buffer.from([0x89, 0x50, 0x4E, 0x47]) // PNG signature
 
     const mockResponse = {
       statusCode: 200,
@@ -79,7 +82,8 @@ describe('httpRequest', () => {
           on: vi.fn((event, cb) => {
             if (event === 'data') {
               cb(mockResponse.data)
-            } else if (event === 'end') {
+            }
+            else if (event === 'end') {
               cb()
             }
           }),
@@ -125,14 +129,16 @@ describe('httpRequest', () => {
             }),
           }
           callback(res)
-        } else {
+        }
+        else {
           const res = {
             statusCode: 200,
             headers: {},
             on: vi.fn((event, cb) => {
               if (event === 'data') {
                 cb(Buffer.from('final response'))
-              } else if (event === 'end') {
+              }
+              else if (event === 'end') {
                 cb()
               }
             }),
@@ -201,7 +207,8 @@ describe('httpRequest', () => {
             on: vi.fn((event, cb) => {
               if (event === 'data') {
                 cb(Buffer.from('{"success":true}'))
-              } else if (event === 'end') {
+              }
+              else if (event === 'end') {
                 cb()
               }
             }),
@@ -249,14 +256,16 @@ describe('httpRequest', () => {
               }),
             }
             callback(res)
-          } else {
+          }
+          else {
             const res = {
               statusCode: 200,
               headers: {},
               on: vi.fn((event, cb) => {
                 if (event === 'data') {
                   cb(Buffer.from('success'))
-                } else if (event === 'end') {
+                }
+                else if (event === 'end') {
                   cb()
                 }
               }),
@@ -295,7 +304,8 @@ describe('httpRequest', () => {
             on: vi.fn((event, cb) => {
               if (event === 'data') {
                 cb('error message')
-              } else if (event === 'end') {
+              }
+              else if (event === 'end') {
                 cb()
               }
             }),
@@ -332,7 +342,8 @@ describe('httpRequest', () => {
             on: vi.fn((event, cb) => {
               if (event === 'data') {
                 cb('server error')
-              } else if (event === 'end') {
+              }
+              else if (event === 'end') {
                 cb()
               }
             }),
@@ -361,25 +372,9 @@ describe('httpRequest', () => {
     const networkError = new Error('Network error')
     ;(networkError as any).code = 'ECONNREFUSED'
 
-    vi.mocked(https.request).mockImplementationOnce((url, options, callback) => {
+    vi.mocked(https.request).mockImplementationOnce((_url, _options, _callback) => {
       setTimeout(() => {
-        const req = {
-          write: vi.fn(),
-          end: vi.fn(),
-          on: vi.fn((event, cb) => {
-            if (event === 'error') {
-              cb(networkError)
-            }
-          }),
-        }
         // Simulate error on request
-        setTimeout(() => {
-          const listeners = req.on.mock.calls
-          const errorCall = listeners.find(call => call[0] === 'error')
-          if (errorCall) {
-            errorCall[1](networkError)
-          }
-        }, 0)
       }, 0)
 
       return {
@@ -387,7 +382,7 @@ describe('httpRequest', () => {
         end: vi.fn(),
         on: vi.fn((event, cb) => {
           if (event === 'error') {
-            setTimeout(() => cb(networkError), 0)
+            setTimeout(cb, 0, networkError)
           }
         }),
       } as any
@@ -415,7 +410,8 @@ describe('httpRequest', () => {
           on: vi.fn((event, cb) => {
             if (event === 'data') {
               cb(Buffer.from('success'))
-            } else if (event === 'end') {
+            }
+            else if (event === 'end') {
               cb()
             }
           }),

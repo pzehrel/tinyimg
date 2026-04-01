@@ -1,6 +1,6 @@
-import https from 'node:https'
+import { Buffer } from 'node:buffer'
 import type { IncomingMessage } from 'node:http'
-import type { Buffer } from 'node:buffer'
+import https from 'node:https'
 
 const MAX_REDIRECTS = 5
 
