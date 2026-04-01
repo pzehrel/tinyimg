@@ -26,7 +26,7 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
           const listeners = mockRes.on.mock.calls
           listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
             if (event === 'data') {
-              fn(JSON.stringify({ output: { url: 'https://example.com/output.png' } }))
+              fn(Buffer.from(JSON.stringify({ output: { url: 'https://example.com/output.png' } })))
             }
             else if (event === 'end') {
               fn()
@@ -112,7 +112,7 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
           listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
             if (event === 'data') {
               if (!uploadCalled) {
-                fn(JSON.stringify({ output: { url: mockOutputUrl } }))
+                fn(Buffer.from(JSON.stringify({ output: { url: mockOutputUrl } })))
                 uploadCalled = true
               }
               else {
@@ -171,10 +171,10 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
           listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
             if (event === 'data') {
               if (attemptCount === 1) {
-                fn('Internal Server Error')
+                fn(Buffer.from('Internal Server Error'))
               }
               else if (!uploadCalled) {
-                fn(JSON.stringify({ output: { url: mockOutputUrl } }))
+                fn(Buffer.from(JSON.stringify({ output: { url: 'https://example.com/output.png' } })))
                 uploadCalled = true
               }
               else {
@@ -224,7 +224,7 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
           const listeners = mockRes.on.mock.calls
           listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
             if (event === 'data') {
-              fn('Unauthorized')
+              fn(Buffer.from('Unauthorized'))
             }
             else if (event === 'end') {
               fn()
@@ -243,7 +243,7 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
 
       const compressor = new TinyPngApiCompressor(mockKeyPool, 8)
 
-      await expect(compressor.compress(mockInputBuffer)).rejects.toThrow('认证失败')
+      await expect(compressor.compress(mockInputBuffer)).rejects.toThrow('HTTP 401')
       expect(compressor.getFailureCount()).toBe(1)
     })
 
@@ -272,10 +272,10 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
           listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
             if (event === 'data') {
               if (attemptCount === 1) {
-                fn('Too Many Requests')
+                fn(Buffer.from('Too Many Requests'))
               }
               else if (!uploadCalled) {
-                fn(JSON.stringify({ output: { url: mockOutputUrl } }))
+                fn(Buffer.from(JSON.stringify({ output: { url: 'https://example.com/output.png' } })))
                 uploadCalled = true
               }
               else {
@@ -342,7 +342,7 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
             listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
               if (event === 'data') {
                 if (!uploadCalled) {
-                  fn(JSON.stringify({ output: { url: mockOutputUrl } }))
+                  fn(Buffer.from(JSON.stringify({ output: { url: 'https://example.com/output.png' } })))
                   uploadCalled = true
                 }
                 else {
@@ -443,7 +443,7 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
           listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
             if (event === 'data') {
               if (!uploadCalled) {
-                fn(JSON.stringify({ output: { url: mockOutputUrl } }))
+                fn(Buffer.from(JSON.stringify({ output: { url: mockOutputUrl } })))
                 uploadCalled = true
               }
               else {
@@ -495,10 +495,10 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
             const listeners = mockRes.on.mock.calls
             listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
               if (event === 'data') {
-                fn(JSON.stringify({
+                fn(Buffer.from(JSON.stringify({
                   output: { url: 'https://api.tinify.com/output/test.png' },
                   compressionCount: 123,
-                }))
+                })))
               }
               else if (event === 'end') {
                 fn()
@@ -561,10 +561,10 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
             const listeners = mockRes.on.mock.calls
             listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
               if (event === 'data') {
-                fn(JSON.stringify({
+                fn(Buffer.from(JSON.stringify({
                   output: { url: 'https://api.tinify.com/output/test.png' },
                   // No compressionCount field
-                }))
+                })))
               }
               else if (event === 'end') {
                 fn()
@@ -627,7 +627,7 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
           const listeners = mockRes.on.mock.calls
           listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
             if (event === 'data') {
-              fn(JSON.stringify({ output: { url: 'https://tinypng.com/output/test.png' } }))
+              fn(Buffer.from(JSON.stringify({ output: { url: 'https://example.com/output.png' } })))
             }
             else if (event === 'end') {
               fn()
@@ -668,7 +668,7 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
           const listeners = mockRes.on.mock.calls
           listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
             if (event === 'data') {
-              fn(JSON.stringify({ compressionCount: 42 }))
+              fn(Buffer.from(JSON.stringify({ compressionCount: 42 })))
             }
             else if (event === 'end') {
               fn()
@@ -715,10 +715,10 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
             const listeners = mockRes.on.mock.calls
             listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
               if (event === 'data') {
-                fn(JSON.stringify({
+                fn(Buffer.from(JSON.stringify({
                   output: { url: 'https://api.tinify.com/output/test.png' },
                   compressionCount: 100,
-                }))
+                })))
               }
               else if (event === 'end') {
                 fn()
