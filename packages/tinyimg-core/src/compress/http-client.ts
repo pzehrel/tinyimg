@@ -1,5 +1,4 @@
 import { Buffer } from 'node:buffer'
-import { maskKey } from '../keys/masker'
 import { httpRequest } from '../utils/http-request'
 
 const TINYPNG_API_URL = 'https://api.tinify.com/shrink'
@@ -136,7 +135,7 @@ export class TinyPngHttpClient {
         headers: {
           'Authorization': this.createAuthHeader(key),
           'Content-Type': 'application/octet-stream',
-          'Content-Length': buffer.byteLength,
+          'Content-Length': String(buffer.byteLength),
         },
         body: buffer,
       },

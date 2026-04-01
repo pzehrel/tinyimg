@@ -35,13 +35,13 @@ export class TinyPngApiCompressor implements ICompressor {
 
       const originalSize = buffer.byteLength
       const result = await client.compress(key, buffer)
-      const compressedSize = result.byteLength
+      const compressedSize = result.buffer.byteLength
       const saved = ((1 - compressedSize / originalSize) * 100).toFixed(1)
 
       this.keyPool.decrementQuota()
       logInfo(`Compressed with [TinyPngApiCompressor]: ${originalSize} → ${compressedSize} (saved ${saved}%)`)
 
-      return result
+      return result.buffer
     })
   }
 
