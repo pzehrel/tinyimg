@@ -79,33 +79,18 @@ export class TinyPngWebCompressor implements ICompressor {
   }
 
   private async downloadCompressedImage(url: string): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      // Use https.request instead of https.get to include custom headers
-      const req = https.request(
-        url,
-        {
-          headers: {
-            'Content-Type': 'application/octet-stream',
-            ...this.requestHeaders,
-          },
+    const response = await httpRequest<Buffer>(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          ...this.requestHeaders,
         },
-        (res) => {
-          if (res.statusCode !== 200) {
-            const error = new Error(`HTTP ${res.statusCode} downloading compressed image`)
-            ;(error as any).statusCode = res.statusCode
-            return reject(error)
-          }
+      },
+    )
 
-          const chunks: Buffer[] = []
-          res.on('data', chunk => chunks.push(chunk))
-          res.on('end', () => resolve(Buffer.concat(chunks)))
-          res.on('error', reject)
-        },
-      )
-
-      req.on('error', reject)
-      req.end()
-    })
+    return response.data
   }
 
   getFailureCount(): number {
