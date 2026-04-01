@@ -28,40 +28,34 @@ export class TinyPngHttpClient {
    * @returns true if key is valid, false otherwise
    */
   async validateKey(key: string): Promise<boolean> {
-    try {
-      const response = await httpRequest<{}>(
-        TINYPNG_API_URL,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': this.createAuthHeader(key),
-            'Content-Type': 'application/octet-stream',
-          },
-          body: Buffer.alloc(0),
+    const response = await httpRequest<{}>( // eslint-disable-line ts/no-empty-object-type
+      TINYPNG_API_URL,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': this.createAuthHeader(key),
+          'Content-Type': 'application/octet-stream',
         },
-      )
+        body: Buffer.alloc(0),
+      },
+    )
 
-      // Success: 2xx status codes
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        return true
-      }
+    // Success: 2xx status codes
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return true
+    }
 
-      // Auth failed: 401/403 return false
-      if (response.statusCode === 401 || response.statusCode === 403) {
-        return false
-      }
-
-      // Other 4xx errors return false
-      if (response.statusCode >= 400 && response.statusCode < 500) {
-        return false
-      }
-
+    // Auth failed: 401/403 return false
+    if (response.statusCode === 401 || response.statusCode === 403) {
       return false
     }
-    catch (error: any) {
-      // Network errors or 5xx errors - throw for retry
-      throw error
+
+    // Other 4xx errors return false
+    if (response.statusCode >= 400 && response.statusCode < 500) {
+      return false
     }
+
+    return false
   }
 
   /**
@@ -71,42 +65,36 @@ export class TinyPngHttpClient {
    * @returns Number of compressions used this month
    */
   async getCompressionCount(key: string): Promise<number> {
-    try {
-      const response = await httpRequest<{ compressionCount?: number }>(
-        TINYPNG_API_URL,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': this.createAuthHeader(key),
-            'Content-Type': 'application/octet-stream',
-          },
-          body: Buffer.alloc(0),
+    const response = await httpRequest<{ compressionCount?: number }>(
+      TINYPNG_API_URL,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': this.createAuthHeader(key),
+          'Content-Type': 'application/octet-stream',
         },
-      )
+        body: Buffer.alloc(0),
+      },
+    )
 
-      // Success: 2xx status codes
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        // Handle undefined compressionCount (TinyPNG API may not return this field)
-        return response.data.compressionCount ?? 0
-      }
-
-      // Auth failed: 401/403 return 0
-      if (response.statusCode === 401 || response.statusCode === 403) {
-        return 0
-      }
-
-      // Other 4xx errors return 0
-      if (response.statusCode >= 400 && response.statusCode < 500) {
-        return 0
-      }
-
-      // 5xx errors should be retried
-      throw new Error(`HTTP ${response.statusCode}: Server error`)
+    // Success: 2xx status codes
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      // Handle undefined compressionCount (TinyPNG API may not return this field)
+      return response.data.compressionCount ?? 0
     }
-    catch (error: any) {
-      // Network errors preserve error.code
-      throw error
+
+    // Auth failed: 401/403 return 0
+    if (response.statusCode === 401 || response.statusCode === 403) {
+      return 0
     }
+
+    // Other 4xx errors return 0
+    if (response.statusCode >= 400 && response.statusCode < 500) {
+      return 0
+    }
+
+    // 5xx errors should be retried
+    throw new Error(`HTTP ${response.statusCode}: Server error`)
   }
 
   /**
@@ -169,7 +157,7 @@ export class TinyPngHttpClient {
       {
         method: 'GET',
         headers: {
-          'Authorization': this.createAuthHeader(key),
+          Authorization: this.createAuthHeader(key),
         },
       },
     )

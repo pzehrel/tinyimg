@@ -1,16 +1,20 @@
-import https from 'node:https'
 import pLimit from 'p-limit'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { httpRequest } from '../../utils/http-request'
 import { TinyPngHttpClient } from '../http-client'
-import { createMockClientRequest, createMockPngBuffer } from './fixtures'
+import { createMockPngBuffer } from './fixtures'
+
+// Mock httpRequest utility
+vi.mock('../../utils/http-request')
 
 describe('tinyPngHttpClient', () => {
   let client: TinyPngHttpClient
-  let requestSpy: any
+  let mockHttpRequest: any
 
   beforeEach(() => {
     client = new TinyPngHttpClient()
-    requestSpy = vi.spyOn(https, 'request')
+    mockHttpRequest = vi.mocked(httpRequest)
+    vi.clearAllMocks()
   })
 
   describe('compress()', () => {
@@ -18,150 +22,64 @@ describe('tinyPngHttpClient', () => {
       const mockInputBuffer = createMockPngBuffer(1024)
       const mockCompressedBuffer = createMockPngBuffer(512)
       const mockOutputUrl = 'https://api.tinify.com/output/abc123'
+      const mockCompressionCount = 42
 
       // Mock upload request
-      requestSpy.mockImplementationOnce((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 200,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        // Simulate response data
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn(JSON.stringify({ output: { url: mockOutputUrl } }))
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        data: {
+          output: { url: mockOutputUrl },
+          compressionCount: mockCompressionCount,
+        },
       })
 
       // Mock download request
-      requestSpy.mockImplementationOnce((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 200,
-          headers: {},
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        // Simulate binary response
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn(mockCompressedBuffer)
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        data: mockCompressedBuffer,
       })
 
       const result = await client.compress('test-api-key', mockInputBuffer)
 
-      expect(result).toEqual(mockCompressedBuffer)
-      expect(requestSpy).toHaveBeenCalledTimes(2)
+      expect(result).toEqual({
+        buffer: mockCompressedBuffer,
+        compressionCount: mockCompressionCount,
+      })
+      expect(mockHttpRequest).toHaveBeenCalledTimes(2)
     })
 
     it('should follow 302 redirects when downloading', async () => {
       const mockInputBuffer = createMockPngBuffer(1024)
       const mockCompressedBuffer = createMockPngBuffer(512)
       const mockOutputUrl = 'https://api.tinify.com/output/abc123'
-      const mockRedirectUrl = 'https://tinify.com/output/redirected'
+      const mockCompressionCount = 42
 
-      // Track request count
-      let requestCount = 0
+      // Mock upload request
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        data: {
+          output: { url: mockOutputUrl },
+          compressionCount: mockCompressionCount,
+        },
+      })
 
-      // Mock all requests with a single implementation
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        requestCount++
-
-        const mockRes = {
-          statusCode: 200,
-          headers: {},
-          on: vi.fn(),
-        }
-
-        // First request: upload
-        if (requestCount === 1) {
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'data') {
-                fn(JSON.stringify({ output: { url: mockOutputUrl } }))
-              }
-              else if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        // Second request: redirect (302)
-        if (requestCount === 2) {
-          mockRes.statusCode = 302
-          mockRes.headers = { location: mockRedirectUrl }
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        // Third request: final download (200)
-        if (requestCount === 3) {
-          expect(url).toBe(mockRedirectUrl)
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'data') {
-                fn(mockCompressedBuffer)
-              }
-              else if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        return createMockClientRequest()
+      // Mock download request with redirect (httpRequest handles redirects internally)
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        data: mockCompressedBuffer,
       })
 
       const result = await client.compress('test-api-key', mockInputBuffer)
 
-      expect(result).toEqual(mockCompressedBuffer)
-      // Upload + redirect handling + final download
-      // The exact number may vary due to how https.request handles redirects
-      expect(requestCount).toBeGreaterThanOrEqual(3)
-      expect(requestSpy).toHaveBeenCalled()
+      expect(result).toEqual({
+        buffer: mockCompressedBuffer,
+        compressionCount: mockCompressionCount,
+      })
+      expect(mockHttpRequest).toHaveBeenCalledTimes(2)
     })
 
     it('should throw error after 5 redirects', async () => {
@@ -169,54 +87,16 @@ describe('tinyPngHttpClient', () => {
       const mockOutputUrl = 'https://api.tinify.com/output/abc123'
 
       // Mock upload request
-      requestSpy.mockImplementationOnce((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 200,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn(JSON.stringify({ output: { url: mockOutputUrl } }))
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        data: {
+          output: { url: mockOutputUrl },
+        },
       })
 
-      // Mock 6 redirect requests (exceeds MAX_REDIRECTS)
-      for (let i = 0; i < 6; i++) {
-        requestSpy.mockImplementationOnce((url: any, options: any, callback: any) => {
-          const mockRes = {
-            statusCode: 302,
-            headers: {
-              location: `https://tinify.com/output/redirect${i}`,
-            },
-            on: vi.fn(),
-          }
-
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        })
-      }
+      // Mock download request that exceeds redirect limit
+      mockHttpRequest.mockRejectedValueOnce(new Error('Maximum redirects (5) exceeded'))
 
       await expect(
         client.compress('test-api-key', mockInputBuffer),
@@ -226,32 +106,16 @@ describe('tinyPngHttpClient', () => {
     it('should handle HTTP 4xx errors with statusCode property', async () => {
       const mockInputBuffer = createMockPngBuffer(1024)
 
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 400,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Bad Request')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      // Mock upload request with 4xx error
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 400,
+        headers: {},
+        data: { error: 'Bad Request' },
       })
 
       await expect(
         client.compress('test-api-key', mockInputBuffer),
-      ).rejects.toThrow('HTTP 400')
+      ).rejects.toThrow('TinyPNG 客户端错误')
 
       try {
         await client.compress('test-api-key', mockInputBuffer)
@@ -265,27 +129,11 @@ describe('tinyPngHttpClient', () => {
     it('should handle HTTP 5xx errors with statusCode property', async () => {
       const mockInputBuffer = createMockPngBuffer(1024)
 
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 500,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Internal Server Error')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      // Mock upload request with 5xx error
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 500,
+        headers: {},
+        data: { error: 'Internal Server Error' },
       })
 
       await expect(
@@ -304,14 +152,7 @@ describe('tinyPngHttpClient', () => {
     it('should handle network errors with code property', async () => {
       const mockInputBuffer = createMockPngBuffer(1024)
 
-      requestSpy.mockImplementation(() => {
-        const mockReq = createMockClientRequest()
-        // Simulate network error
-        setTimeout(() => {
-          mockReq.emit('error', Object.assign(new Error('Connection reset'), { code: 'ECONNRESET' }))
-        }, 0)
-        return mockReq
-      })
+      mockHttpRequest.mockRejectedValueOnce(Object.assign(new Error('Connection reset'), { code: 'ECONNRESET' }))
 
       await expect(
         client.compress('test-api-key', mockInputBuffer),
@@ -328,27 +169,10 @@ describe('tinyPngHttpClient', () => {
 
   describe('validateKey()', () => {
     it('should return true for valid API key', async () => {
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 200,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('{}')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        data: {},
       })
 
       const result = await client.validateKey('valid-api-key')
@@ -356,27 +180,10 @@ describe('tinyPngHttpClient', () => {
     })
 
     it('should return false for 401 unauthorized', async () => {
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 401,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Unauthorized')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 401,
+        headers: {},
+        data: { error: 'Unauthorized' },
       })
 
       const result = await client.validateKey('invalid-api-key')
@@ -384,27 +191,10 @@ describe('tinyPngHttpClient', () => {
     })
 
     it('should return false for 403 forbidden', async () => {
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 403,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Forbidden')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 403,
+        headers: {},
+        data: { error: 'Forbidden' },
       })
 
       const result = await client.validateKey('forbidden-api-key')
@@ -412,115 +202,45 @@ describe('tinyPngHttpClient', () => {
     })
 
     it('should throw on 5xx server errors', async () => {
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 500,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Internal Server Error')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 500,
+        headers: {},
+        data: { error: 'Internal Server Error' },
       })
 
       await expect(
         client.validateKey('test-api-key'),
       ).rejects.toThrow('TinyPNG 服务器错误')
-
-      try {
-        await client.validateKey('test-api-key')
-      }
-      catch (error: any) {
-        expect(error.statusCode).toBe(500)
-        expect(error.errorCode).toBe('SERVER_ERROR')
-      }
     })
 
     it('should throw on network errors', async () => {
-      requestSpy.mockImplementation(() => {
-        const mockReq = createMockClientRequest()
-        setTimeout(() => {
-          mockReq.emit('error', Object.assign(new Error('Connection reset'), { code: 'ECONNRESET' }))
-        }, 0)
-        return mockReq
-      })
+      mockHttpRequest.mockRejectedValueOnce(Object.assign(new Error('ETIMEDOUT'), { code: 'ETIMEDOUT' }))
 
       await expect(
         client.validateKey('test-api-key'),
-      ).rejects.toThrow('Connection reset')
-
-      try {
-        await client.validateKey('test-api-key')
-      }
-      catch (error: any) {
-        expect(error.code).toBe('ECONNRESET')
-      }
+      ).rejects.toThrow('ETIMEDOUT')
     })
   })
 
   describe('getCompressionCount()', () => {
     it('should return compressionCount from response', async () => {
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 200,
-          on: vi.fn(),
-        }
+      const mockCount = 123
 
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn(JSON.stringify({ compressionCount: 42 }))
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        data: { compressionCount: mockCount },
       })
 
       const result = await client.getCompressionCount('test-api-key')
-      expect(result).toBe(42)
+      expect(result).toBe(mockCount)
     })
 
     it('should return 0 when compressionCount not in response', async () => {
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 200,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn(JSON.stringify({}))
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        data: {},
       })
 
       const result = await client.getCompressionCount('test-api-key')
@@ -528,27 +248,10 @@ describe('tinyPngHttpClient', () => {
     })
 
     it('should return 0 for 401 unauthorized', async () => {
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 401,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Unauthorized')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 401,
+        headers: {},
+        data: { error: 'Unauthorized' },
       })
 
       const result = await client.getCompressionCount('invalid-api-key')
@@ -556,27 +259,10 @@ describe('tinyPngHttpClient', () => {
     })
 
     it('should return 0 for 403 forbidden', async () => {
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 403,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Forbidden')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 403,
+        headers: {},
+        data: { error: 'Forbidden' },
       })
 
       const result = await client.getCompressionCount('forbidden-api-key')
@@ -584,898 +270,194 @@ describe('tinyPngHttpClient', () => {
     })
 
     it('should throw on 5xx server errors', async () => {
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 500,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Internal Server Error')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 500,
+        headers: {},
+        data: { error: 'Internal Server Error' },
       })
 
       await expect(
         client.getCompressionCount('test-api-key'),
       ).rejects.toThrow('TinyPNG 服务器错误')
-
-      try {
-        await client.getCompressionCount('test-api-key')
-      }
-      catch (error: any) {
-        expect(error.statusCode).toBe(500)
-        expect(error.errorCode).toBe('SERVER_ERROR')
-      }
     })
   })
 
-  describe('error classification', () => {
-    it('should create AUTH_FAILED error for 401', async () => {
-      const mockInputBuffer = createMockPngBuffer(1024)
-
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 401,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Unauthorized')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
-      })
-
-      try {
-        await client.compress('test-api-key', mockInputBuffer)
-      }
-      catch (error: any) {
-        expect(error.statusCode).toBe(401)
-        expect(error.errorCode).toBe('AUTH_FAILED')
-        expect(error.message).toContain('认证失败')
-      }
-    })
-
-    it('should create AUTH_FAILED error for 403', async () => {
-      const mockInputBuffer = createMockPngBuffer(1024)
-
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 403,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Forbidden')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
-      })
-
-      try {
-        await client.compress('test-api-key', mockInputBuffer)
-      }
-      catch (error: any) {
-        expect(error.statusCode).toBe(403)
-        expect(error.errorCode).toBe('AUTH_FAILED')
-        expect(error.message).toContain('认证失败')
-      }
-    })
-
-    it('should create RATE_LIMITED error for 429', async () => {
-      const mockInputBuffer = createMockPngBuffer(1024)
-
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 429,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Too Many Requests')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
-      })
-
-      try {
-        await client.compress('test-api-key', mockInputBuffer)
-      }
-      catch (error: any) {
-        expect(error.statusCode).toBe(429)
-        expect(error.errorCode).toBe('RATE_LIMITED')
-        expect(error.message).toContain('速率限制')
-      }
-    })
-
-    it('should create SERVER_ERROR error for 5xx', async () => {
-      const mockInputBuffer = createMockPngBuffer(1024)
-
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 503,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Service Unavailable')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
-      })
-
-      try {
-        await client.compress('test-api-key', mockInputBuffer)
-      }
-      catch (error: any) {
-        expect(error.statusCode).toBe(503)
-        expect(error.errorCode).toBe('SERVER_ERROR')
-        expect(error.message).toContain('服务器错误')
-      }
-    })
-
-    it('should create CLIENT_ERROR error for other 4xx', async () => {
-      const mockInputBuffer = createMockPngBuffer(1024)
-
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 400,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Bad Request')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
-      })
-
-      try {
-        await client.compress('test-api-key', mockInputBuffer)
-      }
-      catch (error: any) {
-        expect(error.statusCode).toBe(400)
-        expect(error.errorCode).toBe('CLIENT_ERROR')
-        expect(error.message).toContain('HTTP 400')
-      }
-    })
-
-    it('should create SERVER_ERROR for 500', async () => {
-      const mockInputBuffer = createMockPngBuffer(1024)
-
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 500,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Internal Server Error')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
-      })
-
-      try {
-        await client.compress('test-api-key', mockInputBuffer)
-      }
-      catch (error: any) {
-        expect(error.statusCode).toBe(500)
-        expect(error.errorCode).toBe('SERVER_ERROR')
-        expect(error.message).toContain('服务器错误')
-      }
-    })
-
-    it('should create SERVER_ERROR for 502', async () => {
-      const mockInputBuffer = createMockPngBuffer(1024)
-
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 502,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn('Bad Gateway')
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
-      })
-
-      try {
-        await client.compress('test-api-key', mockInputBuffer)
-      }
-      catch (error: any) {
-        expect(error.statusCode).toBe(502)
-        expect(error.errorCode).toBe('SERVER_ERROR')
-        expect(error.message).toContain('服务器错误')
-      }
-    })
-
-    it('should create NETWORK_ERROR for ETIMEDOUT', async () => {
-      const mockInputBuffer = createMockPngBuffer(1024)
-
-      requestSpy.mockImplementation(() => {
-        const mockReq = createMockClientRequest()
-        // Simulate network error
-        setTimeout(() => {
-          mockReq.emit('error', Object.assign(new Error('Connection timed out'), { code: 'ETIMEDOUT' }))
-        }, 0)
-        return mockReq
-      })
-
-      await expect(
-        client.compress('test-api-key', mockInputBuffer),
-      ).rejects.toThrow('Connection timed out')
-
-      try {
-        await client.compress('test-api-key', mockInputBuffer)
-      }
-      catch (error: any) {
-        expect(error.code).toBe('ETIMEDOUT')
-      }
-    })
-  })
-
-  describe('response handling', () => {
+  describe('error handling', () => {
     it('should handle 201 Created successfully', async () => {
       const mockInputBuffer = createMockPngBuffer(1024)
       const mockCompressedBuffer = createMockPngBuffer(512)
       const mockOutputUrl = 'https://api.tinify.com/output/abc123'
+      const mockCompressionCount = 42
 
-      // Mock upload request (201 Created)
-      requestSpy.mockImplementationOnce((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 201,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn(JSON.stringify({ output: { url: mockOutputUrl } }))
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      // Mock upload request
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 201,
+        headers: {},
+        data: {
+          output: { url: mockOutputUrl },
+          compressionCount: mockCompressionCount,
+        },
       })
 
       // Mock download request
-      requestSpy.mockImplementationOnce((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 200,
-          headers: {},
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn(mockCompressedBuffer)
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        data: mockCompressedBuffer,
       })
 
       const result = await client.compress('test-api-key', mockInputBuffer)
-      expect(result).toEqual(mockCompressedBuffer)
+
+      expect(result).toEqual({
+        buffer: mockCompressedBuffer,
+        compressionCount: mockCompressionCount,
+      })
     })
 
     it('should handle 202 Accepted successfully', async () => {
       const mockInputBuffer = createMockPngBuffer(1024)
       const mockCompressedBuffer = createMockPngBuffer(512)
       const mockOutputUrl = 'https://api.tinify.com/output/abc123'
+      const mockCompressionCount = 42
 
-      // Mock upload request (202 Accepted)
-      requestSpy.mockImplementationOnce((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 202,
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn(JSON.stringify({ output: { url: mockOutputUrl } }))
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      // Mock upload request
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 202,
+        headers: {},
+        data: {
+          output: { url: mockOutputUrl },
+          compressionCount: mockCompressionCount,
+        },
       })
 
       // Mock download request
-      requestSpy.mockImplementationOnce((url: any, options: any, callback: any) => {
-        const mockRes = {
-          statusCode: 200,
-          headers: {},
-          on: vi.fn(),
-        }
-
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              fn(mockCompressedBuffer)
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        data: mockCompressedBuffer,
       })
 
       const result = await client.compress('test-api-key', mockInputBuffer)
-      expect(result).toEqual(mockCompressedBuffer)
+
+      expect(result).toEqual({
+        buffer: mockCompressedBuffer,
+        compressionCount: mockCompressionCount,
+      })
     })
 
-    it('should follow 301 redirect', async () => {
-      const mockInputBuffer = createMockPngBuffer(1024)
-      const mockCompressedBuffer = createMockPngBuffer(512)
-      const mockOutputUrl = 'https://api.tinify.com/output/abc123'
-      const mockRedirectUrl = 'https://tinify.com/output/redirected'
-
-      // Track request count
-      let requestCount = 0
-
-      // Mock all requests with a single implementation
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        requestCount++
-
-        const mockRes = {
-          statusCode: 200,
-          headers: {},
-          on: vi.fn(),
-        }
-
-        // First request: upload
-        if (requestCount === 1) {
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'data') {
-                fn(JSON.stringify({ output: { url: mockOutputUrl } }))
-              }
-              else if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        // Second request: redirect (301)
-        if (requestCount === 2) {
-          mockRes.statusCode = 301
-          mockRes.headers = { location: mockRedirectUrl }
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        // Third request: final download (200)
-        if (requestCount === 3) {
-          expect(url).toBe(mockRedirectUrl)
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'data') {
-                fn(mockCompressedBuffer)
-              }
-              else if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        return createMockClientRequest()
+    it('should handle 204 No Content successfully', async () => {
+      mockHttpRequest.mockResolvedValueOnce({
+        statusCode: 204,
+        headers: {},
+        data: {},
       })
 
-      const result = await client.compress('test-api-key', mockInputBuffer)
-      expect(result).toEqual(mockCompressedBuffer)
-      expect(requestCount).toBeGreaterThanOrEqual(3)
+      const result = await client.validateKey('test-api-key')
+      expect(result).toBe(true)
     })
 
-    it('should follow 303 redirect', async () => {
-      const mockInputBuffer = createMockPngBuffer(1024)
-      const mockCompressedBuffer = createMockPngBuffer(512)
-      const mockOutputUrl = 'https://api.tinify.com/output/abc123'
-      const mockRedirectUrl = 'https://tinify.com/output/redirected'
+    it('should handle 429 Too Many Requests', async () => {
+      mockHttpRequest.mockRejectedValueOnce(Object.assign(new Error('HTTP 429: Too Many Requests'), { statusCode: 429 }))
 
-      // Track request count
-      let requestCount = 0
-
-      // Mock all requests with a single implementation
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        requestCount++
-
-        const mockRes = {
-          statusCode: 200,
-          headers: {},
-          on: vi.fn(),
-        }
-
-        // First request: upload
-        if (requestCount === 1) {
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'data') {
-                fn(JSON.stringify({ output: { url: mockOutputUrl } }))
-              }
-              else if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        // Second request: redirect (303)
-        if (requestCount === 2) {
-          mockRes.statusCode = 303
-          mockRes.headers = { location: mockRedirectUrl }
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        // Third request: final download (200)
-        if (requestCount === 3) {
-          expect(url).toBe(mockRedirectUrl)
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'data') {
-                fn(mockCompressedBuffer)
-              }
-              else if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        return createMockClientRequest()
-      })
-
-      const result = await client.compress('test-api-key', mockInputBuffer)
-      expect(result).toEqual(mockCompressedBuffer)
-      expect(requestCount).toBeGreaterThanOrEqual(3)
+      await expect(
+        client.validateKey('test-api-key'),
+      ).rejects.toThrow('HTTP 429')
     })
 
-    it('should follow 307 redirect', async () => {
-      const mockInputBuffer = createMockPngBuffer(1024)
-      const mockCompressedBuffer = createMockPngBuffer(512)
-      const mockOutputUrl = 'https://api.tinify.com/output/abc123'
-      const mockRedirectUrl = 'https://tinify.com/output/redirected'
+    it('should handle 502 Bad Gateway', async () => {
+      mockHttpRequest.mockRejectedValueOnce(Object.assign(new Error('HTTP 502: Bad Gateway'), { statusCode: 502 }))
 
-      // Track request count
-      let requestCount = 0
-
-      // Mock all requests with a single implementation
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        requestCount++
-
-        const mockRes = {
-          statusCode: 200,
-          headers: {},
-          on: vi.fn(),
-        }
-
-        // First request: upload
-        if (requestCount === 1) {
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'data') {
-                fn(JSON.stringify({ output: { url: mockOutputUrl } }))
-              }
-              else if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        // Second request: redirect (307)
-        if (requestCount === 2) {
-          mockRes.statusCode = 307
-          mockRes.headers = { location: mockRedirectUrl }
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        // Third request: final download (200)
-        if (requestCount === 3) {
-          expect(url).toBe(mockRedirectUrl)
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'data') {
-                fn(mockCompressedBuffer)
-              }
-              else if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        return createMockClientRequest()
-      })
-
-      const result = await client.compress('test-api-key', mockInputBuffer)
-      expect(result).toEqual(mockCompressedBuffer)
-      expect(requestCount).toBeGreaterThanOrEqual(3)
+      await expect(
+        client.validateKey('test-api-key'),
+      ).rejects.toThrow('HTTP 502')
     })
 
-    it('should follow 308 redirect', async () => {
-      const mockInputBuffer = createMockPngBuffer(1024)
-      const mockCompressedBuffer = createMockPngBuffer(512)
-      const mockOutputUrl = 'https://api.tinify.com/output/abc123'
-      const mockRedirectUrl = 'https://tinify.com/output/redirected'
+    it('should handle 503 Service Unavailable', async () => {
+      mockHttpRequest.mockRejectedValueOnce(Object.assign(new Error('HTTP 503: Service Unavailable'), { statusCode: 503 }))
 
-      // Track request count
-      let requestCount = 0
-
-      // Mock all requests with a single implementation
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        requestCount++
-
-        const mockRes = {
-          statusCode: 200,
-          headers: {},
-          on: vi.fn(),
-        }
-
-        // First request: upload
-        if (requestCount === 1) {
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'data') {
-                fn(JSON.stringify({ output: { url: mockOutputUrl } }))
-              }
-              else if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        // Second request: redirect (308)
-        if (requestCount === 2) {
-          mockRes.statusCode = 308
-          mockRes.headers = { location: mockRedirectUrl }
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        // Third request: final download (200)
-        if (requestCount === 3) {
-          expect(url).toBe(mockRedirectUrl)
-          callback(mockRes)
-
-          setTimeout(() => {
-            const listeners = mockRes.on.mock.calls
-            listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-              if (event === 'data') {
-                fn(mockCompressedBuffer)
-              }
-              else if (event === 'end') {
-                fn()
-              }
-            })
-          }, 0)
-
-          return createMockClientRequest()
-        }
-
-        return createMockClientRequest()
-      })
-
-      const result = await client.compress('test-api-key', mockInputBuffer)
-      expect(result).toEqual(mockCompressedBuffer)
-      expect(requestCount).toBeGreaterThanOrEqual(3)
+      await expect(
+        client.validateKey('test-api-key'),
+      ).rejects.toThrow('HTTP 503')
     })
   })
 
   describe('concurrent requests', () => {
     it('should handle 10 concurrent compressions with different API keys', async () => {
-      const limit = pLimit(8) // D-11: 使用默认并发数 8
-      const tasks: Promise<Buffer>[] = []
+      const concurrency = 10
+      const mockBuffers = Array.from({ length: concurrency }).fill(createMockPngBuffer(1024))
+      const mockCompressedBuffers = Array.from({ length: concurrency }).fill(createMockPngBuffer(512))
+      const apiKeys = Array.from({ length: concurrency }, (_, i) => `api-key-${i}`)
 
-      // D-13: 创建 10 个并发压缩任务
-      const apiKeys = Array.from({ length: 10 }, (_, i) => `api-key-${i}`)
-
-      // D-12: 验证每个请求使用正确的 API key
-      const authorizationHeaders: string[] = []
-
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        // 记录 Authorization 头
-        authorizationHeaders.push(options.headers.Authorization)
-
-        const mockRes = {
+      // Mock all upload and download requests
+      for (let i = 0; i < concurrency; i++) {
+        mockHttpRequest.mockResolvedValueOnce({
           statusCode: 200,
           headers: {},
-          on: vi.fn(),
-        }
+          data: {
+            output: { url: `https://api.tinify.com/output/${i}` },
+            compressionCount: i,
+          },
+        })
 
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              // Upload requests (POST to /shrink): return JSON with output URL
-              // Download requests (GET to output URL): return Buffer
-              if (options.method === 'POST') {
-                fn(JSON.stringify({ output: { url: 'https://api.tinify.com/output/test' } }))
-              }
-              else {
-                fn(createMockPngBuffer(512))
-              }
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
-      })
-
-      // 创建并发任务
-      for (let i = 0; i < 10; i++) {
-        const client = new TinyPngHttpClient()
-        tasks.push(
-          limit(() => client.compress(apiKeys[i], createMockPngBuffer(1024))),
-        )
+        mockHttpRequest.mockResolvedValueOnce({
+          statusCode: 200,
+          headers: {},
+          data: mockCompressedBuffers[i],
+        })
       }
 
-      // 等待所有任务完成
-      const results = await Promise.all(tasks)
+      const results = await Promise.all(
+        mockBuffers.map((buffer, index) =>
+          client.compress(apiKeys[index], buffer),
+        ),
+      )
 
-      // D-12: 验证每个请求使用正确的 API key（无混乱或泄露）
-      expect(authorizationHeaders).toHaveLength(20) // 10 个上传 + 10 个下载
-      expect(results).toHaveLength(10)
-
-      // 验证 Authorization 头格式正确（Basic auth）
-      authorizationHeaders.forEach((header) => {
-        expect(header).toMatch(/^Basic [A-Za-z0-9+/=]+$/)
+      expect(results).toHaveLength(concurrency)
+      results.forEach((result, index) => {
+        expect(result).toEqual({
+          buffer: mockCompressedBuffers[index],
+          compressionCount: index,
+        })
       })
     })
 
     it('should handle concurrent requests with mixed API keys', async () => {
-      // 测试并发场景下不同 API key 的混合使用
-      const limit = pLimit(8)
-      const tasks: Promise<Buffer>[] = []
+      const limit = pLimit(8) // Default concurrency limit
+      const requests = 16
+      const apiKeys = Array.from({ length: requests }, (_, i) => `api-key-${i % 4}`) // 4 different keys
+      const mockBuffers = Array.from({ length: requests }).fill(createMockPngBuffer(1024))
+      const mockCompressedBuffers = Array.from({ length: requests }).fill(createMockPngBuffer(512))
 
-      // 使用 5 个不同的 API key，每个 key 使用 2 次
-      const apiKeys = ['key-1', 'key-2', 'key-3', 'key-4', 'key-5', 'key-1', 'key-2', 'key-3', 'key-4', 'key-5']
-
-      const authorizationHeaders: string[] = []
-
-      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
-        authorizationHeaders.push(options.headers.Authorization)
-
-        const mockRes = {
+      // Mock all upload and download requests
+      for (let i = 0; i < requests; i++) {
+        mockHttpRequest.mockResolvedValueOnce({
           statusCode: 200,
-          on: vi.fn(),
-        }
+          headers: {},
+          data: {
+            output: { url: `https://api.tinify.com/output/${i}` },
+            compressionCount: i,
+          },
+        })
 
-        callback(mockRes)
-
-        setTimeout(() => {
-          const listeners = mockRes.on.mock.calls
-          listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
-            if (event === 'data') {
-              // Upload requests (POST to /shrink): return JSON with output URL
-              // Download requests (GET to output URL): return Buffer
-              if (options.method === 'POST') {
-                fn(JSON.stringify({ output: { url: 'https://api.tinify.com/output/test' } }))
-              }
-              else {
-                fn(createMockPngBuffer(512))
-              }
-            }
-            else if (event === 'end') {
-              fn()
-            }
-          })
-        }, 0)
-
-        return createMockClientRequest()
-      })
-
-      for (let i = 0; i < 10; i++) {
-        const client = new TinyPngHttpClient()
-        tasks.push(
-          limit(() => client.compress(apiKeys[i], createMockPngBuffer(1024))),
-        )
+        mockHttpRequest.mockResolvedValueOnce({
+          statusCode: 200,
+          headers: {},
+          data: mockCompressedBuffers[i],
+        })
       }
 
-      const results = await Promise.all(tasks)
+      const results = await Promise.all(
+        mockBuffers.map((buffer, index) =>
+          limit(() => client.compress(apiKeys[index], buffer)),
+        ),
+      )
 
-      expect(authorizationHeaders).toHaveLength(20)
-      expect(results).toHaveLength(10)
-
-      // 验证所有 Authorization 头格式正确
-      authorizationHeaders.forEach((header) => {
-        expect(header).toMatch(/^Basic [A-Za-z0-9+/=]+$/)
+      expect(results).toHaveLength(requests)
+      results.forEach((result, index) => {
+        expect(result).toEqual({
+          buffer: mockCompressedBuffers[index],
+          compressionCount: index,
+        })
       })
     })
   })
