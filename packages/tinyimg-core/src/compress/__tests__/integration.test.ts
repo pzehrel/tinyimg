@@ -463,4 +463,117 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
       expect(compressor.getFailureCount()).toBe(0)
     })
   })
+
+  describe('TinyPngHttpClient compressionCount integration', () => {
+    it('should return compressionCount in compress result', async () => {
+      // Arrange: Mock upload with compressionCount, download with buffer
+      let requestCount = 0
+
+      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
+        requestCount++
+
+        // Upload request
+        if (requestCount === 1) {
+          const mockRes = {
+            statusCode: 200,
+            on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
+              if (event === 'data') {
+                process.nextTick(() => fn(JSON.stringify({
+                  output: { url: 'https://api.tinify.com/output/test.png' },
+                  compressionCount: 123,
+                })))
+              }
+              else if (event === 'end') {
+                process.nextTick(() => fn())
+              }
+              return mockRes
+            }),
+          }
+          callback(mockRes)
+          return createMockClientRequest()
+        }
+
+        // Download request
+        const mockRes = {
+          statusCode: 200,
+          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
+            if (event === 'data') {
+              process.nextTick(() => fn(createMockPngBuffer(512)))
+            }
+            else if (event === 'end') {
+              process.nextTick(() => fn())
+            }
+            return mockRes
+          }),
+        }
+        callback(mockRes)
+        return createMockClientRequest()
+      })
+
+      // Act: Compress image
+      const { TinyPngHttpClient } = await import('../http-client')
+      const client = new TinyPngHttpClient()
+      const result = await client.compress('test-api-key', createMockPngBuffer(1024))
+
+      // Assert: Result contains both buffer and compressionCount
+      expect(result.buffer).toBeInstanceOf(Buffer)
+      expect(result.buffer.byteLength).toBe(512)
+      expect(result.compressionCount).toBe(123)
+    })
+
+    it('should handle undefined compressionCount in API response', async () => {
+      // Arrange: Mock upload without compressionCount field
+      let requestCount = 0
+
+      requestSpy.mockImplementation((url: any, options: any, callback: any) => {
+        requestCount++
+
+        // Upload request (no compressionCount field)
+        if (requestCount === 1) {
+          const mockRes = {
+            statusCode: 200,
+            on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
+              if (event === 'data') {
+                process.nextTick(() => fn(JSON.stringify({
+                  output: { url: 'https://api.tinify.com/output/test.png' },
+                  // No compressionCount field
+                })))
+              }
+              else if (event === 'end') {
+                process.nextTick(() => fn())
+              }
+              return mockRes
+            }),
+          }
+          callback(mockRes)
+          return createMockClientRequest()
+        }
+
+        // Download request
+        const mockRes = {
+          statusCode: 200,
+          on: vi.fn().mockImplementation((event: string, fn: (...args: any[]) => any) => {
+            if (event === 'data') {
+              process.nextTick(() => fn(createMockPngBuffer(512)))
+            }
+            else if (event === 'end') {
+              process.nextTick(() => fn())
+            }
+            return mockRes
+          }),
+        }
+        callback(mockRes)
+        return createMockClientRequest()
+      })
+
+      // Act: Compress image
+      const { TinyPngHttpClient } = await import('../http-client')
+      const client = new TinyPngHttpClient()
+      const result = await client.compress('test-api-key', createMockPngBuffer(1024))
+
+      // Assert: compressionCount defaults to 0 when not in response
+      expect(result.buffer).toBeInstanceOf(Buffer)
+      expect(result.compressionCount).toBe(0)
+    })
+  })
 })
