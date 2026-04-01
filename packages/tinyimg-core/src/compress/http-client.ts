@@ -12,19 +12,16 @@ export interface CompressResult {
 }
 
 export class TinyPngHttpClient {
-  private redirectCount = 0
-
   /**
    * Compress an image by uploading to TinyPNG API and downloading the result.
    *
    * @param key - TinyPNG API key
    * @param buffer - Image buffer to compress
-   * @returns Compressed image buffer
+   * @returns Compressed image buffer and compression count
    */
-  async compress(key: string, buffer: Buffer): Promise<Buffer> {
-    const outputUrl = await this.uploadImage(key, buffer)
-    this.redirectCount = 0 // Reset redirect counter
-    return this.downloadImage(outputUrl, key)
+  async compress(key: string, buffer: Buffer): Promise<CompressResult> {
+    const { url, compressionCount } = await this.uploadImage(key, buffer)
+    return this.downloadImage(url, key, compressionCount)
   }
 
   /**
@@ -269,82 +266,27 @@ export class TinyPngHttpClient {
 
   /**
    * Download compressed image from TinyPNG API.
-   * Supports following redirects (up to MAX_REDIRECTS).
+   * Supports following redirects (handled by httpRequest utility).
    *
    * @param url - URL to download from
    * @param key - TinyPNG API key
-   * @returns Downloaded image buffer
+   * @param compressionCount - Compression count from upload response
+   * @returns Compressed image buffer and compression count
    */
-  private async downloadImage(url: string, key: string): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      const authHeader = this.createAuthHeader(key)
-
-      const req = https.request(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: authHeader,
-          },
+  private async downloadImage(url: string, key: string, compressionCount: number): Promise<CompressResult> {
+    const response = await httpRequest<Buffer>(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': this.createAuthHeader(key),
         },
-        (res) => {
-          const statusCode = res.statusCode || 0
+      },
+    )
 
-          // Handle redirects (3xx)
-          if (statusCode >= 300 && statusCode < 400) {
-            const redirectUrl = res.headers.location
-            if (!redirectUrl) {
-              return reject(new Error(`Redirect (${statusCode}) but no Location header`))
-            }
-
-            // Check redirect limit
-            if (this.redirectCount >= MAX_REDIRECTS) {
-              return reject(new Error(`Maximum redirects (${MAX_REDIRECTS}) exceeded`))
-            }
-
-            // Follow redirect
-            this.redirectCount++
-            return resolve(this.downloadImage(redirectUrl, key))
-          }
-
-          // Success: 2xx status codes
-          if (statusCode >= 200 && statusCode < 300) {
-            const chunks: Buffer[] = []
-
-            res.on('data', (chunk) => {
-              chunks.push(chunk)
-            })
-
-            res.on('end', () => {
-              resolve(Buffer.concat(chunks))
-            })
-
-            res.on('error', (error) => {
-              reject(error)
-            })
-
-            return
-          }
-
-          // Error: non-2xx/3xx status codes
-          let data = ''
-          res.on('data', (chunk) => {
-            data += chunk
-          })
-
-          res.on('end', () => {
-            const error = this.createError(statusCode, data, key)
-            reject(error)
-          })
-        },
-      )
-
-      req.on('error', (error) => {
-        // Network errors preserve error.code
-        reject(error)
-      })
-
-      req.end()
-    })
+    return {
+      buffer: response.data,
+      compressionCount,
+    }
   }
 }
