@@ -1,13 +1,14 @@
 import https from 'node:https'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMockClientRequest } from '../../compress/__tests__/fixtures'
-import { createQuotaTracker, queryQuota } from '../quota'
+import { clearCompressionCountCache, createQuotaTracker, getCachedCompressionCount, queryQuota, updateCompressionCountCache } from '../quota'
 
 describe('queryQuota', () => {
   let requestSpy: any
 
   beforeEach(() => {
     requestSpy = vi.spyOn(https, 'request')
+    clearCompressionCountCache()
   })
 
   it('should return remaining quota for valid API key', async () => {
@@ -373,5 +374,115 @@ describe('quotaTracker', () => {
     tracker.decrement()
 
     expect(consoleWarnSpy).not.toHaveBeenCalled()
+  })
+})
+
+describe('compression-count cache', () => {
+  let requestSpy: any
+
+  beforeEach(() => {
+    requestSpy = vi.spyOn(https, 'request')
+    clearCompressionCountCache()
+  })
+
+  it('should cache compression-count on first queryQuota call', async () => {
+    // Arrange: Mock HTTPS response with compressionCount: 42
+    requestSpy.mockImplementation((url: any, options: any, callback: any) => {
+      const mockRes = {
+        statusCode: 200,
+        headers: {},
+        on: vi.fn(),
+      }
+      callback(mockRes)
+      setTimeout(() => {
+        const listeners = mockRes.on.mock.calls
+        listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
+          if (event === 'data') {
+            fn(JSON.stringify({ compressionCount: 42 }))
+          } else if (event === 'end') {
+            fn()
+          }
+        })
+      }, 0)
+      return createMockClientRequest()
+    })
+
+    // Act: First call
+    const result1 = await queryQuota('test-key')
+
+    // Assert: HTTP request sent
+    expect(requestSpy).toHaveBeenCalledTimes(2) // validateKey + getCompressionCount
+    expect(result1).toBe(458) // 500 - 42
+
+    // Act: Second call (should use cache)
+    const result2 = await queryQuota('test-key')
+
+    // Assert: No additional HTTP requests (cache hit)
+    expect(requestSpy).toHaveBeenCalledTimes(2) // Still 2 (no new calls)
+    expect(result2).toBe(458)
+  })
+
+  it('should isolate cache by API key', async () => {
+    // Arrange: Mock different compression counts for different keys
+    let callCount = 0
+    requestSpy.mockImplementation((url: any, options: any, callback: any) => {
+      callCount++
+      const count = callCount <= 2 ? 10 : 20 // First key: 10, Second key: 20
+      const mockRes = {
+        statusCode: 200,
+        headers: {},
+        on: vi.fn(),
+      }
+      callback(mockRes)
+      setTimeout(() => {
+        const listeners = mockRes.on.mock.calls
+        listeners.forEach(([event, fn]: [string, (...args: any[]) => any]) => {
+          if (event === 'data') {
+            fn(JSON.stringify({ compressionCount: count }))
+          } else if (event === 'end') {
+            fn()
+          }
+        })
+      }, 0)
+      return createMockClientRequest()
+    })
+
+    // Act: Query two different keys
+    const result1 = await queryQuota('key1')
+    const result2 = await queryQuota('key2')
+
+    // Assert: Different results (cache isolated)
+    expect(result1).toBe(490) // 500 - 10
+    expect(result2).toBe(480) // 500 - 20
+  })
+
+  it('should update cache via updateCompressionCountCache()', async () => {
+    // Arrange: Initial cache value
+    updateCompressionCountCache('test-key', 100)
+
+    // Act: Update cache
+    updateCompressionCountCache('test-key', 150)
+
+    // Assert: Cache updated
+    expect(getCachedCompressionCount('test-key')).toBe(150)
+  })
+
+  it('should clear cache via clearCompressionCountCache()', async () => {
+    // Arrange: Set cache
+    updateCompressionCountCache('test-key', 100)
+
+    // Act: Clear cache
+    clearCompressionCountCache()
+
+    // Assert: Cache cleared
+    expect(getCachedCompressionCount('test-key')).toBeUndefined()
+  })
+
+  it('should return undefined for non-cached key', () => {
+    // Act: Get non-cached key
+    const result = getCachedCompressionCount('non-existent-key')
+
+    // Assert: Returns undefined
+    expect(result).toBeUndefined()
   })
 })
