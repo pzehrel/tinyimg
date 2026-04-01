@@ -136,20 +136,18 @@ describe('tinyPngHttpClient', () => {
       const mockInputBuffer = createMockPngBuffer(1024)
 
       // Mock upload request with 4xx error
-      mockHttpRequest.mockResolvedValueOnce({
+      mockHttpRequest.mockResolvedValue({
         statusCode: 400,
         headers: {},
         data: { error: 'Bad Request' },
       })
 
-      await expect(
-        client.compress('test-api-key', mockInputBuffer),
-      ).rejects.toThrow('TinyPNG 客户端错误')
-
       try {
         await client.compress('test-api-key', mockInputBuffer)
+        expect(true).toBe(false) // Should not reach here
       }
       catch (error: any) {
+        expect(error.message).toContain('TinyPNG 客户端错误')
         expect(error.statusCode).toBe(400)
         expect(error.errorCode).toBe('CLIENT_ERROR')
       }
@@ -159,20 +157,18 @@ describe('tinyPngHttpClient', () => {
       const mockInputBuffer = createMockPngBuffer(1024)
 
       // Mock upload request with 5xx error
-      mockHttpRequest.mockResolvedValueOnce({
+      mockHttpRequest.mockResolvedValue({
         statusCode: 500,
         headers: {},
         data: { error: 'Internal Server Error' },
       })
 
-      await expect(
-        client.compress('test-api-key', mockInputBuffer),
-      ).rejects.toThrow('TinyPNG 服务器错误')
-
       try {
         await client.compress('test-api-key', mockInputBuffer)
+        expect(true).toBe(false) // Should not reach here
       }
       catch (error: any) {
+        expect(error.message).toContain('TinyPNG 服务器错误')
         expect(error.statusCode).toBe(500)
         expect(error.errorCode).toBe('SERVER_ERROR')
       }
@@ -181,16 +177,14 @@ describe('tinyPngHttpClient', () => {
     it('should handle network errors with code property', async () => {
       const mockInputBuffer = createMockPngBuffer(1024)
 
-      mockHttpRequest.mockRejectedValueOnce(Object.assign(new Error('Connection reset'), { code: 'ECONNRESET' }))
-
-      await expect(
-        client.compress('test-api-key', mockInputBuffer),
-      ).rejects.toThrow('Connection reset')
+      mockHttpRequest.mockRejectedValue(Object.assign(new Error('Connection reset'), { code: 'ECONNRESET' }))
 
       try {
         await client.compress('test-api-key', mockInputBuffer)
+        expect(true).toBe(false) // Should not reach here
       }
       catch (error: any) {
+        expect(error.message).toContain('Connection reset')
         expect(error.code).toBe('ECONNRESET')
       }
     })

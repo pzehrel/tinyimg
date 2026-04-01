@@ -8,6 +8,18 @@ export interface CompressResult {
   compressionCount: number
 }
 
+class TinyPngError extends Error {
+  statusCode: number
+  errorCode: string
+
+  constructor(message: string, statusCode: number, errorCode: string) {
+    super(message)
+    this.name = 'TinyPngError'
+    this.statusCode = statusCode
+    this.errorCode = errorCode
+  }
+}
+
 export class TinyPngHttpClient {
   /**
    * Compress an image by uploading to TinyPNG API and downloading the result.
@@ -55,7 +67,8 @@ export class TinyPngHttpClient {
       return false
     }
 
-    return false
+    // 5xx errors should be retried
+    throw new Error(`TinyPNG 服务器错误: HTTP ${response.statusCode}`)
   }
 
   /**
@@ -94,7 +107,7 @@ export class TinyPngHttpClient {
     }
 
     // 5xx errors should be retried
-    throw new Error(`HTTP ${response.statusCode}: Server error`)
+    throw new Error(`TinyPNG 服务器错误: HTTP ${response.statusCode}`)
   }
 
   /**
@@ -131,18 +144,19 @@ export class TinyPngHttpClient {
 
     if (!response.data.output?.url) {
       // Determine error type based on statusCode
-      const error: any = new Error()
       if (response.statusCode >= 400 && response.statusCode < 500) {
-        error.message = `TinyPNG 客户端错误: HTTP ${response.statusCode}`
-        error.statusCode = response.statusCode
-        error.errorCode = 'CLIENT_ERROR'
-        throw error
+        throw new TinyPngError(
+          `TinyPNG 客户端错误: HTTP ${response.statusCode}`,
+          response.statusCode,
+          'CLIENT_ERROR',
+        )
       }
       if (response.statusCode >= 500) {
-        error.message = `TinyPNG 服务器错误: HTTP ${response.statusCode}`
-        error.statusCode = response.statusCode
-        error.errorCode = 'SERVER_ERROR'
-        throw error
+        throw new TinyPngError(
+          `TinyPNG 服务器错误: HTTP ${response.statusCode}`,
+          response.statusCode,
+          'SERVER_ERROR',
+        )
       }
       throw new Error('No output URL in response')
     }
