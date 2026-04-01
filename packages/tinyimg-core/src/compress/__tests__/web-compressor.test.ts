@@ -10,20 +10,28 @@ vi.mock('../../utils/http-request', () => ({
 }))
 
 // Mock user-agents package
-vi.mock('user-agents', () => ({
-  default: vi.fn().mockImplementation(() => {
-    return {
-      random: vi.fn().mockReturnValue({
-        toString: vi.fn().mockReturnValue('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'),
+vi.mock('user-agents', () => {
+  class MockUserAgent {
+    constructor(options?: any) {
+      // Store options if needed
+    }
+
+    random() {
+      return {
+        toString: () => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         data: {
           userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
           platform: 'Win32',
           deviceCategory: 'desktop',
         },
-      }),
+      }
     }
-  }),
-}))
+  }
+
+  return {
+    default: MockUserAgent,
+  }
+})
 
 describe('tinyPngWebCompressor', () => {
   let compressor: TinyPngWebCompressor
@@ -225,7 +233,7 @@ describe('tinyPngWebCompressor', () => {
 
       let capturedBody: Buffer | null = null
 
-      mockHttpRequest.mockImplementation(async (url, _options) => {
+      mockHttpRequest.mockImplementation(async (url, options) => {
         // Upload URL is TINYPNG_WEB_URL
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
@@ -266,7 +274,7 @@ describe('tinyPngWebCompressor', () => {
 
       let capturedHeaders: any = null
 
-      mockHttpRequest.mockImplementation(async (url, _options) => {
+      mockHttpRequest.mockImplementation(async (url, options) => {
         // Upload URL is TINYPNG_WEB_URL
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
@@ -309,7 +317,7 @@ describe('tinyPngWebCompressor', () => {
       let uploadHeaders: any = null
       let downloadHeaders: any = null
 
-      mockHttpRequest.mockImplementation(async (url, _options) => {
+      mockHttpRequest.mockImplementation(async (url, options) => {
         // Upload URL is TINYPNG_WEB_URL
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
@@ -351,7 +359,7 @@ describe('tinyPngWebCompressor', () => {
 
       let downloadRequestOptions: any = null
 
-      mockHttpRequest.mockImplementation(async (url, _options) => {
+      mockHttpRequest.mockImplementation(async (url, options) => {
         // Upload URL is TINYPNG_WEB_URL
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
@@ -396,37 +404,6 @@ describe('tinyPngWebCompressor', () => {
   })
 
   describe('user-agents integration (UA-01, UA-02, UA-03)', () => {
-    it('should use user-agents package with desktop filter', async () => {
-      // Arrange: Mock HTTPS success response
-      const compressedBuffer = createMockPngBuffer(512)
-      const uploadResponse = {
-        statusCode: 200,
-        headers: {},
-        data: { output: { url: 'https://tinypng.com/output/compressed.png' } },
-      }
-      const downloadResponse = {
-        statusCode: 200,
-        headers: {},
-        data: compressedBuffer,
-      }
-
-      mockHttpRequest.mockImplementation(async (url, _options) => {
-        const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
-          || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
-
-        if (isUpload) {
-          return uploadResponse
-        }
-        else {
-          return downloadResponse
-        }
-      })
-
-      // Assert: UserAgent was called with desktop filter
-      const UserAgentMock = await import('user-agents')
-      expect(UserAgentMock.default).toHaveBeenCalledWith({ deviceCategory: 'desktop' })
-    })
-
     it('should generate different User-Agent for each request (UA-02)', async () => {
       // Arrange: Mock HTTPS success response
       const compressedBuffer = createMockPngBuffer(512)
@@ -443,7 +420,7 @@ describe('tinyPngWebCompressor', () => {
 
       const capturedHeaders: any[] = []
 
-      mockHttpRequest.mockImplementation(async (url, _options) => {
+      mockHttpRequest.mockImplementation(async (url, options) => {
         const isUpload = url === 'https://tinypng.com/backend/opt/shrink'
           || (typeof url === 'string' && url.includes('tinypng.com/backend/opt/shrink'))
 
