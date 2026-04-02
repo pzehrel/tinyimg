@@ -1,3 +1,4 @@
+/* eslint-disable node/prefer-global/buffer */
 import https from 'node:https'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TinyPngApiCompressor } from '../api-compressor'

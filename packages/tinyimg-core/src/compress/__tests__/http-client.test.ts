@@ -1,3 +1,4 @@
+/* eslint-disable node/prefer-global/buffer */
 import pLimit from 'p-limit'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { httpRequest } from '../../utils/http-request'
@@ -408,7 +409,6 @@ describe('tinyPngHttpClient', () => {
     it('should handle 10 concurrent compressions with different API keys', async () => {
       const concurrency = 10
       const mockBuffers = Array.from({ length: concurrency }).fill(createMockPngBuffer(1024))
-      const mockCompressedBuffers = Array.from({ length: concurrency }).fill(createMockPngBuffer(512))
       const apiKeys = Array.from({ length: concurrency }, (_, i) => `api-key-${i}`)
 
       // Mock all upload and download requests using mockResolvedValue (not Once)
@@ -453,7 +453,6 @@ describe('tinyPngHttpClient', () => {
       const requests = 16
       const apiKeys = Array.from({ length: requests }, (_, i) => `api-key-${i % 4}`) // 4 different keys
       const mockBuffers = Array.from({ length: requests }).fill(createMockPngBuffer(1024))
-      const mockCompressedBuffers = Array.from({ length: requests }).fill(createMockPngBuffer(512))
 
       // Mock all upload and download requests using mockImplementation
       mockHttpRequest.mockImplementation((url: string, options: any) => {

@@ -149,7 +149,6 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
     it('should retry on 500 error and succeed on second attempt', async () => {
       const mockInputBuffer = createMockPngBuffer(1024)
       const mockCompressedBuffer = createMockPngBuffer(512)
-      const mockOutputUrl = 'https://api.tinify.com/output/abc123'
 
       let attemptCount = 0
       let uploadCalled = false
@@ -250,7 +249,6 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
     it('should retry on 429 rate limit error', async () => {
       const mockInputBuffer = createMockPngBuffer(1024)
       const mockCompressedBuffer = createMockPngBuffer(512)
-      const mockOutputUrl = 'https://api.tinify.com/output/abc123'
 
       let attemptCount = 0
       let uploadCalled = false
@@ -310,7 +308,6 @@ describe('integration: TinyPngHttpClient → TinyPngApiCompressor → RetryManag
     it('should retry on network error (ECONNRESET)', async () => {
       const mockInputBuffer = createMockPngBuffer(1024)
       const mockCompressedBuffer = createMockPngBuffer(512)
-      const mockOutputUrl = 'https://api.tinify.com/output/abc123'
 
       let attemptCount = 0
       let uploadCalled = false

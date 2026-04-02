@@ -12,7 +12,7 @@ vi.mock('../../utils/http-request', () => ({
 // Mock user-agents package
 vi.mock('user-agents', () => {
   class MockUserAgent {
-    constructor(options?: any) {
+    constructor(_options?: any) {
       // Store options if needed
     }
 
