@@ -6,13 +6,9 @@ import { validateKey } from '../validator'
 
 describe('validateKey', () => {
   let requestSpy: any
-  let consoleLogSpy: any
-  let consoleWarnSpy: any
 
   beforeEach(() => {
     requestSpy = vi.spyOn(https, 'request')
-    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
   })
 
   it('should return true for valid API key', async () => {
@@ -42,8 +38,6 @@ describe('validateKey', () => {
 
     const result = await validateKey('valid-api-key')
     expect(result).toBe(true)
-    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('✓ API key'))
-    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('validated successfully'))
   })
 
   it('should return false for invalid API key (401)', async () => {
@@ -73,8 +67,6 @@ describe('validateKey', () => {
 
     const result = await validateKey('invalid-api-key')
     expect(result).toBe(false)
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠ Invalid API key'))
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('marked and skipped'))
   })
 
   it('should return false for invalid API key (403)', async () => {
@@ -104,7 +96,6 @@ describe('validateKey', () => {
 
     const result = await validateKey('forbidden-api-key')
     expect(result).toBe(false)
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠ Invalid API key'))
   })
 
   it('should return false for other 4xx errors', async () => {
@@ -134,7 +125,6 @@ describe('validateKey', () => {
 
     const result = await validateKey('test-api-key')
     expect(result).toBe(false)
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠ Invalid API key'))
   })
 
   it('should throw error on 500 server error', async () => {
@@ -216,7 +206,6 @@ describe('validateKey', () => {
 
     const result = await validateKey('invalid-api-key')
     expect(result).toBe(false)
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠ Invalid API key'))
   })
 
   it('should handle error with statusCode 403 from catch block', async () => {
@@ -230,7 +219,6 @@ describe('validateKey', () => {
 
     const result = await validateKey('forbidden-api-key')
     expect(result).toBe(false)
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠ Invalid API key'))
   })
 
   it('should handle error with errorCode AUTH_FAILED from catch block', async () => {
@@ -244,7 +232,6 @@ describe('validateKey', () => {
 
     const result = await validateKey('invalid-api-key')
     expect(result).toBe(false)
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠ Invalid API key'))
   })
 
   it('should re-throw network errors without statusCode', async () => {

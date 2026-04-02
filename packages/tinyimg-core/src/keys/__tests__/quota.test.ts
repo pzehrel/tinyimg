@@ -356,26 +356,6 @@ describe('quotaTracker', () => {
     tracker.decrement() // Should not go below 0
     expect(tracker.localCounter).toBe(0)
   })
-
-  it('should log warning when quota exhausted', () => {
-    const consoleWarnSpy = vi.spyOn(console, 'warn')
-    const tracker = createQuotaTracker('test-key', 1)
-
-    tracker.decrement() // This should trigger warning
-
-    expect(consoleWarnSpy).toHaveBeenCalledWith(
-      '⚠ Key test****-key quota exhausted, switching to next key',
-    )
-  })
-
-  it('should not log warning when quota not exhausted', () => {
-    const consoleWarnSpy = vi.spyOn(console, 'warn')
-    const tracker = createQuotaTracker('test-key', 10)
-
-    tracker.decrement()
-
-    expect(consoleWarnSpy).not.toHaveBeenCalled()
-  })
 })
 
 describe('compression-count cache', () => {

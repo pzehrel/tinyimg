@@ -2,10 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { PrioritySelector, RandomSelector, RoundRobinSelector } from './selector'
 
 // Mock dependencies
-vi.mock('../utils/logger', () => ({
-  logWarning: vi.fn(),
-}))
-
 vi.mock('./validator', () => ({
   validateKey: vi.fn(),
 }))
