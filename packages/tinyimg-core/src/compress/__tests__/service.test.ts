@@ -8,10 +8,6 @@ import { createMockPngBuffer, SMALL_PNG } from './fixtures'
 // Mock the dependencies
 vi.mock('../../keys/pool')
 vi.mock('../../cache/buffer-storage')
-vi.mock('../../utils/logger', () => ({
-  logInfo: vi.fn(),
-  logWarning: vi.fn(),
-}))
 
 describe('compressImage', () => {
   let mockKeyPool: any
@@ -40,7 +36,9 @@ describe('compressImage', () => {
       const result = await compressImage(SMALL_PNG, { cache: true, keyPool: mockKeyPool })
 
       // Assert: Returns cached image without compressing
-      expect(result).toEqual(cachedBuffer)
+      expect(result.buffer).toEqual(cachedBuffer)
+      expect(result.meta.cached).toBe(true)
+      expect(result.meta.compressorName).toBeNull()
     })
 
     it('should compress and cache when cache miss', async () => {
@@ -57,8 +55,10 @@ describe('compressImage', () => {
       // Act: Call compressImage() with test image
       const result = await compressImage(SMALL_PNG, { cache: true, keyPool: mockKeyPool })
 
-      // Assert: Compresses image, returns compressed buffer
-      expect(result).toEqual(compressedBuffer)
+      // Assert: Compresses image, returns compressed buffer with metadata
+      expect(result.buffer).toEqual(compressedBuffer)
+      expect(result.meta.cached).toBe(false)
+      expect(result.meta.compressorName).toBeDefined()
     })
 
     it('should check project cache first, then global cache', async () => {
@@ -76,7 +76,8 @@ describe('compressImage', () => {
       })
 
       // Assert: Returns global cache result
-      expect(result).toEqual(cachedBuffer)
+      expect(result.buffer).toEqual(cachedBuffer)
+      expect(result.meta.cached).toBe(true)
       expect(readCacheByHash).toHaveBeenCalledTimes(2)
     })
 
@@ -93,7 +94,8 @@ describe('compressImage', () => {
       const result = await compressImage(SMALL_PNG, { cache: true, keyPool: mockKeyPool })
 
       // Assert: Should still compress successfully
-      expect(result).toEqual(compressedBuffer)
+      expect(result.buffer).toEqual(compressedBuffer)
+      expect(result.meta.cached).toBe(false)
     })
   })
 
@@ -110,7 +112,8 @@ describe('compressImage', () => {
       const result = await compressImage(SMALL_PNG, { mode: 'api', keyPool: mockKeyPool })
 
       // Assert: Uses API compressor (not web compressor)
-      expect(result).toEqual(compressedBuffer)
+      expect(result.buffer).toEqual(compressedBuffer)
+      expect(result.meta.cached).toBe(false)
       expect(mockKeyPool.selectKey).toHaveBeenCalled()
       expect(mockKeyPool.decrementQuota).toHaveBeenCalled()
     })
@@ -129,7 +132,7 @@ describe('compressImage', () => {
       const result = await compressImage(SMALL_PNG, { mode: 'api', keyPool: mockKeyPool })
 
       // Assert: Should complete successfully
-      expect(result).toEqual(compressedBuffer)
+      expect(result.buffer).toEqual(compressedBuffer)
       expect(mockKeyPool.selectKey).toHaveBeenCalled()
     })
   })
@@ -157,7 +160,7 @@ describe('compressImage', () => {
       // Assert: All 5 complete successfully
       expect(results).toHaveLength(5)
       results.forEach((result) => {
-        expect(result).toEqual(compressedBuffer)
+        expect(result.buffer).toEqual(compressedBuffer)
       })
     })
 
@@ -184,7 +187,7 @@ describe('compressImage', () => {
       // Assert: All 6 complete successfully
       expect(results).toHaveLength(6)
       results.forEach((result) => {
-        expect(result).toEqual(compressedBuffer)
+        expect(result.buffer).toEqual(compressedBuffer)
       })
     })
   })
@@ -214,7 +217,7 @@ describe('compressImage', () => {
       const result = await compressImage(SMALL_PNG, { mode: 'api', keyPool: mockKeyPool })
 
       // Assert: Should complete successfully
-      expect(result).toEqual(compressedBuffer)
+      expect(result.buffer).toEqual(compressedBuffer)
       expect(mockKeyPool.selectKey).toHaveBeenCalled()
     })
   })
@@ -233,7 +236,8 @@ describe('compressImage', () => {
       const result1 = await compressImage(SMALL_PNG, { cache: true, keyPool: mockKeyPool })
 
       // Assert: Should compress successfully
-      expect(result1).toEqual(compressedBuffer)
+      expect(result1.buffer).toEqual(compressedBuffer)
+      expect(result1.meta.cached).toBe(false)
     })
   })
 })
