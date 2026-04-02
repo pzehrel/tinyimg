@@ -1,7 +1,6 @@
 import type { Buffer } from 'node:buffer'
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { logInfo } from '../utils/logger'
 import { calculateMD5 } from './hash'
 
 /**
@@ -84,9 +83,6 @@ export async function readCache(
     const storage = new CacheStorage(cacheDir)
     const data = await storage.read(imagePath)
     if (data !== null) {
-      const md5Hash = await calculateMD5(imagePath)
-      const prefix = md5Hash.substring(0, 8)
-      logInfo(`ℹ️ cache hit: ${prefix}`)
       return data
     }
   }
@@ -108,8 +104,4 @@ export async function writeCache(
 ): Promise<void> {
   const storage = new CacheStorage(cacheDir)
   await storage.write(imagePath, data)
-
-  const md5Hash = await calculateMD5(imagePath)
-  const prefix = md5Hash.substring(0, 8)
-  logInfo(`ℹ️ cache miss: ${prefix}, compressed`)
 }
