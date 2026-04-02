@@ -37,8 +37,11 @@ describe('compressImage', () => {
 
       // Assert: Returns cached image without compressing
       expect(result.buffer).toEqual(cachedBuffer)
+      expect(result.meta).toBeDefined()
       expect(result.meta.cached).toBe(true)
       expect(result.meta.compressorName).toBeNull()
+      expect(result.meta.originalSize).toBe(SMALL_PNG.byteLength)
+      expect(result.meta.compressedSize).toBe(cachedBuffer.byteLength)
     })
 
     it('should compress and cache when cache miss', async () => {
@@ -57,8 +60,11 @@ describe('compressImage', () => {
 
       // Assert: Compresses image, returns compressed buffer with metadata
       expect(result.buffer).toEqual(compressedBuffer)
+      expect(result.meta).toBeDefined()
       expect(result.meta.cached).toBe(false)
       expect(result.meta.compressorName).toBeDefined()
+      expect(result.meta.originalSize).toBe(SMALL_PNG.byteLength)
+      expect(result.meta.compressedSize).toBe(compressedBuffer.byteLength)
     })
 
     it('should check project cache first, then global cache', async () => {
@@ -77,7 +83,11 @@ describe('compressImage', () => {
 
       // Assert: Returns global cache result
       expect(result.buffer).toEqual(cachedBuffer)
+      expect(result.meta).toBeDefined()
       expect(result.meta.cached).toBe(true)
+      expect(result.meta.compressorName).toBeNull()
+      expect(result.meta.originalSize).toBe(SMALL_PNG.byteLength)
+      expect(result.meta.compressedSize).toBe(cachedBuffer.byteLength)
       expect(readCacheByHash).toHaveBeenCalledTimes(2)
     })
 
@@ -95,7 +105,11 @@ describe('compressImage', () => {
 
       // Assert: Should still compress successfully
       expect(result.buffer).toEqual(compressedBuffer)
+      expect(result.meta).toBeDefined()
       expect(result.meta.cached).toBe(false)
+      expect(result.meta.compressorName).toBeDefined()
+      expect(result.meta.originalSize).toBe(SMALL_PNG.byteLength)
+      expect(result.meta.compressedSize).toBe(compressedBuffer.byteLength)
     })
   })
 
@@ -113,7 +127,11 @@ describe('compressImage', () => {
 
       // Assert: Uses API compressor (not web compressor)
       expect(result.buffer).toEqual(compressedBuffer)
+      expect(result.meta).toBeDefined()
       expect(result.meta.cached).toBe(false)
+      expect(result.meta.compressorName).toBeDefined()
+      expect(result.meta.originalSize).toBe(SMALL_PNG.byteLength)
+      expect(result.meta.compressedSize).toBe(compressedBuffer.byteLength)
       expect(mockKeyPool.selectKey).toHaveBeenCalled()
       expect(mockKeyPool.decrementQuota).toHaveBeenCalled()
     })
@@ -133,6 +151,11 @@ describe('compressImage', () => {
 
       // Assert: Should complete successfully
       expect(result.buffer).toEqual(compressedBuffer)
+      expect(result.meta).toBeDefined()
+      expect(result.meta.cached).toBe(false)
+      expect(result.meta.compressorName).toBeDefined()
+      expect(result.meta.originalSize).toBe(SMALL_PNG.byteLength)
+      expect(result.meta.compressedSize).toBe(compressedBuffer.byteLength)
       expect(mockKeyPool.selectKey).toHaveBeenCalled()
     })
   })
@@ -218,6 +241,11 @@ describe('compressImage', () => {
 
       // Assert: Should complete successfully
       expect(result.buffer).toEqual(compressedBuffer)
+      expect(result.meta).toBeDefined()
+      expect(result.meta.cached).toBe(false)
+      expect(result.meta.compressorName).toBeDefined()
+      expect(result.meta.originalSize).toBe(SMALL_PNG.byteLength)
+      expect(result.meta.compressedSize).toBe(compressedBuffer.byteLength)
       expect(mockKeyPool.selectKey).toHaveBeenCalled()
     })
   })
@@ -237,7 +265,11 @@ describe('compressImage', () => {
 
       // Assert: Should compress successfully
       expect(result1.buffer).toEqual(compressedBuffer)
+      expect(result1.meta).toBeDefined()
       expect(result1.meta.cached).toBe(false)
+      expect(result1.meta.compressorName).toBeDefined()
+      expect(result1.meta.originalSize).toBe(SMALL_PNG.byteLength)
+      expect(result1.meta.compressedSize).toBe(compressedBuffer.byteLength)
     })
   })
 })
