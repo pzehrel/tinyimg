@@ -1,7 +1,6 @@
 import type { Buffer } from 'node:buffer'
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { logInfo } from '../utils/logger'
 
 /**
  * Cache storage for reading and writing compressed image data by hash.
@@ -82,8 +81,6 @@ export async function readCacheByHash(
     const storage = new BufferCacheStorage(cacheDir)
     const data = await storage.read(hash)
     if (data !== null) {
-      const prefix = hash.substring(0, 8)
-      logInfo(`ℹ Cache hit: ${prefix}`)
       return data
     }
   }
@@ -105,7 +102,4 @@ export async function writeCacheByHash(
 ): Promise<void> {
   const storage = new BufferCacheStorage(cacheDir)
   await storage.write(hash, data)
-
-  const prefix = hash.substring(0, 8)
-  logInfo(`ℹ Cached: ${prefix}`)
 }
