@@ -1,4 +1,3 @@
-import { logWarning } from '../utils/logger'
 import { maskKey } from './masker'
 import { createQuotaTracker, queryQuota } from './quota'
 import { validateKey } from './validator'
@@ -30,7 +29,6 @@ export class RandomSelector {
 
       const remaining = await queryQuota(key)
       if (remaining === 0) {
-        logWarning(`Key ${maskKey(key)} has no quota remaining`)
         continue
       }
 
