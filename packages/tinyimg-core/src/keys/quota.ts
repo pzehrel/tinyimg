@@ -1,5 +1,4 @@
 import { TinyPngHttpClient } from '../compress/http-client'
-import { maskKey } from './masker'
 
 const MONTHLY_LIMIT = 500 // Free tier limit
 
@@ -87,10 +86,6 @@ export function createQuotaTracker(key: string, remaining: number): QuotaTracker
     decrement() {
       if (this.localCounter > 0) {
         this.localCounter--
-
-        if (this.localCounter === 0) {
-          console.warn(`⚠ Key ${maskKey(this.key)} quota exhausted, switching to next key`)
-        }
       }
     },
     isZero() {
