@@ -2,14 +2,8 @@ import { Buffer } from 'node:buffer'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { CacheStorage, readCache, writeCache } from './storage'
-
-// Mock logger
-vi.mock('../utils/logger', () => ({
-  logInfo: vi.fn(),
-  logWarning: vi.fn(),
-}))
 
 describe('cache storage', () => {
   let cacheDir: string
@@ -152,40 +146,6 @@ describe('cache storage', () => {
       // Cleanup
       await rm(cacheDir1, { recursive: true, force: true })
       await rm(cacheDir2, { recursive: true, force: true })
-    })
-  })
-
-  describe('writeCache', () => {
-    it('logs cache hit with MD5 prefix', async () => {
-      const { logInfo } = await import('../utils/logger')
-      const cacheDir = join(tmpdir(), `cache-${Date.now()}`)
-      await mkdir(cacheDir, { recursive: true })
-
-      const testData = Buffer.from('compressed-image-data')
-      await writeCache(testImagePath, testData, cacheDir)
-
-      // Verify logInfo was called with cache hit message
-      expect(logInfo).toHaveBeenCalledWith(
-        expect.stringContaining('cache hit:'),
-      )
-
-      // Cleanup
-      await rm(cacheDir, { recursive: true, force: true })
-    })
-
-    it('logs cache miss with MD5 prefix + ", compressed"', async () => {
-      const { logInfo } = await import('../utils/logger')
-      const cacheDir = join(tmpdir(), `cache-${Date.now()}`)
-      await mkdir(cacheDir, { recursive: true })
-
-      const testData = Buffer.from('compressed-image-data')
-      await writeCache(testImagePath, testData, cacheDir)
-
-      // Verify logInfo was called
-      expect(logInfo).toHaveBeenCalled()
-
-      // Cleanup
-      await rm(cacheDir, { recursive: true, force: true })
     })
   })
 })

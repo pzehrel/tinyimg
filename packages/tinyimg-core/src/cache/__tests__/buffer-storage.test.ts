@@ -5,7 +5,6 @@ import { BufferCacheStorage, readCacheByHash, writeCacheByHash } from '../buffer
 
 // Mock dependencies
 vi.mock('node:fs/promises')
-vi.mock('../utils/logger')
 
 const { mkdir, readFile, rename, writeFile } = vi.mocked(fs)
 
