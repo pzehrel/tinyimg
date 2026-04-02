@@ -39,4 +39,3 @@ export { PrioritySelector, RandomSelector, RoundRobinSelector } from './keys/sel
 export { validateKey } from './keys/validator'
 
 // Utils
-export { logInfo, logWarning } from './utils/logger'
