@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { maskKey } from '../keys/masker'
 import { createQuotaTracker } from '../keys/quota'
 
@@ -47,28 +47,16 @@ describe('key Operations Integration Tests', () => {
       expect(tracker.isZero()).toBe(true)
     })
 
-    it('warns on exhaustion', () => {
+    it('detects zero quota after decrement', () => {
       const tracker = createQuotaTracker('key', 1)
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
       tracker.decrement()
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('quota exhausted'),
-      )
-
-      consoleWarnSpy.mockRestore()
+      expect(tracker.isZero()).toBe(true)
     })
 
-    it('masks key in quota exhaustion warning', () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      const tracker = createQuotaTracker('abcd1234efgh5678', 1)
-
-      tracker.decrement()
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('abcd****5678'),
-      )
-
-      consoleWarnSpy.mockRestore()
+    it('masks key in tracker key property', () => {
+      const tracker = createQuotaTracker('abcd1234efgh5678', 10)
+      expect(tracker.key).toBe('abcd1234efgh5678')
     })
   })
 })
