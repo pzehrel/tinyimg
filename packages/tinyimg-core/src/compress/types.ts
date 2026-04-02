@@ -66,3 +66,45 @@ export interface CompressOptions {
  * This is defined in compress/service.ts but exported here for consistency
  */
 export type { CompressServiceOptions } from './service'
+
+/**
+ * Compression metadata returned with compressed image
+ */
+export interface CompressionMeta {
+  /**
+   * Whether the result was served from cache
+   */
+  cached: boolean
+
+  /**
+   * Name of the compressor that performed the compression
+   * Null when served from cache
+   */
+  compressorName: string | null
+
+  /**
+   * Original image size in bytes
+   */
+  originalSize: number
+
+  /**
+   * Compressed image size in bytes
+   */
+  compressedSize: number
+}
+
+/**
+ * Result of a compression operation
+ * Contains both the compressed buffer and metadata
+ */
+export interface CompressResult {
+  /**
+   * Compressed image data
+   */
+  buffer: Buffer
+
+  /**
+   * Compression metadata
+   */
+  meta: CompressionMeta
+}
