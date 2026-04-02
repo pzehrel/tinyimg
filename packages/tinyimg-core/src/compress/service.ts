@@ -73,7 +73,7 @@ export async function compressImage(
         }
       }
     }
-    catch (error: any) {
+    catch {
       // Continue to compression on cache errors
     }
   }
