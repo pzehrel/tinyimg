@@ -2,7 +2,6 @@ import type { Buffer } from 'node:buffer'
 import type { KeyPool } from '../keys/pool'
 import type { ICompressor } from './types'
 import { updateCompressionCountCache } from '../keys/quota'
-import { logInfo, logWarning } from '../utils/logger'
 import { TinyPngHttpClient } from './http-client'
 import { RetryManager } from './retry'
 
@@ -26,7 +25,6 @@ export class TinyPngApiCompressor implements ICompressor {
   async compress(buffer: Buffer): Promise<Buffer> {
     // Check 5MB limit per CONTEXT.md D-09
     if (buffer.byteLength > MAX_FILE_SIZE) {
-      logWarning(`File exceeds 5MB limit for API compressor (${(buffer.byteLength / 1024 / 1024).toFixed(2)}MB)`)
       throw new Error('File size exceeds 5MB limit')
     }
 
@@ -34,10 +32,7 @@ export class TinyPngApiCompressor implements ICompressor {
       const key = await this.keyPool.selectKey()
       const client = new TinyPngHttpClient()
 
-      const originalSize = buffer.byteLength
       const { buffer: compressedBuffer, compressionCount } = await client.compress(key, buffer)
-      const compressedSize = compressedBuffer.byteLength
-      const saved = ((1 - compressedSize / originalSize) * 100).toFixed(1)
 
       // Update compression-count cache (D-14, 解决 warning #2)
       // compressionCount 可能为 undefined（如果 TinyPNG API 不返回该字段）
@@ -46,7 +41,6 @@ export class TinyPngApiCompressor implements ICompressor {
       }
 
       this.keyPool.decrementQuota()
-      logInfo(`Compressed with [TinyPngApiCompressor]: ${originalSize} → ${compressedSize} (saved ${saved}%)`)
 
       return compressedBuffer
     })

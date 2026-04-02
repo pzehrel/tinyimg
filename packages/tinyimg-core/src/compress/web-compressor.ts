@@ -2,7 +2,6 @@ import type { Buffer } from 'node:buffer'
 import type { ICompressor } from './types'
 import UserAgent from 'user-agents'
 import { httpRequest } from '../utils/http-request'
-import { logInfo } from '../utils/logger'
 import { RetryManager } from './retry'
 
 const TINYPNG_WEB_URL = 'https://tinypng.com/backend/opt/shrink'
@@ -25,12 +24,6 @@ export class TinyPngWebCompressor implements ICompressor {
 
       // Step 2: Download compressed image
       const compressedBuffer = await this.downloadCompressedImage(uploadUrl)
-
-      const originalSize = buffer.byteLength
-      const compressedSize = compressedBuffer.byteLength
-      const saved = ((1 - compressedSize / originalSize) * 100).toFixed(1)
-
-      logInfo(`Compressed with [TinyPngWebCompressor]: ${originalSize} → ${compressedSize} (saved ${saved}%)`)
 
       return compressedBuffer
     })
