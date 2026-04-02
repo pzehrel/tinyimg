@@ -1,7 +1,6 @@
 import type { Buffer } from 'node:buffer'
 import type { CompressionMode, CompressOptions } from './types'
 import { AllCompressionFailedError } from '../errors/types'
-import { logInfo, logWarning } from '../utils/logger'
 /**
  * Compress buffer with automatic fallback through multiple compressors
  *
@@ -24,18 +23,15 @@ import { logInfo, logWarning } from '../utils/logger'
 export async function compressWithFallback(
   buffer: Buffer,
   options: CompressOptions = {},
-): Promise<Buffer> {
+): Promise<{ buffer: Buffer, compressorName: string }> {
   const compressors = options.compressors ?? []
 
   for (const compressor of compressors) {
     try {
-      logInfo(`Attempting compression with [${compressor.constructor.name}]`)
       const result = await compressor.compress(buffer)
-      return result
+      return { buffer: result, compressorName: compressor.constructor.name }
     }
     catch (error: any) {
-      logWarning(`[${compressor.constructor.name}] failed: ${error.message}`)
-
       // If this is AllCompressionFailedError, propagate immediately
       if (error.name === 'AllCompressionFailedError') {
         throw error
