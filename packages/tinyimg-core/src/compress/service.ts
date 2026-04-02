@@ -1,11 +1,10 @@
 import type { Buffer } from 'node:buffer'
-import type { CompressOptions, ICompressor } from './types'
+import type { CompressOptions, CompressResult, ICompressor } from './types'
 import process from 'node:process'
 import { readCacheByHash, writeCacheByHash } from '../cache/buffer-storage'
 import { calculateMD5FromBuffer } from '../cache/hash'
 import { getGlobalCachePath, getProjectCachePath } from '../cache/paths'
 import { KeyPool } from '../keys/pool'
-import { logInfo, logWarning } from '../utils/logger'
 import { TinyPngApiCompressor, TinyPngWebCompressor } from './api-compressor'
 import { compressWithFallback } from './compose'
 import { createConcurrencyLimiter } from './concurrency'
@@ -43,7 +42,7 @@ export interface CompressServiceOptions extends CompressOptions {
 export async function compressImage(
   buffer: Buffer,
   options: CompressServiceOptions = {},
-): Promise<Buffer> {
+): Promise<CompressResult> {
   const {
     cache = true,
     projectCacheOnly = false,
@@ -51,9 +50,10 @@ export async function compressImage(
     maxRetries = 8,
   } = options
 
-  // Step 1: Calculate MD5 for cache key
+  // Step 1: Calculate MD5 for cache key and record original size
   const hash = await calculateMD5FromBuffer(buffer)
   const hashPrefix = hash.substring(0, 8)
+  const originalSize = buffer.byteLength
 
   // Step 2: Check cache if enabled
   if (cache) {
@@ -62,8 +62,7 @@ export async function compressImage(
       const projectCachePath = getProjectCachePath(process.cwd())
       const cached = await readCacheByHash(hash, [projectCachePath])
       if (cached) {
-        logInfo(`ℹ Cache hit: ${hashPrefix}`)
-        return cached
+        return { buffer: cached, meta: { cached: true, compressorName: null, originalSize, compressedSize: cached.byteLength } }
       }
 
       // Try global cache if not project-only
@@ -71,21 +70,17 @@ export async function compressImage(
         const globalCachePath = getGlobalCachePath()
         const globalCached = await readCacheByHash(hash, [globalCachePath])
         if (globalCached) {
-          logInfo(`ℹ Cache hit (global): ${hashPrefix}`)
-          return globalCached
+          return { buffer: globalCached, meta: { cached: true, compressorName: null, originalSize, compressedSize: globalCached.byteLength } }
         }
       }
     }
     catch (error: any) {
-      logWarning(`Cache read failed: ${error.message}`)
       // Continue to compression on cache errors
     }
   }
 
   // Step 3: Compress with fallback
-  logInfo(`ℹ Cache miss: ${hashPrefix}, compressing...`)
-
-  const compressed = await compressWithFallback(buffer, {
+  const { buffer: compressed, compressorName } = await compressWithFallback(buffer, {
     mode,
     maxRetries,
     compressors: createCompressors(options),
@@ -96,15 +91,13 @@ export async function compressImage(
     try {
       const projectCachePath = getProjectCachePath(process.cwd())
       await writeCacheByHash(hash, compressed, projectCachePath)
-      logInfo(`ℹ Cached: ${hashPrefix}`)
     }
-    catch (error: any) {
-      logWarning(`Cache write failed: ${error.message}`)
+    catch {
       // Don't fail compression on cache write errors
     }
   }
 
-  return compressed
+  return { buffer: compressed, meta: { cached: false, compressorName, originalSize, compressedSize: compressed.byteLength } }
 }
 
 /**
@@ -117,7 +110,7 @@ export async function compressImage(
 export async function compressImages(
   buffers: Buffer[],
   options: CompressServiceOptions = {},
-): Promise<Buffer[]> {
+): Promise<CompressResult[]> {
   const { concurrency = 8 } = options
   const limit = createConcurrencyLimiter(concurrency)
 
