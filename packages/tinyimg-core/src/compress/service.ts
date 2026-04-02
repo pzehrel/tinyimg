@@ -52,7 +52,6 @@ export async function compressImage(
 
   // Step 1: Calculate MD5 for cache key and record original size
   const hash = await calculateMD5FromBuffer(buffer)
-  const hashPrefix = hash.substring(0, 8)
   const originalSize = buffer.byteLength
 
   // Step 2: Check cache if enabled
