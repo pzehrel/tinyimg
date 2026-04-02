@@ -1,5 +1,3 @@
-import { logWarning } from '../utils/logger'
-
 export class RetryManager {
   private failureCount = 0
 
@@ -23,7 +21,6 @@ export class RetryManager {
         }
 
         const delay = this.baseDelay * 2 ** attempt
-        logWarning(`Retry ${attempt + 1}/${this.maxRetries} after ${delay}ms`)
         await this.sleep(delay)
       }
     }
