@@ -26,7 +26,8 @@ describe('compressWithFallback', () => {
       // Assert: Tries apiCompressor first, then webCompressor
       expect(mockApiCompressor.compress).toHaveBeenCalledTimes(1)
       expect(mockWebCompressor.compress).toHaveBeenCalledTimes(1)
-      expect(result).toEqual(SMALL_PNG)
+      expect(result.buffer).toEqual(SMALL_PNG)
+      expect(result.compressorName).toBe('Object')
     })
 
     it('should return first successful result', async () => {
@@ -45,7 +46,8 @@ describe('compressWithFallback', () => {
       // Assert: Returns result from first compressor without trying others
       expect(mockCompressor1.compress).toHaveBeenCalledTimes(1)
       expect(mockCompressor2.compress).not.toHaveBeenCalled()
-      expect(result).toEqual(SMALL_PNG)
+      expect(result.buffer).toEqual(SMALL_PNG)
+      expect(result.compressorName).toBe('Object')
     })
 
     it('should try next compressor on failure', async () => {
@@ -64,7 +66,8 @@ describe('compressWithFallback', () => {
       // Assert: Falls back to second compressor and returns its result
       expect(mockCompressor1.compress).toHaveBeenCalledTimes(1)
       expect(mockCompressor2.compress).toHaveBeenCalledTimes(1)
-      expect(result).toEqual(SMALL_PNG)
+      expect(result.buffer).toEqual(SMALL_PNG)
+      expect(result.compressorName).toBe('Object')
     })
 
     it('should throw AllCompressionFailedError when all fail', async () => {
