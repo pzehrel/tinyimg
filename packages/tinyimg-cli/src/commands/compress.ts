@@ -41,7 +41,7 @@ async function printSummary(results: CompressResult[]): Promise<void> {
   if (config.keys.length > 0) {
     try {
       const quotas = await Promise.allSettled(
-        config.keys.map(k => queryQuota(k.key))
+        config.keys.map(k => queryQuota(k.key)),
       )
       const totalQuota = quotas
         .filter((r): r is PromiseFulfilledResult<number> => r.status === 'fulfilled')
