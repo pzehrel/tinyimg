@@ -9,7 +9,7 @@ describe('normalizeOptions', () => {
       cache: true,
       parallel: 8,
       strict: false,
-      verbose: false,
+      level: 'normal',
       include: undefined,
       exclude: undefined,
     })
@@ -56,5 +56,32 @@ describe('normalizeOptions', () => {
     expect(() => normalizeOptions({ parallel: -1 })).toThrow('Invalid parallel: -1. Must be a positive number')
     expect(() => normalizeOptions({ parallel: 0 })).toThrow(RangeError)
     expect(() => normalizeOptions({ parallel: 0 })).toThrow('Invalid parallel: 0. Must be a positive number')
+  })
+
+  it('defaults level to normal', async () => {
+    const { normalizeOptions } = await import('./options')
+    expect(normalizeOptions({}).level).toBe('normal')
+  })
+
+  it('accepts explicit level values', async () => {
+    const { normalizeOptions } = await import('./options')
+    expect(normalizeOptions({ level: 'quiet' }).level).toBe('quiet')
+    expect(normalizeOptions({ level: 'normal' }).level).toBe('normal')
+    expect(normalizeOptions({ level: 'verbose' }).level).toBe('verbose')
+  })
+
+  it('maps verbose: true to level: verbose for backward compatibility', async () => {
+    const { normalizeOptions } = await import('./options')
+    expect(normalizeOptions({ verbose: true }).level).toBe('verbose')
+  })
+
+  it('ignores verbose: false and uses normal level', async () => {
+    const { normalizeOptions } = await import('./options')
+    expect(normalizeOptions({ verbose: false }).level).toBe('normal')
+  })
+
+  it('prefers explicit level over verbose', async () => {
+    const { normalizeOptions } = await import('./options')
+    expect(normalizeOptions({ level: 'quiet', verbose: true }).level).toBe('quiet')
   })
 })
