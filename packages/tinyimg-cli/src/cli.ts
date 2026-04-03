@@ -1,13 +1,33 @@
 #!/usr/bin/env node
 import process from 'node:process'
 import cac from 'cac'
-import kleur from 'kleur'
 import { compressCommand } from './commands/compress'
 import { convertCommand } from './commands/convert'
 import { keyAdd, keyList, keyRemove } from './commands/key'
 import { listCommand } from './commands/list'
+import { logger } from './utils/logger'
 
 const cli = cac('tinyimg')
+
+// 全局选项：必须在所有 cli.command() 之前定义
+cli.option('--verbose', 'Enable verbose output')
+cli.option('--quiet', 'Suppress non-error output')
+
+/**
+ * 设置 Logger 级别并检查选项互斥
+ */
+function setupLogger(options: { verbose?: boolean, quiet?: boolean }): void {
+  if (options.verbose && options.quiet) {
+    console.error('Error: --verbose and --quiet are mutually exclusive')
+    process.exit(1)
+  }
+  if (options.verbose) {
+    logger.setLevel('verbose')
+  }
+  else if (options.quiet) {
+    logger.setLevel('quiet')
+  }
+}
 
 // Main compression command
 cli
@@ -25,10 +45,11 @@ cli
   .option('--convert', 'Convert opaque PNGs to JPG after compression')
   .action(async (inputs: string[], options: any) => {
     try {
+      setupLogger(options)
       await compressCommand(inputs, options)
     }
     catch (error: any) {
-      console.error(kleur.red(`Error: ${error.message}`))
+      logger.error(error.message)
       process.exit(1)
     }
   })
@@ -45,8 +66,8 @@ cli
       if (subcommand === 'add') {
         const key = rawArgs[2]
         if (!key) {
-          console.error(kleur.red('Error: API key is required'))
-          console.log(kleur.gray('Usage: tinyimg key add <key>'))
+          logger.error('API key is required')
+          logger.verbose('Usage: tinyimg key add <key>')
           process.exit(1)
         }
         await keyAdd(key)
@@ -59,13 +80,13 @@ cli
         await keyList()
       }
       else {
-        console.error(kleur.red(`Error: Unknown key subcommand "${subcommand}"`))
-        console.log(kleur.gray('Usage: tinyimg key <add|remove|list>'))
+        logger.error(`Unknown key subcommand "${subcommand}"`)
+        logger.verbose('Usage: tinyimg key <add|remove|list>')
         process.exit(1)
       }
     }
     catch (error: any) {
-      console.error(kleur.red(`Error: ${error.message}`))
+      logger.error(error.message)
       process.exit(1)
     }
   })
@@ -76,10 +97,11 @@ cli
   .option('-t, --convertible', 'Show only PNG files convertible to JPG (no alpha channel)')
   .action(async (inputs: string[], options: any) => {
     try {
+      setupLogger(options)
       await listCommand(inputs, options)
     }
     catch (error: any) {
-      console.error(kleur.red(`Error: ${error.message}`))
+      logger.error(error.message)
       process.exit(1)
     }
   })
@@ -89,10 +111,11 @@ cli
   .option('-t, --convertible', 'Show only PNG files convertible to JPG (no alpha channel)')
   .action(async (inputs: string[], options: any) => {
     try {
+      setupLogger(options)
       await listCommand(inputs, options)
     }
     catch (error: any) {
-      console.error(kleur.red(`Error: ${error.message}`))
+      logger.error(error.message)
       process.exit(1)
     }
   })
@@ -104,10 +127,11 @@ cli
   .option('--quality <number>', 'JPG quality (1-100, default: 85)', { default: '85' })
   .action(async (inputs: string[], options: any) => {
     try {
+      setupLogger(options)
       await convertCommand(inputs, { deleteOriginal: options.deleteOriginal, quality: Number(options.quality) })
     }
     catch (error: any) {
-      console.error(kleur.red(`Error: ${error.message}`))
+      logger.error(error.message)
       process.exit(1)
     }
   })
