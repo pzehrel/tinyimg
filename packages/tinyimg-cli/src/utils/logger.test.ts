@@ -132,8 +132,9 @@ describe('terminalLogger', () => {
   describe('formatResult', () => {
     it('returns plain string without ANSI color codes', () => {
       const result = logger.formatResult('/path/to/image.png', 1024, 512)
-      // 检查不包含 ANSI 转义序列
-      expect(result).not.toMatch(/\x1b\[[0-9;]*m/)
+      // 检查不包含 ANSI 转义序列 (ESC 字符)
+      // eslint-disable-next-line no-control-regex
+      expect(result).not.toMatch(/\x1B\[[0-9;]*m/)
     })
 
     it('includes basename in output', () => {
@@ -165,7 +166,7 @@ describe('terminalLogger', () => {
     })
   })
 
-  describe('TerminalLogger class', () => {
+  describe('terminalLogger class', () => {
     it('can create independent instances', () => {
       const logger1 = new TerminalLogger()
       const logger2 = new TerminalLogger()

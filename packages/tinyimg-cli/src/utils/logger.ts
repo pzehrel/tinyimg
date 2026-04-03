@@ -3,6 +3,9 @@ import { formatBytes } from './format'
 
 export type LogLevel = 'quiet' | 'normal' | 'verbose'
 
+// 路径分隔符正则（静态定义避免重复编译）
+const PATH_SEP_REGEX = /[/\\]/
+
 /**
  * 统一的终端日志类
  * 支持 quiet/normal/verbose 三级输出级别
@@ -124,7 +127,7 @@ export class TerminalLogger {
    * 格式："{basename}: {originalSize} → {compressedSize} ({savedPercent}% saved)"
    */
   formatResult(inputPath: string, originalSize: number, compressedSize: number): string {
-    const basename = inputPath.split(/[/\\]/).pop() || inputPath
+    const basename = inputPath.split(PATH_SEP_REGEX).pop() || inputPath
     const savedBytes = originalSize - compressedSize
     const savedPercent = originalSize > 0 ? ((savedBytes / originalSize) * 100).toFixed(1) : '0.0'
 

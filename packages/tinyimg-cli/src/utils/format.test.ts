@@ -12,8 +12,9 @@ describe('format utilities', () => {
 
     it('returns plain string without ANSI color codes', () => {
       const result = formatProgress(1, 1)
-      // 检查不包含 ANSI 转义序列
-      expect(result).not.toMatch(/\x1b\[[0-9;]*m/)
+      // 检查不包含 ANSI 转义序列 (ESC 字符)
+      // eslint-disable-next-line no-control-regex
+      expect(result).not.toMatch(/\x1B\[[0-9;]*m/)
       expect(result).toContain('Compressing 1/1')
       expect(result).toContain('...')
     })
@@ -22,8 +23,9 @@ describe('format utilities', () => {
   describe('formatResult', () => {
     it('returns plain string without ANSI color codes', () => {
       const result = formatResult('/path/to/image.png', '/path/to/output.png', 1024, 512)
-      // 检查不包含 ANSI 转义序列
-      expect(result).not.toMatch(/\x1b\[[0-9;]*m/)
+      // 检查不包含 ANSI 转义序列 (ESC 字符)
+      // eslint-disable-next-line no-control-regex
+      expect(result).not.toMatch(/\x1B\[[0-9;]*m/)
     })
 
     it('shows filename', () => {
