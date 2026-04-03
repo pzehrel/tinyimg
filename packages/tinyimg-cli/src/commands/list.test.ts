@@ -11,18 +11,31 @@ vi.mock('node:fs/promises')
 vi.mock('@pz4l/tinyimg-core', () => ({
   detectAlphas: vi.fn(),
 }))
+vi.mock('../utils/logger', () => ({
+  logger: {
+    setLevel: vi.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    verbose: vi.fn(),
+    warn: vi.fn(),
+    listItem: vi.fn(),
+  },
+}))
 
 describe('list command', () => {
-  let consoleErrorSpy: any
-  let consoleLogSpy: any
   let processExitSpy: any
+  let logger: any
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
-    // Mock console and process.exit for each test
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    // Reset fs.stat mock to clear any previous mockResolvedValueOnce calls
+    vi.mocked(fs.stat).mockReset()
+    // Mock process.exit for each test
     processExitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as any)
+    // Get mocked logger
+    const loggerModule = await import('../utils/logger')
+    logger = loggerModule.logger
   })
 
   afterEach(() => {
@@ -55,23 +68,25 @@ describe('list command', () => {
 
     await listCommand(['./src'], {})
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('No valid image files found'))
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('No valid image files found'))
     expect(processExitSpy).toHaveBeenCalledWith(1)
   })
 
   it('displays each file with its size', async () => {
     const { expandInputs } = await import('../utils/files')
-    vi.mocked(expandInputs).mockResolvedValue(['/path/a.png', '/path/b.png'])
+    const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue('/project')
+
+    vi.mocked(expandInputs).mockResolvedValue(['/project/src/a.png', '/project/src/b.png'])
     vi.mocked(fs.stat)
       .mockResolvedValueOnce({ size: 1024 } as any)
       .mockResolvedValueOnce({ size: 2048 } as any)
 
     await listCommand(['./src'], {})
 
-    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('a.png'))
-    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('b.png'))
-    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('1KB'))
-    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('2KB'))
+    expect(logger.listItem).toHaveBeenCalledWith('src/a.png', 1024)
+    expect(logger.listItem).toHaveBeenCalledWith('src/b.png', 2048)
+
+    cwdSpy.mockRestore()
   })
 
   it('displays summary with file count and total size', async () => {
@@ -83,23 +98,28 @@ describe('list command', () => {
 
     await listCommand(['./src'], {})
 
-    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('2 files'))
-    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('3KB'))
+    expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Compressible images'))
+    expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('2 files'))
+    expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('3KB'))
   })
 
   it('sorts files by path alphabetically', async () => {
     const { expandInputs } = await import('../utils/files')
-    vi.mocked(expandInputs).mockResolvedValue(['/path/z.png', '/path/a.png'])
+    const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue('/project')
+
+    vi.mocked(expandInputs).mockResolvedValue(['/project/z.png', '/project/a.png'])
     vi.mocked(fs.stat)
       .mockResolvedValueOnce({ size: 1024 } as any)
       .mockResolvedValueOnce({ size: 2048 } as any)
 
     await listCommand(['./src'], {})
 
-    const calls = consoleLogSpy.mock.calls
-    const aIndex = calls.findIndex(call => call[0]?.includes('a.png'))
-    const zIndex = calls.findIndex(call => call[0]?.includes('z.png'))
-    expect(aIndex).toBeLessThan(zIndex)
+    // Verify listItem is called with files in alphabetical order
+    const calls = logger.listItem.mock.calls
+    expect(calls[0][0]).toBe('a.png')
+    expect(calls[1][0]).toBe('z.png')
+
+    cwdSpy.mockRestore()
   })
 
   it('handles stat errors gracefully', async () => {
@@ -120,12 +140,8 @@ describe('list command', () => {
 
       await listCommand(['./src'], {})
 
-      // Should display the full relative path, not just the basename
-      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('src/images/logo.png -'))
-      // Should NOT display just "logo.png -" (the basename format)
-      const calls = consoleLogSpy.mock.calls.map(call => call[0])
-      const hasBasenameOnly = calls.some(call => call.includes('logo.png -') && !call.includes('src/images/logo.png'))
-      expect(hasBasenameOnly).toBe(false)
+      // Should display the full relative path using listItem
+      expect(logger.listItem).toHaveBeenCalledWith('src/images/logo.png', 1024)
 
       cwdSpy.mockRestore()
     })
@@ -139,7 +155,7 @@ describe('list command', () => {
 
       await listCommand(['.'], {})
 
-      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('image.png'))
+      expect(logger.listItem).toHaveBeenCalledWith('image.png', 2048)
 
       cwdSpy.mockRestore()
     })
@@ -153,7 +169,7 @@ describe('list command', () => {
 
       await listCommand(['.'], {})
 
-      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('../other/dir/image.png'))
+      expect(logger.listItem).toHaveBeenCalledWith('../other/dir/image.png', 512)
 
       cwdSpy.mockRestore()
     })
@@ -174,14 +190,12 @@ describe('list command', () => {
 
       await listCommand(['.'], {})
 
-      const calls = consoleLogSpy.mock.calls
-      const srcBIndex = calls.findIndex(call => call[0]?.includes('src/b.png'))
-      const srcImagesIndex = calls.findIndex(call => call[0]?.includes('src/images/a.png'))
-      const zIndex = calls.findIndex(call => call[0]?.includes('z.png'))
+      const calls = logger.listItem.mock.calls
 
       // Alphabetical order: src/b.png < src/images/a.png < z.png
-      expect(srcBIndex).toBeLessThan(srcImagesIndex)
-      expect(srcImagesIndex).toBeLessThan(zIndex)
+      expect(calls[0][0]).toBe('src/b.png')
+      expect(calls[1][0]).toBe('src/images/a.png')
+      expect(calls[2][0]).toBe('z.png')
 
       cwdSpy.mockRestore()
     })
@@ -204,9 +218,9 @@ describe('list command', () => {
 
       await listCommand(['./src'], {})
 
-      // Should show both PNG and JPG files
-      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('image1.png'))
-      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('image2.jpg'))
+      // Should show both PNG and JPG files using listItem
+      expect(logger.listItem).toHaveBeenCalledWith('image1.png', 1024)
+      expect(logger.listItem).toHaveBeenCalledWith('image2.jpg', 2048)
       expect(detectAlphas).not.toHaveBeenCalled()
 
       cwdSpy.mockRestore()
@@ -221,8 +235,9 @@ describe('list command', () => {
         '/project/with-alpha.png',
         '/project/without-alpha.png',
       ])
+      // Note: fs.stat is called for files that pass the alpha filter
+      // Only without-alpha.png will have stat called since with-alpha.png is filtered out
       vi.mocked(fs.stat)
-        .mockResolvedValueOnce({ size: 1024 } as any)
         .mockResolvedValueOnce({ size: 2048 } as any)
       vi.mocked(detectAlphas).mockResolvedValue(
         new Map([
@@ -233,9 +248,9 @@ describe('list command', () => {
 
       await listCommand(['./src'], { convertible: true })
 
-      // Should only show PNG without alpha
-      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('without-alpha.png'))
-      expect(consoleLogSpy).not.toHaveBeenCalledWith(expect.stringContaining('with-alpha.png'))
+      // Should only show PNG without alpha using listItem
+      expect(logger.listItem).toHaveBeenCalledWith('without-alpha.png', 2048)
+      expect(logger.listItem).not.toHaveBeenCalledWith('with-alpha.png', expect.any(Number))
       expect(detectAlphas).toHaveBeenCalledWith(
         ['/project/with-alpha.png', '/project/without-alpha.png'],
         { concurrency: 8 },
@@ -264,10 +279,10 @@ describe('list command', () => {
 
       await listCommand(['./src'], { convertible: true })
 
-      // Should only show PNG, not JPG/JPEG
-      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('image.png'))
-      expect(consoleLogSpy).not.toHaveBeenCalledWith(expect.stringContaining('image.jpg'))
-      expect(consoleLogSpy).not.toHaveBeenCalledWith(expect.stringContaining('image.jpeg'))
+      // Should only show PNG using listItem, not JPG/JPEG
+      expect(logger.listItem).toHaveBeenCalledWith('image.png', 1024)
+      expect(logger.listItem).not.toHaveBeenCalledWith('image.jpg', expect.any(Number))
+      expect(logger.listItem).not.toHaveBeenCalledWith('image.jpeg', expect.any(Number))
       // detectAlphas should only be called for PNG files
       expect(detectAlphas).toHaveBeenCalledWith(
         ['/project/image.png'],
@@ -298,7 +313,7 @@ describe('list command', () => {
 
       await listCommand(['./src'], { convertible: true })
 
-      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('No convertible PNG files found'))
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('No convertible PNG files found'))
 
       cwdSpy.mockRestore()
     })
@@ -319,9 +334,90 @@ describe('list command', () => {
 
       await listCommand(['./src'], { convertible: true })
 
-      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('No PNG files found'))
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('No PNG files found'))
 
       cwdSpy.mockRestore()
+    })
+  })
+
+  describe('logger integration', () => {
+    it('uses logger.listItem for each file with size-based coloring', async () => {
+      const { expandInputs } = await import('../utils/files')
+      const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue('/project')
+
+      vi.mocked(expandInputs).mockResolvedValue([
+        '/project/small.png',
+        '/project/medium.png',
+        '/project/large.png',
+      ])
+      vi.mocked(fs.stat)
+        .mockResolvedValueOnce({ size: 100 * 1024 } as any) // 100KB - green
+        .mockResolvedValueOnce({ size: 500 * 1024 } as any) // 500KB - cyan
+        .mockResolvedValueOnce({ size: 2 * 1024 * 1024 } as any) // 2MB - red
+
+      await listCommand(['./src'], {})
+
+      // Verify listItem is called for each file with correct size
+      expect(logger.listItem).toHaveBeenCalledTimes(3)
+      expect(logger.listItem).toHaveBeenCalledWith('small.png', 100 * 1024)
+      expect(logger.listItem).toHaveBeenCalledWith('medium.png', 500 * 1024)
+      expect(logger.listItem).toHaveBeenCalledWith('large.png', 2 * 1024 * 1024)
+
+      cwdSpy.mockRestore()
+    })
+
+    it('calls listItem with correct size for color threshold testing', async () => {
+      const { expandInputs } = await import('../utils/files')
+      const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue('/project')
+
+      // Test all 5 color thresholds
+      vi.mocked(expandInputs).mockResolvedValue([
+        '/project/t1.png', // <300KB - green
+        '/project/t2.png', // 300-600KB - cyan
+        '/project/t3.png', // 600KB-1MB - yellow
+        '/project/t4.png', // 1-1.5MB - magenta
+        '/project/t5.png', // >1.5MB - red
+      ])
+      vi.mocked(fs.stat)
+        .mockResolvedValueOnce({ size: 200 * 1024 } as any)
+        .mockResolvedValueOnce({ size: 400 * 1024 } as any)
+        .mockResolvedValueOnce({ size: 800 * 1024 } as any)
+        .mockResolvedValueOnce({ size: 1.2 * 1024 * 1024 } as any)
+        .mockResolvedValueOnce({ size: 2 * 1024 * 1024 } as any)
+
+      await listCommand(['./src'], {})
+
+      // Verify all sizes are passed correctly to listItem
+      expect(logger.listItem).toHaveBeenCalledWith('t1.png', 200 * 1024)
+      expect(logger.listItem).toHaveBeenCalledWith('t2.png', 400 * 1024)
+      expect(logger.listItem).toHaveBeenCalledWith('t3.png', 800 * 1024)
+      expect(logger.listItem).toHaveBeenCalledWith('t4.png', 1.2 * 1024 * 1024)
+      expect(logger.listItem).toHaveBeenCalledWith('t5.png', 2 * 1024 * 1024)
+
+      cwdSpy.mockRestore()
+    })
+
+    it('uses logger.info for title and summary', async () => {
+      const { expandInputs } = await import('../utils/files')
+      vi.mocked(expandInputs).mockResolvedValue(['/path/a.png'])
+      vi.mocked(fs.stat).mockResolvedValue({ size: 1024 } as any)
+
+      await listCommand(['./src'], {})
+
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Compressible images'))
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Total:'))
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('1 files'))
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('1KB'))
+    })
+
+    it('uses logger.warn when no files found', async () => {
+      const { expandInputs } = await import('../utils/files')
+      vi.mocked(expandInputs).mockResolvedValue([])
+
+      await listCommand(['./src'], {})
+
+      expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('No valid image files found'))
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Supported formats'))
     })
   })
 })
