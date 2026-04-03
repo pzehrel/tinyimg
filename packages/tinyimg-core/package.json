@@ -49,6 +49,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "pathe": "^2.0.3",
     "p-limit": "7.3.0",
     "sharp": "^0.34.5",
     "user-agents": "2.1.17"

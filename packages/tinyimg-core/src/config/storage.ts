@@ -1,7 +1,7 @@
 import type { ConfigFile } from './types'
 import fs from 'node:fs'
 import os from 'node:os'
-import path from 'node:path'
+import path from 'pathe'
 
 const CONFIG_DIR = '.tinyimg'
 const CONFIG_FILE = 'keys.json'
