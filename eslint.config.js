@@ -1,6 +1,6 @@
 import antfu from '@antfu/eslint-config'
 
-export default antfu({
+const base = await antfu({
   typescript: true,
   markdown: false,
   formatters: {
@@ -18,3 +18,14 @@ export default antfu({
     'no-console': 'off',
   },
 })
+
+export default [
+  ...base,
+  // 对 core 包启用 no-console
+  {
+    files: ['packages/tinyimg-core/src/**/*.ts'],
+    rules: {
+      'no-console': 'error',
+    },
+  },
+]
