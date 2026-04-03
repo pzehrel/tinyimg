@@ -4,8 +4,8 @@ import process from 'node:process'
 import { compressImage, loadKeys } from '@pz4l/tinyimg-core'
 import { createUnplugin } from 'unplugin'
 import { shouldProcessImage } from './filter'
-import { createLogger } from './logger'
 import { normalizeOptions } from './options'
+import { TerminalLogger } from './utils/logger'
 
 // Regex for matching image file extensions
 const IMAGE_REGEX = /\.(png|jpg|jpeg|gif|webp|svg)$/i
@@ -21,10 +21,7 @@ export default createUnplugin((options: TinyimgUnpluginOptions = {}): any => {
   }
 
   // Create logger
-  const logger = createLogger({
-    verbose: normalized.verbose,
-    strict: normalized.strict,
-  })
+  const logger = new TerminalLogger(normalized.level)
 
   return {
     name: 'tinyimg-unplugin',
@@ -49,28 +46,34 @@ export default createUnplugin((options: TinyimgUnpluginOptions = {}): any => {
       // Get relative path for logging
       const relativePath = getRelativePath(id)
 
-      // Log compression start
-      logger.logCompressing(relativePath)
-
       try {
         // Compress image
-        const compressed = await compressImage(buffer, {
+        const { buffer: compressed, meta } = await compressImage(buffer, {
           projectCacheOnly: true, // Only project cache (D-17)
           cache: normalized.cache,
           mode: normalized.mode as any,
         })
 
-        // Log success
-        logger.logCompressed(relativePath, buffer.length, compressed.length)
+        // Log based on cache status
+        if (meta.cached) {
+          logger.cacheHit(relativePath, meta.originalSize)
+        }
+        else {
+          logger.successCompress(relativePath, meta.originalSize, meta.compressedSize)
+          // Verbose mode: log compressor name
+          if (normalized.level === 'verbose' && meta.compressorName) {
+            logger.verbose(`  compressor: ${meta.compressorName}`)
+          }
+        }
 
         return { code: compressed, map: null }
       }
       catch (error: any) {
         // Log error
-        logger.logError(relativePath, error.message)
+        logger.errorCompress(relativePath, error.message, normalized.strict)
 
         // Check strict mode
-        if (logger.shouldThrowOnError()) {
+        if (normalized.strict) {
           throw error
         }
 
@@ -80,7 +83,7 @@ export default createUnplugin((options: TinyimgUnpluginOptions = {}): any => {
     },
 
     buildEnd() {
-      logger.logSummary()
+      logger.summary()
     },
   }
 })
