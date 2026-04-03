@@ -6,6 +6,7 @@ import { detectAlpha } from '@pz4l/tinyimg-core'
 import sharp from 'sharp'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { expandInputs } from '../utils/files'
+import { logger } from '../utils/logger'
 import { convertCommand } from './convert'
 
 // Mock dependencies BEFORE importing the module under test
@@ -22,13 +23,20 @@ vi.mock('../utils/files', () => ({
 vi.mock('../utils/format', () => ({
   formatProgress: vi.fn((current, total) => `[${current}/${total}]`),
 }))
+vi.mock('../utils/logger', () => ({
+  logger: {
+    setLevel: vi.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    verbose: vi.fn(),
+    warn: vi.fn(),
+  },
+}))
 
 describe('convert command', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // Mock console.log/console.error to avoid noise in tests
-    vi.spyOn(console, 'log').mockImplementation(() => {})
-    vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   afterEach(() => {
@@ -42,7 +50,7 @@ describe('convert command', () => {
       })
 
       await expect(convertCommand([])).rejects.toThrow('exit called')
-      expect(console.error).toHaveBeenCalledWith(expect.stringContaining('No input files specified'))
+      expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('No input files specified'))
       exitSpy.mockRestore()
     })
 
@@ -54,7 +62,7 @@ describe('convert command', () => {
       vi.mocked(expandInputs).mockResolvedValue(['/path/to/image.jpg'])
 
       await expect(convertCommand(['/path/to/image.jpg'])).rejects.toThrow('exit called')
-      expect(console.log).toHaveBeenCalledWith(expect.stringContaining('No PNG files found'))
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('No PNG files found'))
 
       exitSpy.mockRestore()
     })
@@ -68,8 +76,8 @@ describe('convert command', () => {
       // Don't expect exit on success - command completes normally
       await convertCommand(['/path/to/image.png'])
 
-      expect(console.log).toHaveBeenCalledWith(expect.stringContaining('has transparency'))
-      expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Skipped (transparent): 1'))
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('has transparency'))
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Skipped (transparent): 1'))
     })
 
     it('converts opaque PNG files', async () => {
@@ -89,7 +97,7 @@ describe('convert command', () => {
       await convertCommand(['/path/to/image.png'])
 
       expect(fs.writeFile).toHaveBeenCalledWith('/path/to/image.jpg', mockBuffer)
-      expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Converted: 1'))
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Converted: 1'))
     })
   })
 
@@ -156,8 +164,8 @@ describe('convert command', () => {
 
       await convertCommand(['*.png'])
 
-      expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Converted: 2'))
-      expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Skipped (transparent): 1'))
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Converted: 2'))
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Skipped (transparent): 1'))
     })
   })
 
@@ -173,7 +181,7 @@ describe('convert command', () => {
 
       await convertCommand(['/path/to/image.png'])
 
-      expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Error converting'))
+      expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Error converting'))
     })
 
     it('uses default quality of 85 when not specified', async () => {
