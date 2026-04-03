@@ -2,9 +2,9 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
 import { detectAlphas } from '@pz4l/tinyimg-core'
-import kleur from 'kleur'
 import { expandInputs } from '../utils/files'
 import { formatBytes } from '../utils/format'
+import { logger } from '../utils/logger'
 
 export async function listCommand(inputs: string[], options?: any): Promise<void> {
   // Default to current directory if no inputs
@@ -16,9 +16,9 @@ export async function listCommand(inputs: string[], options?: any): Promise<void
   const files = await expandInputs(inputs)
 
   if (files.length === 0) {
-    console.error(kleur.red('Error: No valid image files found'))
-    console.log('Supported formats: PNG, JPG, JPEG')
-    console.log('Usage: tinyimg list [inputs...]')
+    logger.error('No valid image files found')
+    logger.info('Supported formats: PNG, JPG, JPEG')
+    logger.info('Usage: tinyimg list [inputs...]')
     process.exit(1)
   }
 
@@ -30,8 +30,8 @@ export async function listCommand(inputs: string[], options?: any): Promise<void
     const pngFiles = files.filter(f => path.extname(f).toLowerCase() === '.png')
 
     if (pngFiles.length === 0) {
-      console.log(kleur.yellow('No PNG files found.'))
-      console.log(kleur.gray('The --convertible flag only applies to PNG files.'))
+      logger.warn('No PNG files found.')
+      logger.info('The --convertible flag only applies to PNG files.')
       process.exit(0)
     }
 
@@ -45,7 +45,7 @@ export async function listCommand(inputs: string[], options?: any): Promise<void
     })
 
     if (filteredFiles.length === 0) {
-      console.log(kleur.yellow('No convertible PNG files found (all have alpha channel).'))
+      logger.warn('No convertible PNG files found (all have alpha channel).')
       process.exit(0)
     }
   }
@@ -62,12 +62,12 @@ export async function listCommand(inputs: string[], options?: any): Promise<void
   const sorted = fileStats.sort((a, b) => a.path.localeCompare(b.path))
 
   // Display files
-  console.log(kleur.cyan('\nCompressible images:\n'))
+  logger.info('Compressible images:')
   for (const file of sorted) {
-    console.log(`  ${kleur.yellow(file.name)} - ${kleur.gray(formatBytes(file.size))}`)
+    logger.listItem(file.name, file.size)
   }
 
   // Display summary (per D-01: sizes only, no savings estimates)
   const totalSize = sorted.reduce((sum, f) => sum + f.size, 0)
-  console.log(kleur.cyan(`\nTotal: ${sorted.length} files, ${formatBytes(totalSize)}\n`))
+  logger.info(`Total: ${sorted.length} files, ${formatBytes(totalSize)}`)
 }
