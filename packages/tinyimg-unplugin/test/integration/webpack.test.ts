@@ -7,9 +7,17 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 
 // Mock tinyimg-core before importing the plugin
 vi.mock('@pz4l/tinyimg-core', () => ({
-  compressImage: vi.fn().mockResolvedValue(Buffer.from('mock-compressed-image-data')),
+  compressImage: vi.fn().mockResolvedValue({
+    buffer: Buffer.from('mock-compressed-image-data'),
+    meta: {
+      cached: false,
+      compressorName: 'TinyPngApiCompressor',
+      originalSize: 1000,
+      compressedSize: 500,
+    },
+  }),
   compressImages: vi.fn().mockResolvedValue([]),
-  loadKeys: vi.fn().mockReturnValue(['test-key-1', 'test-key-2']),
+  loadKeys: vi.fn().mockReturnValue([{ key: 'test-key-1' }, { key: 'test-key-2' }]),
   loadKeysFromGlobal: vi.fn().mockReturnValue([]),
 }))
 
@@ -122,7 +130,7 @@ describe('webpack Integration', () => {
 
     // Check for summary output (D-09)
     expect(result).toMatch(/tinyimg|Compressed|compressed/)
-    expect(result).toMatch(/images?|KB|bytes/)
+    expect(result).toMatch(/images?|KB|B|bytes/)
   })
 
   it('skips compression in development mode (CLI available)', () => {
