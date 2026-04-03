@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.3.5
 milestone_name: 统一 Logger
 status: executing
-last_updated: "2026-04-03T11:20:00.000Z"
+last_updated: "2026-04-03T05:43:21.435Z"
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 12
-  completed_plans: 8
-  percent: 75
+  completed_phases: 3
+  total_plans: 14
+  completed_plans: 13
+  percent: 93
 ---
 
 # TinyImg Project State
@@ -34,12 +34,17 @@ v0.3.5 统一的 Logger — 准备开始 Phase 36 规划。
 
 ## Current Position
 
-Phase: 38 (unplugin-logger) — EXECUTING
-Plan: 2 of 3
-**Phase:** 38 of 39 (unplugin logger 选项更新)
-**Plan:** 38-02 Completed
-**Status:** Executing Phase 38
-**Progress:** [█████████░] 75%
+Phase: 39 (整合验证与规则恢复) — EXECUTING
+Plan: 2 of 2
+**Phase:** 39 of 39 (整合验证与规则恢复) — PLANNED
+**Plan:** 2 plans ready
+**Status:** Executing Phase 39
+**Progress:** [█████████░] 93%
+
+### Phase 39 Plans
+
+- [x] 39-01-PLAN.md — ESLint 规则恢复与 lint 验证
+- [ ] 39-02-PLAN.md — 全量测试与残留引用清理
 
 ### Milestone Progress
 
@@ -90,6 +95,24 @@ None.
 ### Last Session Summary
 
 **Date:** 2026-04-03
+**Action:** 执行 Phase 39 Plan 01 - ESLint 规则恢复与 lint 验证
+
+**Accomplished:**
+
+- 更新 eslint.config.js 使用配置数组形式
+- 对 packages/tinyimg-core/src/**/*.ts 单独启用 no-console: error
+- 全局其他包保持 no-console: off 以支持 TerminalLogger
+- pnpm lint:fix 全量通过，无错误
+
+**提交记录:**
+
+- 979fc17 chore(39-01): 更新 eslint.config.js 对 core 包启用 no-console 规则
+
+---
+
+### Previous Session Summary
+
+**Date:** 2026-04-03
 **Action:** 执行 Phase 38 Plan 02 - 更新 unplugin 选项定义和依赖
 
 **Accomplished:**
@@ -110,6 +133,7 @@ None.
 ### Completed Plans (Parallel Execution)
 
 **Phase 37 Plan 03 (CLI compress logger):**
+
 - ✅ 迁移 compress 命令使用 TerminalLogger
 - ✅ 实现 printSummary 汇总统计
 - ✅ 更新 compress.test.ts 使用 CompressResult 格式
@@ -121,4 +145,4 @@ None.
 
 ---
 *Last updated: 2026-04-03*
-*Phase 37 Plan 03 已完成 | Phase 38 Plan 02 已完成*
+*Phase 39 已规划完成 | 2 个计划待执行*

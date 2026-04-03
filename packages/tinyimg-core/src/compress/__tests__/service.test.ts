@@ -216,14 +216,16 @@ describe('compressImage', () => {
   })
 
   describe('error handling', () => {
-    it('should throw error after all retries', async () => {
-      // Arrange: Mock all compressors to fail
+    it('should throw error when API key pool fails', async () => {
+      // Arrange: Mock API key pool to fail (simulating no available keys)
       vi.mocked(mockKeyPool.selectKey).mockRejectedValue(new Error('No keys'))
 
-      // Act & Assert: Call compressImage() should throw
-      await expect(compressImage(SMALL_PNG, { mode: 'auto', keyPool: mockKeyPool }))
+      // Act & Assert: Call compressImage() with API mode should throw
+      // Note: Using 'api' mode to avoid falling back to web compressor
+      // The error is wrapped as AllCompressionFailedError by compressWithFallback
+      await expect(compressImage(SMALL_PNG, { mode: 'api', keyPool: mockKeyPool }))
         .rejects
-        .toThrow()
+        .toThrow('All compression methods failed')
     })
 
     it('should handle errors gracefully during compression', async () => {
