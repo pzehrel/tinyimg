@@ -1,12 +1,12 @@
-import type { CompressServiceOptions, KeyStrategy } from '@pz4l/tinyimg-core'
+import type { CompressResult, CompressServiceOptions, KeyStrategy } from '@pz4l/tinyimg-core'
 import type { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
-import { AllCompressionFailedError, AllKeysExhaustedError, compressImages, KeyPool, NoValidKeysError } from '@pz4l/tinyimg-core'
-import kleur from 'kleur'
+import { AllCompressionFailedError, AllKeysExhaustedError, compressImages, KeyPool, NoValidKeysError, queryQuota, readConfig } from '@pz4l/tinyimg-core'
 import { expandInputs, resolveOutputPath } from '../utils/files'
-import { formatProgress, formatResult } from '../utils/format'
+import { formatBytes, formatProgress } from '../utils/format'
+import { logger } from '../utils/logger'
 import { convertCommand } from './convert'
 
 interface CompressOptions {
@@ -20,13 +20,48 @@ interface CompressOptions {
 }
 
 /**
+ * 打印压缩汇总信息
+ */
+async function printSummary(results: CompressResult[]): Promise<void> {
+  const totalFiles = results.length
+  const cachedCount = results.filter(r => r.meta.cached).length
+  const compressedCount = totalFiles - cachedCount
+
+  const totalOriginal = results.reduce((sum, r) => sum + r.meta.originalSize, 0)
+  const totalCompressed = results.reduce((sum, r) => sum + r.meta.compressedSize, 0)
+  const totalSaved = totalOriginal - totalCompressed
+  const avgSaved = totalOriginal > 0 ? ((totalSaved / totalOriginal) * 100).toFixed(1) : '0.0'
+
+  logger.success('Compression complete')
+  logger.info(`  Files: ${totalFiles} processed, ${compressedCount} compressed, ${cachedCount} cached`)
+  logger.info(`  Savings: ${avgSaved}% avg, ${formatBytes(totalSaved)} total`)
+
+  // 查询所有 key 的剩余用量
+  const config = readConfig()
+  if (config.keys.length > 0) {
+    try {
+      const quotas = await Promise.allSettled(
+        config.keys.map(k => queryQuota(k.key))
+      )
+      const totalQuota = quotas
+        .filter((r): r is PromiseFulfilledResult<number> => r.status === 'fulfilled')
+        .reduce((sum, r) => sum + r.value, 0)
+      logger.info(`  Quota: ${totalQuota}/${config.keys.length * 500} remaining`)
+    }
+    catch {
+      // 忽略配额查询错误
+    }
+  }
+}
+
+/**
  * Main compression command handler
  */
 export async function compressCommand(inputs: string[], options: CompressOptions): Promise<void> {
   // Validate inputs
   if (inputs.length === 0) {
-    console.error(kleur.red('Error: No input files specified'))
-    console.log('Usage: tinyimg [options] <input...>')
+    logger.error('No input files specified')
+    logger.info('Usage: tinyimg [options] <input...>')
     process.exit(1)
   }
 
@@ -34,17 +69,17 @@ export async function compressCommand(inputs: string[], options: CompressOptions
   const files = await expandInputs(inputs)
 
   if (files.length === 0) {
-    console.error(kleur.red('Error: No valid image files found'))
-    console.log('Supported formats: PNG, JPG, JPEG, WebP, AVIF')
+    logger.error('No valid image files found')
+    logger.info('Supported formats: PNG, JPG, JPEG, WebP, AVIF')
     process.exit(1)
   }
 
   // Display configuration
-  console.log(kleur.cyan('\nConfiguration:'))
-  console.log(`  Mode: ${options.mode || 'random'}`)
-  console.log(`  Parallel: ${options.parallel || '8'}`)
-  console.log(`  Cache: ${options.cache !== false ? 'enabled' : 'disabled'}`)
-  console.log(`  Files: ${files.length}\n`)
+  logger.info('Configuration')
+  logger.info(`  Mode: ${options.mode || 'random'}`)
+  logger.info(`  Parallel: ${options.parallel || '8'}`)
+  logger.info(`  Cache: ${options.cache !== false ? 'enabled' : 'disabled'}`)
+  logger.info(`  Files: ${files.length}`)
 
   // Read all files into buffers
   const buffers: Buffer[] = []
@@ -54,7 +89,7 @@ export async function compressCommand(inputs: string[], options: CompressOptions
       buffers.push(buffer)
     }
     catch (error: any) {
-      console.error(kleur.red(`Error reading ${file}: ${error.message}`))
+      logger.error(`Error reading ${file}: ${error.message}`)
       process.exit(1)
     }
   }
@@ -78,12 +113,12 @@ export async function compressCommand(inputs: string[], options: CompressOptions
     }
     catch (error: any) {
       if (error instanceof NoValidKeysError) {
-        console.log(kleur.yellow('ℹ No API keys configured. Using free web interface (slower, no quota).'))
+        logger.warn('No API keys configured. Using free web interface (slower, no quota).')
         compressOptions.mode = 'web'
         // Don't set keyPool — web mode doesn't need it
       }
       else {
-        console.error(kleur.red(`Error: ${error.message}`))
+        logger.error(error.message)
         process.exit(1)
       }
     }
@@ -97,41 +132,49 @@ export async function compressCommand(inputs: string[], options: CompressOptions
     for (let i = 0; i < files.length; i++) {
       const inputFile = files[i]
       const originalBuffer = buffers[i]
-      const compressedBuffer = results[i]
+      const result = results[i]
+      const compressedBuffer = result.buffer
       const outputPath = await resolveOutputPath(inputFile, options.output)
 
       // Display progress
-      console.log(formatProgress(i + 1, files.length))
+      logger.info(formatProgress(i + 1, files.length))
 
       // Write compressed file
       await fs.writeFile(outputPath, compressedBuffer)
 
       // Display result
-      console.log(formatResult(inputFile, outputPath, originalBuffer.length, compressedBuffer.length))
+      const resultMessage = `${path.relative(process.cwd(), inputFile)}: ${formatBytes(originalBuffer.length)} → ${formatBytes(compressedBuffer.length)} (${((originalBuffer.length - compressedBuffer.length) / originalBuffer.length * 100).toFixed(1)}% saved)`
+      logger.success(resultMessage)
+
+      // Verbose mode: show compressor info
+      if (result.meta.compressorName) {
+        logger.verbose(`  Using ${result.meta.compressorName}${result.meta.cached ? ' (cached)' : ''}`)
+      }
     }
 
-    console.log(kleur.green('\n✓ Compression complete'))
+    // Print summary
+    await printSummary(results)
 
     // Handle --convert flag: convert compressed PNGs to JPG
     if (options.convert) {
       const pngFiles = files.filter(f => path.extname(f).toLowerCase() === '.png')
       if (pngFiles.length > 0) {
-        console.log(kleur.cyan('\nConverting compressed PNGs to JPG...'))
+        logger.info('Converting compressed PNGs to JPG...')
         await convertCommand(pngFiles, { deleteOriginal: options.deleteOriginal, quality: 85 })
       }
     }
   }
   catch (error: any) {
     if (error instanceof AllKeysExhaustedError) {
-      console.error(kleur.red('Error: All API keys have exhausted quota'))
-      console.log('Please add more keys or wait for quota to reset')
+      logger.error('All API keys have exhausted quota')
+      logger.info('Please add more keys or wait for quota to reset')
     }
     else if (error instanceof AllCompressionFailedError) {
-      console.error(kleur.red('Error: All compression methods failed'))
-      console.log('Please check your network connection and API status')
+      logger.error('All compression methods failed')
+      logger.info('Please check your network connection and API status')
     }
     else {
-      console.error(kleur.red(`Error: ${error.message}`))
+      logger.error(error.message)
     }
     process.exit(1)
   }
