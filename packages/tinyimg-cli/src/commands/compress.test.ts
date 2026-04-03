@@ -46,7 +46,15 @@ describe('compress command', () => {
   it('expands inputs to file list', async () => {
     vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
     vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('png'))
-    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed')])
+    vi.mocked(compressImages).mockResolvedValue([{
+      buffer: Buffer.from('compressed'),
+      meta: {
+        cached: false,
+        compressorName: 'TinyPngApiCompressor',
+        originalSize: 3,
+        compressedSize: 2,
+      },
+    }])
 
     await compressCommand(['image.png'], {})
 
@@ -62,11 +70,19 @@ describe('compress command', () => {
   it('displays configuration (mode, parallel, cache, files)', async () => {
     vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
     vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('png'))
-    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed')])
+    vi.mocked(compressImages).mockResolvedValue([{
+      buffer: Buffer.from('compressed'),
+      meta: {
+        cached: false,
+        compressorName: 'TinyPngApiCompressor',
+        originalSize: 3,
+        compressedSize: 2,
+      },
+    }])
 
     await compressCommand(['image.png'], { mode: 'random', parallel: '4', cache: true })
 
-    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Configuration:'))
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Configuration'))
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Mode: random'))
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Parallel: 4'))
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Cache: enabled'))
@@ -81,7 +97,10 @@ describe('compress command', () => {
     vi.mocked(fs.readFile)
       .mockResolvedValueOnce(file1Buffer)
       .mockResolvedValueOnce(file2Buffer)
-    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed1'), Buffer.from('compressed2')])
+    vi.mocked(compressImages).mockResolvedValue([
+      { buffer: Buffer.from('compressed1'), meta: { cached: false, compressorName: 'TinyPngApiCompressor', originalSize: 6, compressedSize: 4 } },
+      { buffer: Buffer.from('compressed2'), meta: { cached: false, compressorName: 'TinyPngApiCompressor', originalSize: 6, compressedSize: 4 } },
+    ])
 
     await compressCommand(['image1.png', 'image2.jpg'], {})
 
@@ -92,7 +111,15 @@ describe('compress command', () => {
   it('calls compressImages with correct options', async () => {
     vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
     vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('png'))
-    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed')])
+    vi.mocked(compressImages).mockResolvedValue([{
+      buffer: Buffer.from('compressed'),
+      meta: {
+        cached: false,
+        compressorName: 'TinyPngApiCompressor',
+        originalSize: 3,
+        compressedSize: 2,
+      },
+    }])
 
     await compressCommand(['image.png'], {
       mode: 'round-robin',
@@ -113,7 +140,15 @@ describe('compress command', () => {
   it('writes compressed files to output locations', async () => {
     vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
     vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('original'))
-    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed')])
+    vi.mocked(compressImages).mockResolvedValue([{
+      buffer: Buffer.from('compressed'),
+      meta: {
+        cached: false,
+        compressorName: 'TinyPngApiCompressor',
+        originalSize: 8,
+        compressedSize: 6,
+      },
+    }])
     vi.mocked(fs.writeFile).mockResolvedValue(undefined)
 
     await compressCommand(['image.png'], {})
@@ -159,7 +194,15 @@ describe('compress command', () => {
 
     vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
     vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('png'))
-    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed')])
+    vi.mocked(compressImages).mockResolvedValue([{
+      buffer: Buffer.from('compressed'),
+      meta: {
+        cached: false,
+        compressorName: 'TinyPngApiCompressor',
+        originalSize: 3,
+        compressedSize: 2,
+      },
+    }])
     vi.mocked(fs.writeFile).mockResolvedValue(undefined)
 
     await compressCommand(['image.png'], { convert: true })
@@ -175,7 +218,15 @@ describe('compress command', () => {
 
     vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
     vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('jpg'))
-    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed')])
+    vi.mocked(compressImages).mockResolvedValue([{
+      buffer: Buffer.from('compressed'),
+      meta: {
+        cached: false,
+        compressorName: 'TinyPngApiCompressor',
+        originalSize: 3,
+        compressedSize: 2,
+      },
+    }])
     vi.mocked(fs.writeFile).mockResolvedValue(undefined)
 
     await compressCommand(['image.jpg'], { convert: true })
@@ -188,7 +239,15 @@ describe('compress command', () => {
 
     vi.mocked(fs.stat).mockResolvedValue({ isFile: () => true, isDirectory: () => false } as any)
     vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('png'))
-    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed')])
+    vi.mocked(compressImages).mockResolvedValue([{
+      buffer: Buffer.from('compressed'),
+      meta: {
+        cached: false,
+        compressorName: 'TinyPngApiCompressor',
+        originalSize: 3,
+        compressedSize: 2,
+      },
+    }])
     vi.mocked(fs.writeFile).mockResolvedValue(undefined)
 
     await compressCommand(['image.png'], {})
@@ -203,7 +262,10 @@ describe('compress command', () => {
     vi.mocked(fs.readFile)
       .mockResolvedValueOnce(Buffer.from('png1'))
       .mockResolvedValueOnce(Buffer.from('png2'))
-    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed1'), Buffer.from('compressed2')])
+    vi.mocked(compressImages).mockResolvedValue([
+      { buffer: Buffer.from('compressed1'), meta: { cached: false, compressorName: 'TinyPngApiCompressor', originalSize: 4, compressedSize: 3 } },
+      { buffer: Buffer.from('compressed2'), meta: { cached: false, compressorName: 'TinyPngApiCompressor', originalSize: 4, compressedSize: 3 } },
+    ])
     vi.mocked(fs.writeFile).mockResolvedValue(undefined)
 
     await compressCommand(['image1.png', 'image2.png'], { convert: true })
@@ -226,7 +288,11 @@ describe('compress command', () => {
       .mockResolvedValueOnce(Buffer.from('png'))
       .mockResolvedValueOnce(Buffer.from('jpg'))
       .mockResolvedValueOnce(Buffer.from('webp'))
-    vi.mocked(compressImages).mockResolvedValue([Buffer.from('compressed1'), Buffer.from('compressed2'), Buffer.from('compressed3')])
+    vi.mocked(compressImages).mockResolvedValue([
+      { buffer: Buffer.from('compressed1'), meta: { cached: false, compressorName: 'TinyPngApiCompressor', originalSize: 3, compressedSize: 2 } },
+      { buffer: Buffer.from('compressed2'), meta: { cached: false, compressorName: 'TinyPngApiCompressor', originalSize: 3, compressedSize: 2 } },
+      { buffer: Buffer.from('compressed3'), meta: { cached: false, compressorName: 'TinyPngApiCompressor', originalSize: 3, compressedSize: 2 } },
+    ])
     vi.mocked(fs.writeFile).mockResolvedValue(undefined)
 
     await compressCommand(['image.png', 'image.jpg', 'image.webp'], { convert: true })
