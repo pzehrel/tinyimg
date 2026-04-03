@@ -21,6 +21,7 @@ describe('tinyimg-unplugin', () => {
     // Reset NODE_ENV
     delete process.env.NODE_ENV
   })
+
   it('creates unplugin factory', () => {
     // The default export is the result of createUnplugin()
     // which returns an object with raw, vite, webpack as getter functions
@@ -48,8 +49,17 @@ describe('tinyimg-unplugin', () => {
 
   it('compresses PNG/JPG/JPEG files in production', async () => {
     const mockCompressedBuffer = Buffer.from('compressed-image-data')
+    const mockResult = {
+      buffer: mockCompressedBuffer,
+      meta: {
+        cached: false,
+        compressorName: 'api',
+        originalSize: Buffer.from('original-image-data').length,
+        compressedSize: mockCompressedBuffer.length,
+      },
+    }
 
-    vi.mocked(compressImage).mockResolvedValue(mockCompressedBuffer)
+    vi.mocked(compressImage).mockResolvedValue(mockResult)
 
     const plugin = tinyimgUnplugin.raw()
 
@@ -64,9 +74,6 @@ describe('tinyimg-unplugin', () => {
         Buffer.from('original-image-data'),
         '/path/to/image.png',
       )
-
-      console.log('compressImage calls:', vi.mocked(compressImage).mock.calls)
-      console.log('result:', result)
 
       expect(compressImage).toHaveBeenCalledWith(
         Buffer.from('original-image-data'),
@@ -108,8 +115,17 @@ describe('tinyimg-unplugin', () => {
 
   it('uses project-only cache', async () => {
     const mockCompressedBuffer = Buffer.from('compressed-image-data')
+    const mockResult = {
+      buffer: mockCompressedBuffer,
+      meta: {
+        cached: false,
+        compressorName: 'api',
+        originalSize: Buffer.from('original-image-data').length,
+        compressedSize: mockCompressedBuffer.length,
+      },
+    }
 
-    vi.mocked(compressImage).mockResolvedValue(mockCompressedBuffer)
+    vi.mocked(compressImage).mockResolvedValue(mockResult)
 
     const plugin = tinyimgUnplugin.raw()
 
@@ -191,5 +207,235 @@ describe('tinyimg-unplugin', () => {
     finally {
       process.env.NODE_ENV = originalEnv
     }
+  })
+
+  describe('terminalLogger integration', () => {
+    it('logs compression result in normal mode', async () => {
+      const mockCompressedBuffer = Buffer.from('compressed-image-data')
+      const mockResult = {
+        buffer: mockCompressedBuffer,
+        meta: {
+          cached: false,
+          compressorName: 'api',
+          originalSize: 100,
+          compressedSize: 50,
+        },
+      }
+
+      vi.mocked(compressImage).mockResolvedValue(mockResult)
+
+      const plugin = tinyimgUnplugin.raw()
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      const originalEnv = process.env.NODE_ENV
+      process.env.NODE_ENV = 'production'
+
+      try {
+        await plugin.transform.call(
+          { config: { isBuild: true } },
+          Buffer.from('original-image-data'),
+          '/path/to/image.png',
+        )
+
+        expect(consoleSpy).toHaveBeenCalled()
+        const calls = consoleSpy.mock.calls
+        const successCall = calls.find(call => call[0]?.includes?.('✓'))
+        expect(successCall).toBeDefined()
+        expect(successCall![0]).toContain('image')
+      }
+      finally {
+        process.env.NODE_ENV = originalEnv
+        consoleSpy.mockRestore()
+      }
+    })
+
+    it('logs cache hit when meta.cached is true', async () => {
+      const mockCompressedBuffer = Buffer.from('compressed-image-data')
+      const mockResult = {
+        buffer: mockCompressedBuffer,
+        meta: {
+          cached: true,
+          compressorName: null,
+          originalSize: 100,
+          compressedSize: 100,
+        },
+      }
+
+      vi.mocked(compressImage).mockResolvedValue(mockResult)
+
+      const plugin = tinyimgUnplugin.raw()
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      const originalEnv = process.env.NODE_ENV
+      process.env.NODE_ENV = 'production'
+
+      try {
+        await plugin.transform.call(
+          { config: { isBuild: true } },
+          Buffer.from('original-image-data'),
+          '/path/to/cached.png',
+        )
+
+        expect(consoleSpy).toHaveBeenCalled()
+        const calls = consoleSpy.mock.calls
+        const cacheCall = calls.find(call => call[0]?.includes?.('cached'))
+        expect(cacheCall).toBeDefined()
+      }
+      finally {
+        process.env.NODE_ENV = originalEnv
+        consoleSpy.mockRestore()
+      }
+    })
+
+    it('logs error in normal mode on failure', async () => {
+      const mockError = new Error('Compression failed')
+      vi.mocked(compressImage).mockRejectedValue(mockError)
+
+      const plugin = tinyimgUnplugin.raw({ strict: false })
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const originalEnv = process.env.NODE_ENV
+      process.env.NODE_ENV = 'production'
+
+      try {
+        await plugin.transform.call(
+          { config: { isBuild: true } },
+          Buffer.from('original-image-data'),
+          '/path/to/error.png',
+        )
+
+        expect(consoleSpy).toHaveBeenCalled()
+        const calls = consoleSpy.mock.calls
+        const errorCall = calls.find(call => call[0]?.includes?.('Compression failed'))
+        expect(errorCall).toBeDefined()
+      }
+      finally {
+        process.env.NODE_ENV = originalEnv
+        consoleSpy.mockRestore()
+      }
+    })
+
+    it('buildEnd logs summary', async () => {
+      const mockCompressedBuffer = Buffer.from('compressed-image-data')
+      const mockResult = {
+        buffer: mockCompressedBuffer,
+        meta: {
+          cached: false,
+          compressorName: 'api',
+          originalSize: 100,
+          compressedSize: 50,
+        },
+      }
+
+      vi.mocked(compressImage).mockResolvedValue(mockResult)
+
+      const plugin = tinyimgUnplugin.raw()
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      const originalEnv = process.env.NODE_ENV
+      process.env.NODE_ENV = 'production'
+
+      try {
+        // First do a compression to populate stats
+        await plugin.transform.call(
+          { config: { isBuild: true } },
+          Buffer.from('original-image-data'),
+          '/path/to/image.png',
+        )
+
+        // Reset spy to only capture buildEnd output
+        consoleSpy.mockClear()
+
+        // Call buildEnd
+        plugin.buildEnd()
+
+        expect(consoleSpy).toHaveBeenCalled()
+        const calls = consoleSpy.mock.calls
+        const summaryCall = calls.find(call => call[0]?.includes?.('Compression complete'))
+        expect(summaryCall).toBeDefined()
+      }
+      finally {
+        process.env.NODE_ENV = originalEnv
+        consoleSpy.mockRestore()
+      }
+    })
+
+    it('respects quiet level and suppresses success logs', async () => {
+      const mockCompressedBuffer = Buffer.from('compressed-image-data')
+      const mockResult = {
+        buffer: mockCompressedBuffer,
+        meta: {
+          cached: false,
+          compressorName: 'api',
+          originalSize: 100,
+          compressedSize: 50,
+        },
+      }
+
+      vi.mocked(compressImage).mockResolvedValue(mockResult)
+
+      // Create plugin with quiet level
+      const plugin = tinyimgUnplugin.raw({ level: 'quiet' })
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      const originalEnv = process.env.NODE_ENV
+      process.env.NODE_ENV = 'production'
+
+      try {
+        await plugin.transform.call(
+          { config: { isBuild: true } },
+          Buffer.from('original-image-data'),
+          '/path/to/image.png',
+        )
+
+        // In quiet mode, success logs should be suppressed
+        const successCalls = consoleSpy.mock.calls.filter(call => call[0]?.includes?.('✓'))
+        expect(successCalls.length).toBe(0)
+      }
+      finally {
+        process.env.NODE_ENV = originalEnv
+        consoleSpy.mockRestore()
+      }
+    })
+
+    it('logs verbose info when level is verbose', async () => {
+      const mockCompressedBuffer = Buffer.from('compressed-image-data')
+      const mockResult = {
+        buffer: mockCompressedBuffer,
+        meta: {
+          cached: false,
+          compressorName: 'api',
+          originalSize: 100,
+          compressedSize: 50,
+        },
+      }
+
+      vi.mocked(compressImage).mockResolvedValue(mockResult)
+
+      // Create plugin with verbose level
+      const plugin = tinyimgUnplugin.raw({ level: 'verbose' })
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      const originalEnv = process.env.NODE_ENV
+      process.env.NODE_ENV = 'production'
+
+      try {
+        await plugin.transform.call(
+          { config: { isBuild: true } },
+          Buffer.from('original-image-data'),
+          '/path/to/image.png',
+        )
+
+        // In verbose mode, should log compressor name
+        const verboseCalls = consoleSpy.mock.calls.filter(call =>
+          call[0]?.includes?.('compressor:'),
+        )
+        expect(verboseCalls.length).toBeGreaterThan(0)
+      }
+      finally {
+        process.env.NODE_ENV = originalEnv
+        consoleSpy.mockRestore()
+      }
+    })
   })
 })
