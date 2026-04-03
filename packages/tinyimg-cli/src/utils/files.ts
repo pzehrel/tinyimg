@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'
-import path from 'pathe'
 import fastGlob from 'fast-glob'
+import path from 'pathe'
 
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.avif'] as const
 
