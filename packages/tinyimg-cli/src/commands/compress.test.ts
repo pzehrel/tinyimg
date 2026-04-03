@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
 import process from 'node:process'
-import { AllCompressionFailedError, AllKeysExhaustedError, compressImages } from '@pz4l/tinyimg-core'
+import { AllCompressionFailedError, AllKeysExhaustedError, compressImages, readConfig } from '@pz4l/tinyimg-core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { compressCommand } from './compress'
 
@@ -23,6 +23,8 @@ describe('compress command', () => {
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
     processExitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as any)
+    // Mock readConfig to return empty keys by default
+    vi.mocked(readConfig).mockReturnValue({ keys: [], version: 1 } as any)
   })
 
   afterEach(() => {
