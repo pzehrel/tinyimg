@@ -22,8 +22,8 @@ decisions:
   - 汇总输出包含文件数、压缩数、缓存数、平均压缩率、总节省大小、配额信息
   - verbose 模式显示 compressor 名称和缓存状态
 metrics:
-  duration: 25
-  commits: 3
+  duration: 30
+  commits: 5
   files_modified: 2
   tests_passing: 19
 ---
@@ -87,6 +87,7 @@ metrics:
 | fea5c2d | feat(37-03): 迁移 compress 命令使用 TerminalLogger 并添加汇总统计 | compress.ts |
 | 1a8a482 | test(37-03): 更新 compress 测试使用 CompressResult 格式 | compress.test.ts |
 | ca304cc | style(37-03): 修复 lint 错误 - 添加缺失的尾随逗号 | compress.ts |
+| 3ffc1ca | test(37-03): 添加 readConfig mock 修复 convertCommand 测试 | compress.test.ts |
 
 ## 偏差说明
 
