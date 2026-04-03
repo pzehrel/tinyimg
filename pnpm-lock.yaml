@@ -87,6 +87,9 @@ importers:
       '@pz4l/tinyimg-core':
         specifier: workspace:*
         version: link:../tinyimg-core
+      kleur:
+        specifier: ^4.1.5
+        version: 4.1.5
       micromatch:
         specifier: ^4.0.8
         version: 4.0.8
