@@ -1,3 +1,5 @@
+import { basename as pathBasename } from 'pathe'
+
 /**
  * Format progress counter for batch compression
  * 返回无颜色字符串（颜色由调用方通过 logger 添加）
@@ -5,9 +7,6 @@
 export function formatProgress(current: number, total: number): string {
   return `Compressing ${current}/${total}...`
 }
-
-// 静态正则表达式，避免每次调用时重新编译
-const PATH_SEPARATOR_REGEX = /[\\/]/
 
 /**
  * Format compression result with size comparison
@@ -19,7 +18,7 @@ export function formatResult(
   originalSize: number,
   compressedSize: number,
 ): string {
-  const basename = inputPath.split(PATH_SEPARATOR_REGEX).pop() || inputPath
+  const basename = pathBasename(inputPath)
   const savedBytes = originalSize - compressedSize
   const savedPercent = originalSize > 0 ? ((savedBytes / originalSize) * 100).toFixed(1) : '0.0'
 

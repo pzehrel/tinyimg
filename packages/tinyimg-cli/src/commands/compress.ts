@@ -1,7 +1,7 @@
 import type { CompressResult, CompressServiceOptions, KeyStrategy } from '@pz4l/tinyimg-core'
 import type { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
-import path from 'node:path'
+import path from 'pathe'
 import process from 'node:process'
 import { AllCompressionFailedError, AllKeysExhaustedError, compressImages, KeyPool, NoValidKeysError, queryQuota, readConfig } from '@pz4l/tinyimg-core'
 import { expandInputs, resolveOutputPath } from '../utils/files'

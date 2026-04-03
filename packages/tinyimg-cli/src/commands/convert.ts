@@ -1,6 +1,6 @@
 import type { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
-import path from 'node:path'
+import path from 'pathe'
 import process from 'node:process'
 import { detectAlpha } from '@pz4l/tinyimg-core'
 import sharp from 'sharp'

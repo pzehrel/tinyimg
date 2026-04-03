@@ -1,11 +1,8 @@
 import fs from 'node:fs/promises'
-import path from 'node:path'
+import path from 'pathe'
 import fastGlob from 'fast-glob'
 
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.avif'] as const
-
-// Regex for normalizing path separators in glob patterns
-const BACKSLASH_REGEX = /\\/g
 
 /**
  * Expand input paths (files, directories, globs) to absolute file paths
@@ -26,7 +23,7 @@ export async function expandInputs(inputs: string[]): Promise<string[]> {
       }
       else if (stat.isDirectory()) {
         // Directory - recursively find all image files
-        const pattern = path.join(input, '**', '*').replace(BACKSLASH_REGEX, '/')
+        const pattern = path.join(input, '**', '*')
         const files = await fastGlob.glob(pattern, {
           absolute: true,
           onlyFiles: true,

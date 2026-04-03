@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises'
-import path from 'node:path'
+import path from 'pathe'
 import process from 'node:process'
 import { detectAlphas } from '@pz4l/tinyimg-core'
 import { expandInputs } from '../utils/files'
