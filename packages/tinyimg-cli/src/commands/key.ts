@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { select } from '@clack/prompts'
 import { maskKey, queryQuota, readConfig, validateKey, writeConfig } from '@pz4l/tinyimg-core'
-import kleur from 'kleur'
+import { logger } from '../utils/logger'
 
 export async function keyAdd(key: string): Promise<void> {
   try {
@@ -9,7 +9,7 @@ export async function keyAdd(key: string): Promise<void> {
     const isValid = await validateKey(key)
 
     if (!isValid) {
-      console.error(kleur.red('✗ Invalid API key. Please check your key and try again.'))
+      logger.error('Invalid API key. Please check your key and try again.')
       process.exit(1)
     }
 
@@ -19,7 +19,7 @@ export async function keyAdd(key: string): Promise<void> {
     // Check if key already exists
     const existingKey = config.keys.find(k => k.key === key)
     if (existingKey) {
-      console.warn(kleur.yellow(`⚠ API key ${maskKey(key)} already exists in config.`))
+      logger.warn(`API key ${maskKey(key)} already exists in config.`)
       process.exit(0)
     }
 
@@ -32,16 +32,16 @@ export async function keyAdd(key: string): Promise<void> {
 
     writeConfig(config)
 
-    console.log(kleur.green(`✓ API key ${maskKey(key)} added successfully.`))
+    logger.success(`API key ${maskKey(key)} added successfully.`)
   }
   catch (error: any) {
     if (error.message?.includes('credentials') || error.message?.includes('Unauthorized')) {
-      console.error(kleur.red('✗ Invalid API key. Please check your key and try again.'))
+      logger.error('Invalid API key. Please check your key and try again.')
       process.exit(1)
     }
 
     // Network or other errors
-    console.error(kleur.red(`✗ Error validating key: ${error.message}`))
+    logger.error(`Error validating key: ${error.message}`)
     process.exit(1)
   }
 }
@@ -51,7 +51,7 @@ export async function keyRemove(key?: string): Promise<void> {
     const config = readConfig()
 
     if (config.keys.length === 0) {
-      console.warn(kleur.yellow('⚠ No API keys configured. Use "tinyimg key add <key>" to add one.'))
+      logger.warn('No API keys configured. Use "tinyimg key add <key>" to add one.')
       process.exit(0)
     }
 
@@ -70,7 +70,7 @@ export async function keyRemove(key?: string): Promise<void> {
       })
 
       if (typeof selected !== 'string') {
-        console.log(kleur.yellow('Operation cancelled.'))
+        logger.warn('Operation cancelled.')
         process.exit(0)
       }
 
@@ -84,17 +84,17 @@ export async function keyRemove(key?: string): Promise<void> {
     const keyIndex = config.keys.findIndex(k => k.key === keyToRemove)
 
     if (keyIndex === -1) {
-      console.error(kleur.red(`✗ API key ${maskKey(keyToRemove)} not found.`))
+      logger.error(`API key ${maskKey(keyToRemove)} not found.`)
       process.exit(1)
     }
 
     const removedKey = config.keys.splice(keyIndex, 1)[0]
     writeConfig(config)
 
-    console.log(kleur.green(`✓ API key ${maskKey(removedKey.key)} removed successfully.`))
+    logger.success(`API key ${maskKey(removedKey.key)} removed successfully.`)
   }
   catch (error: any) {
-    console.error(kleur.red(`✗ Error removing key: ${error.message}`))
+    logger.error(`Error removing key: ${error.message}`)
     process.exit(1)
   }
 }
@@ -104,35 +104,46 @@ export async function keyList(): Promise<void> {
     const config = readConfig()
 
     if (config.keys.length === 0) {
-      console.log(kleur.yellow('⚠ No API keys configured.'))
-      console.log(kleur.gray('Use "tinyimg key add <key>" to add one.'))
+      logger.warn('No API keys configured.')
+      logger.info('Use "tinyimg key add <key>" to add one.')
       process.exit(0)
     }
 
-    console.log(kleur.bold('\nAPI Keys:\n'))
+    logger.info('API Keys:')
+
+    const quotas: PromiseSettledResult<number>[] = []
 
     for (const keyMeta of config.keys) {
       const masked = maskKey(keyMeta.key)
-      const status = keyMeta.valid ? kleur.green('✓ Valid') : kleur.red('✗ Invalid')
       const lastCheck = new Date(keyMeta.lastCheck).toLocaleString()
 
-      console.log(`  ${masked} - ${status}`)
+      if (keyMeta.valid) {
+        logger.success(`${masked} - Valid`)
+      }
+      else {
+        logger.error(`${masked} - Invalid`)
+      }
 
       try {
         const remaining = await queryQuota(keyMeta.key)
-        const quotaInfo = kleur.gray(`  Quota: ${remaining}/500 remaining | Last check: ${lastCheck}`)
-        console.log(quotaInfo)
+        quotas.push({ status: 'fulfilled', value: remaining })
+        logger.info(`  Quota: ${remaining}/500 remaining | Last check: ${lastCheck}`)
       }
       catch {
-        const quotaInfo = kleur.yellow(`  Quota: Unable to query | Last check: ${lastCheck}`)
-        console.log(quotaInfo)
+        quotas.push({ status: 'rejected', reason: new Error('Unable to query') })
+        logger.warn(`  Quota: Unable to query | Last check: ${lastCheck}`)
       }
-
-      console.log() // Empty line between keys
     }
+
+    // 显示总计行
+    const validCount = config.keys.filter(k => k.valid).length
+    const totalQuota = quotas
+      .filter((r): r is PromiseFulfilledResult<number> => r.status === 'fulfilled')
+      .reduce((sum, r) => sum + r.value, 0)
+    logger.info(`Total: ${config.keys.length} keys, ${validCount} valid, ${totalQuota}/${config.keys.length * 500} quota remaining`)
   }
   catch (error: any) {
-    console.error(kleur.red(`✗ Error listing keys: ${error.message}`))
+    logger.error(`Error listing keys: ${error.message}`)
     process.exit(1)
   }
 }
