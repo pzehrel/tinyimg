@@ -12,7 +12,7 @@ export { compressWithFallback, getCompressorTypesForMode } from './compress/comp
 export { createConcurrencyLimiter, executeWithConcurrency } from './compress/concurrency'
 export { RetryManager } from './compress/retry'
 export { compressImage, compressImages } from './compress/service'
-export type { CompressionMode, CompressOptions, CompressServiceOptions, ICompressor } from './compress/types'
+export type { CompressionMeta, CompressionMode, CompressOptions, CompressResult, CompressServiceOptions, ICompressor } from './compress/types'
 export { TinyPngWebCompressor } from './compress/web-compressor'
 
 // Config loading
