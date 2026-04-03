@@ -1,6 +1,6 @@
-import path from 'pathe'
 // @ts-expect-error - micromatch doesn't have types
 import micromatch from 'micromatch'
+import path from 'pathe'
 
 export interface FilterOptions {
   include?: string | string[]
