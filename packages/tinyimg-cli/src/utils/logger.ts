@@ -49,7 +49,7 @@ export class TerminalLogger {
    */
   warn(message: string): void {
     if (this.level !== 'quiet') {
-      console.warn(kleur.yellow(`⚠ ${message}`))
+      console.log(kleur.yellow(`⚠ ${message}`))
     }
   }
 
