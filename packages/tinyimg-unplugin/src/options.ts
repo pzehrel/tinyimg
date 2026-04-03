@@ -5,6 +5,8 @@ export interface TinyimgUnpluginOptions extends FilterOptions {
   cache?: boolean
   parallel?: number
   strict?: boolean
+  level?: 'quiet' | 'normal' | 'verbose'
+  /** @deprecated use `level: 'verbose'` instead */
   verbose?: boolean
 }
 
@@ -13,7 +15,7 @@ export interface NormalizedOptions {
   cache: boolean
   parallel: number
   strict: boolean
-  verbose: boolean
+  level: 'quiet' | 'normal' | 'verbose'
   include?: string[]
   exclude?: string[]
 }
@@ -31,12 +33,15 @@ export function normalizeOptions(options: TinyimgUnpluginOptions = {}): Normaliz
     throw new RangeError(`Invalid parallel: ${options.parallel}. Must be a positive number`)
   }
 
+  // 解析日志级别：优先使用 level，兼容旧版 verbose
+  const level = options.level ?? (options.verbose === true ? 'verbose' : 'normal')
+
   return {
     mode: options.mode ?? 'random',
     cache: options.cache ?? true,
     parallel: options.parallel ?? 8,
     strict: options.strict ?? false,
-    verbose: options.verbose ?? false,
+    level,
     include: options.include ? (Array.isArray(options.include) ? options.include : [options.include]) : undefined,
     exclude: options.exclude ? (Array.isArray(options.exclude) ? options.exclude : [options.exclude]) : undefined,
   }
