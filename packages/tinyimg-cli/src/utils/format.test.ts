@@ -10,21 +10,23 @@ describe('format utilities', () => {
       expect(result).toContain('Compressing')
     })
 
-    it('uses cyan color from kleur', () => {
+    it('returns plain string without ANSI color codes', () => {
       const result = formatProgress(1, 1)
-      // kleur.cyan adds color codes (disabled in test environment)
+      // 检查不包含 ANSI 转义序列
+      expect(result).not.toMatch(/\x1b\[[0-9;]*m/)
       expect(result).toContain('Compressing 1/1')
       expect(result).toContain('...')
     })
   })
 
   describe('formatResult', () => {
-    it('returns success indicator with green checkmark', () => {
+    it('returns plain string without ANSI color codes', () => {
       const result = formatResult('/path/to/image.png', '/path/to/output.png', 1024, 512)
-      expect(result).toContain('✓')
+      // 检查不包含 ANSI 转义序列
+      expect(result).not.toMatch(/\x1b\[[0-9;]*m/)
     })
 
-    it('shows filename in yellow', () => {
+    it('shows filename', () => {
       const result = formatResult('/path/to/image.png', '/path/to/output.png', 1024, 512)
       expect(result).toContain('image.png')
     })
