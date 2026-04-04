@@ -1,15 +1,15 @@
 import fs from 'node:fs'
-import path from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import os from 'node:os'
+import path from 'pathe'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ensureConfigFile, getConfigPath, readConfig, writeConfig } from '../config/storage'
 
 describe('config Storage', () => {
-  const originalHome = process.env.HOME
   const testConfigDir = '.tinyimg-test-storage'
 
   beforeEach(() => {
     // Set up test config directory
-    process.env.HOME = testConfigDir
+    vi.spyOn(os, 'homedir').mockReturnValue(testConfigDir)
     // Clean up any existing test config
     const configPath = getConfigPath()
     const configDir = path.dirname(configPath)
@@ -25,8 +25,7 @@ describe('config Storage', () => {
     if (fs.existsSync(configDir)) {
       fs.rmSync(configDir, { recursive: true, force: true })
     }
-    // Restore original HOME
-    process.env.HOME = originalHome
+    vi.restoreAllMocks()
   })
 
   it('should create config file with secure permissions', () => {

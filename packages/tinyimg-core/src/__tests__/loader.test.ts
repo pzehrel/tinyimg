@@ -1,5 +1,6 @@
 import fs from 'node:fs'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import os from 'node:os'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { loadKeys } from '../config/loader'
 import { writeConfig } from '../config/storage'
 
@@ -9,7 +10,7 @@ describe('key Loading', () => {
 
   beforeEach(() => {
     // Set up test config directory
-    process.env.HOME = testConfigDir
+    vi.spyOn(os, 'homedir').mockReturnValue(testConfigDir)
     // Clean up any existing test config
     const configDir = `${testConfigDir}/.tinyimg`
     if (fs.existsSync(configDir)) {
@@ -32,6 +33,7 @@ describe('key Loading', () => {
     else {
       delete process.env.TINYPNG_KEYS
     }
+    vi.restoreAllMocks()
   })
 
   it('should return empty array when no keys configured', () => {
@@ -124,7 +126,7 @@ describe('multi-variant environment variables', () => {
 
   beforeEach(() => {
     // Set up test config directory
-    process.env.HOME = testConfigDir
+    vi.spyOn(os, 'homedir').mockReturnValue(testConfigDir)
     // Clean up any existing test config
     const configDir = `${testConfigDir}/.tinyimg`
     if (fs.existsSync(configDir)) {
@@ -152,6 +154,7 @@ describe('multi-variant environment variables', () => {
         delete process.env[key]
       }
     })
+    vi.restoreAllMocks()
   })
 
   it('should parse TINYIMG_KEYS environment variable', () => {

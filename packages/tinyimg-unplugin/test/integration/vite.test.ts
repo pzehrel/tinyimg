@@ -111,9 +111,9 @@ describe('vite Integration', () => {
     expect(result).toMatch(/images?|KB|B|bytes/)
   })
 
-  it('skips compression in development mode', () => {
+  it('skips compression in development mode', async () => {
     // Clean dist first
-    execSync('rm -rf dist', { cwd: fixtureDir })
+    await rm(distDir, { recursive: true, force: true })
 
     // In dev mode, plugin should skip compression
     const result = execSync('npx vite build', {
@@ -129,9 +129,9 @@ describe('vite Integration', () => {
     expect(result).not.toMatch(/Compressing|compressing/)
   })
 
-  it('uses cache on second build', () => {
+  it('uses cache on second build', async () => {
     // Clean dist first
-    execSync('rm -rf dist', { cwd: fixtureDir })
+    await rm(distDir, { recursive: true, force: true })
 
     // First build
     execSync('npx vite build', {
