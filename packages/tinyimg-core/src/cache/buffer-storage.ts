@@ -1,6 +1,6 @@
 import type { Buffer } from 'node:buffer'
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join } from 'pathe'
 
 /**
  * Cache storage for reading and writing compressed image data by hash.

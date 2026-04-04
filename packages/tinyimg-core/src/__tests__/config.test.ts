@@ -1,17 +1,17 @@
 import fs from 'node:fs'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import os from 'node:os'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { loadKeys } from '../config/loader'
 import { ensureConfigFile, readConfig, writeConfig } from '../config/storage'
 
 describe('config Management Integration', () => {
-  const originalHome = process.env.HOME
   const originalEnv = process.env.TINYPNG_KEYS
   const testConfigDir = '.tinyimg-test-integration'
 
   beforeEach(() => {
     // Set up test config directory
-    process.env.HOME = testConfigDir
-    // Clean up any existing test config
+    vi.spyOn(os, 'homedir').mockReturnValue(testConfigDir)
+    // Clean up any existing test test config
     const configDir = `${testConfigDir}/.tinyimg`
     if (fs.existsSync(configDir)) {
       fs.rmSync(configDir, { recursive: true, force: true })
@@ -26,8 +26,6 @@ describe('config Management Integration', () => {
     if (fs.existsSync(configDir)) {
       fs.rmSync(configDir, { recursive: true, force: true })
     }
-    // Restore original HOME
-    process.env.HOME = originalHome
     // Restore original env var
     if (originalEnv !== undefined) {
       process.env.TINYPNG_KEYS = originalEnv
@@ -35,6 +33,7 @@ describe('config Management Integration', () => {
     else {
       delete process.env.TINYPNG_KEYS
     }
+    vi.restoreAllMocks()
   })
 
   describe('loadKeys behavior', () => {

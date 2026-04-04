@@ -2,6 +2,7 @@ import type { TinyimgUnpluginOptions } from './options'
 import { Buffer } from 'node:buffer'
 import process from 'node:process'
 import { compressImage, loadKeys } from '@pz4l/tinyimg-core'
+import path from 'pathe'
 import { createUnplugin } from 'unplugin'
 import { shouldProcessImage } from './filter'
 import { normalizeOptions } from './options'
@@ -105,7 +106,8 @@ function isProductionBuild(context: any): boolean {
 }
 
 function getRelativePath(id: string): string {
-  // Convert absolute path to relative for logging
+  // Convert absolute path to relative for logging using pathe (per D-08)
   const root = process.cwd()
-  return id.replace(root, '').replace(IMAGE_REGEX, '')
+  const relativePath = path.relative(root, id)
+  return relativePath.replace(IMAGE_REGEX, '')
 }

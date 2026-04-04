@@ -1,4 +1,5 @@
 import { readdir, stat } from 'node:fs/promises'
+import { join } from 'pathe'
 import { getGlobalCachePath, getProjectCachePath } from './paths'
 
 /**
@@ -64,7 +65,7 @@ export async function getCacheStats(cacheDir: string): Promise<CacheStats> {
     let size = 0
 
     for (const file of files) {
-      const filePath = `${cacheDir}/${file}`
+      const filePath = join(cacheDir, file)
       const stats = await stat(filePath)
 
       if (stats.isFile()) {
