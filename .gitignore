@@ -239,3 +239,4 @@ $RECYCLE.BIN/
 *.lnk
 
 .claude
+.worktrees/
