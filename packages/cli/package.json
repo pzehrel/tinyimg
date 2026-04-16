@@ -1,21 +1,21 @@
 {
   "name": "@pzehrel/tinyimg-cli",
-  "version": "0.0.0",
-  "files": ["dist"],
   "type": "module",
-  "bin": {
-    "tinyimg": "./dist/index.mjs"
+  "version": "0.0.0",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
-    }
+  "bin": {
+    "tinyimg": "./dist/index.mjs"
   },
+  "files": ["dist"],
   "scripts": {
     "build": "tsdown",
     "prepublishOnly": "test -n \"$CI\" || (echo 'Error: Publishing is only allowed from CI.' && exit 1)"

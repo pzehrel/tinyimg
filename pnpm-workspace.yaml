@@ -1,7 +1,9 @@
-packages:
-  - 'packages/*'
 allowBuilds:
   sharp: false
 ignoreTrustDowngrade: true
 shellEmulator: true
-trustPolicy: none
+
+trustPolicy: no-downgrade
+
+packages:
+  - 'packages/*'
