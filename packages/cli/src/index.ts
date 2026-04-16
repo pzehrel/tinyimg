@@ -1,17 +1,20 @@
 #!/usr/bin/env node
+import { createLocaleI18n } from '@pzehrel/tinyimg-locale'
 import { defineCommand, runMain } from 'citty'
 import dotenv from 'dotenv'
 import { registerCompress } from './commands/compress'
 
 dotenv.config({ path: '.env.local' })
 
+const t = createLocaleI18n()
+
 const main = defineCommand({
   meta: {
     name: 'tinyimg',
-    description: 'TinyPNG image compression tool',
+    description: t('cli.meta.description'),
     version: '0.0.0',
   },
-  ...registerCompress(),
+  ...registerCompress(t),
   subCommands: {
     convert: () => import('./commands/convert').then(m => m.default),
     keys: () => import('./commands/keys').then(m => m.default),

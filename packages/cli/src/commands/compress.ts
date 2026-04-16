@@ -6,54 +6,54 @@ import { compressFile, initKeyManager, isProcessed, markProcessed, matchFiles } 
 import kleur from 'kleur'
 import pLimit from 'p-limit'
 
-export function registerCompress(): CommandDef {
+export function registerCompress(t: (key: string, params?: Record<string, string | number>) => string): CommandDef {
   return {
     args: {
       paths: {
         type: 'positional',
-        description: 'image paths or globs',
+        description: t('cli.arg.paths.description'),
         required: false,
         default: './',
       },
       replace: {
         type: 'boolean',
-        description: 'replace source files',
+        description: t('cli.arg.replace.description'),
         default: true,
       },
       output: {
         type: 'string',
-        description: 'output directory',
+        description: t('cli.arg.output.description'),
         alias: 'o',
       },
       strategy: {
         type: 'string',
-        description: 'compression strategy',
+        description: t('cli.arg.strategy.description'),
         default: 'AUTO',
       },
       cache: {
         type: 'boolean',
-        description: 'enable cache',
+        description: t('cli.arg.cache.description'),
         default: true,
       },
       key: {
         type: 'string',
-        description: 'api keys separated by comma',
+        description: t('cli.arg.key.description'),
         alias: 'k',
       },
       parallel: {
         type: 'string',
-        description: 'parallel limit',
+        description: t('cli.arg.parallel.description'),
         alias: 'p',
         default: '3',
       },
       convert: {
         type: 'boolean',
-        description: 'enable PNG to JPG conversion',
+        description: t('cli.arg.convert.description'),
         default: false,
       },
       followSymlinks: {
         type: 'boolean',
-        description: 'follow symbolic links',
+        description: t('cli.arg.followSymlinks.description'),
         default: false,
       },
     },
@@ -77,7 +77,7 @@ export function registerCompress(): CommandDef {
       })
 
       if (files.length === 0) {
-        console.log(kleur.yellow('No files found'))
+        console.log(kleur.yellow(t('cli.output.noFiles')))
         return
       }
 
@@ -92,7 +92,7 @@ export function registerCompress(): CommandDef {
           limit(async () => {
             const buf = await fs.readFile(file.path)
             if (await isProcessed(buf)) {
-              console.log(kleur.cyan('○'), file.path, 'already processed')
+              console.log(kleur.cyan(t('status.cached')), file.path, t('cli.output.alreadyProcessed'))
               cached++
               return
             }
@@ -105,7 +105,7 @@ export function registerCompress(): CommandDef {
             })
 
             if (result.error) {
-              console.log(kleur.red('✗'), file.path, kleur.red().bold('failed:'), result.error.message)
+              console.log(kleur.red(t('status.failed')), file.path, kleur.red().bold(t('cli.output.failed')), result.error.message)
               failed++
               return
             }
@@ -125,11 +125,11 @@ export function registerCompress(): CommandDef {
             await fs.writeFile(outputPath, processedBuf)
 
             if (result.cached) {
-              console.log(kleur.cyan('○'), file.path, formatSize(result.originalSize), '→', formatSize(result.compressedSize))
+              console.log(kleur.cyan(t('status.cached')), file.path, formatSize(result.originalSize), '→', formatSize(result.compressedSize))
               cached++
             }
             else {
-              console.log(kleur.green('✓'), file.path, formatSize(result.originalSize), '→', formatSize(result.compressedSize), `(${result.compressor})`)
+              console.log(kleur.green(t('status.success')), file.path, formatSize(result.originalSize), '→', formatSize(result.compressedSize), `(${result.compressor})`)
               success++
               saved += result.originalSize - result.compressedSize
             }
@@ -137,7 +137,7 @@ export function registerCompress(): CommandDef {
         ),
       )
 
-      console.log(`[tinyimg] Compression complete  Total: ${files.length}  Success: ${success}  Cached: ${cached}  Failed: ${failed}  Saved: ${formatSize(saved)}`)
+      console.log(`[tinyimg] ${t('cli.output.compressionComplete')}  ${t('cli.output.total')}: ${files.length}  ${t('cli.output.success')}: ${success}  ${t('cli.output.cached')}: ${cached}  ${t('summary.failed')}: ${failed}  ${t('cli.output.saved')}: ${formatSize(saved)}`)
       process.exit(failed > 0 ? 1 : 0)
     },
   }

@@ -1,16 +1,19 @@
 import type { CommandDef } from 'citty'
 import { addUserKeys, listUserKeys, removeUserKey } from '@pzehrel/tinyimg-core'
+import { createLocaleI18n } from '@pzehrel/tinyimg-locale'
 import kleur from 'kleur'
+
+const t = createLocaleI18n()
 
 const listCommand: CommandDef = {
   meta: {
     name: 'list',
-    description: 'List saved keys',
+    description: t('cli.command.keys.list.description'),
   },
   async run() {
     const keys = await listUserKeys()
     if (keys.length === 0) {
-      console.log(kleur.yellow('No keys saved'))
+      console.log(kleur.yellow(t('cli.output.noKeys')))
       return
     }
     console.table(keys)
@@ -20,12 +23,12 @@ const listCommand: CommandDef = {
 const addCommand: CommandDef = {
   meta: {
     name: 'add',
-    description: 'Add and verify API keys',
+    description: t('cli.command.keys.add.description'),
   },
   args: {
     keys: {
       type: 'positional',
-      description: 'API keys',
+      description: t('cli.arg.keys.description'),
       required: true,
     },
   },
@@ -34,10 +37,10 @@ const addCommand: CommandDef = {
     const results = await addUserKeys(rawKeys)
     for (const r of results) {
       if (r.valid) {
-        console.log(kleur.green('✓'), r.key, r.remaining !== undefined ? `(${r.remaining} remaining)` : '')
+        console.log(kleur.green(t('status.success')), r.key, r.remaining !== undefined ? `(${r.remaining} remaining)` : '')
       }
       else {
-        console.log(kleur.red('✗'), r.key, r.error || '')
+        console.log(kleur.red(t('status.failed')), r.key, r.error || '')
       }
     }
   },
@@ -46,25 +49,25 @@ const addCommand: CommandDef = {
 const delCommand: CommandDef = {
   meta: {
     name: 'del',
-    description: 'Delete a saved key',
+    description: t('cli.command.keys.del.description'),
   },
   args: {
     maskedKey: {
       type: 'positional',
-      description: 'Masked key to delete',
+      description: t('cli.arg.maskedKey.description'),
       required: true,
     },
   },
   async run({ args }) {
     await removeUserKey(args.maskedKey as string)
-    console.log(kleur.green('✓'), 'Key removed')
+    console.log(kleur.green(t('status.success')), t('cli.output.keyRemoved'))
   },
 }
 
 const keysCommand: CommandDef = {
   meta: {
     name: 'keys',
-    description: 'Manage API keys',
+    description: t('cli.command.keys.description'),
   },
   subCommands: {
     list: listCommand,

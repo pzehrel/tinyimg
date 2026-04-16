@@ -2,23 +2,26 @@ import type { CommandDef } from 'citty'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { canConvertToJpg, convertPngToJpg, matchFiles } from '@pzehrel/tinyimg-core'
+import { createLocaleI18n } from '@pzehrel/tinyimg-locale'
 import kleur from 'kleur'
+
+const t = createLocaleI18n()
 
 const convertCommand: CommandDef = {
   meta: {
     name: 'convert',
-    description: 'Convert PNG to JPG',
+    description: t('cli.command.convert.description'),
   },
   args: {
     paths: {
       type: 'positional',
-      description: 'PNG paths',
+      description: t('cli.arg.paths.description'),
       required: false,
       default: './',
     },
     replace: {
       type: 'boolean',
-      description: 'replace source files',
+      description: t('cli.arg.replace.description'),
       default: true,
     },
   },
@@ -34,7 +37,7 @@ const convertCommand: CommandDef = {
 
     for (const f of pngs) {
       if (!(await canConvertToJpg(f.path))) {
-        console.log(kleur.gray('○'), f.path, 'skipped (has alpha)')
+        console.log(kleur.gray(t('status.cached')), f.path, t('cli.output.skippedAlpha'))
         continue
       }
 
@@ -46,7 +49,7 @@ const convertCommand: CommandDef = {
         await fs.unlink(f.path)
       }
 
-      console.log(kleur.green('✓'), f.path, '→', path.basename(newPath))
+      console.log(kleur.green(t('status.success')), f.path, '→', path.basename(newPath))
     }
   },
 }

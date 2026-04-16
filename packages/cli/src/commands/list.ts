@@ -3,28 +3,31 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
 import { matchFiles, readCache } from '@pzehrel/tinyimg-core'
+import { createLocaleI18n } from '@pzehrel/tinyimg-locale'
 import kleur from 'kleur'
+
+const t = createLocaleI18n()
 
 const listCommand: CommandDef = {
   meta: {
     name: 'list',
-    description: 'List image files',
+    description: t('cli.command.list.description'),
   },
   args: {
     paths: {
       type: 'positional',
-      description: 'image paths',
+      description: t('cli.arg.paths.description'),
       required: false,
       default: './',
     },
     json: {
       type: 'boolean',
-      description: 'output as JSON',
+      description: t('cli.arg.json.description'),
       default: false,
     },
     convert: {
       type: 'boolean',
-      description: 'show only convertible PNGs',
+      description: t('cli.arg.convertList.description'),
       default: false,
     },
   },
@@ -55,12 +58,12 @@ const listCommand: CommandDef = {
       cacheDirExists = false
     }
 
-    console.log('File'.padEnd(30), 'Size'.padEnd(10), 'Cache'.padEnd(8), 'Convertible')
+    console.log(t('cli.output.file').padEnd(30), t('cli.output.size').padEnd(10), t('cli.output.cache').padEnd(8), t('cli.output.convertible'))
     for (const f of filtered) {
       const rel = path.relative(process.cwd(), f.path)
       const cached = cacheDirExists ? await readCache(f.md5!, path.extname(f.path).slice(1), cacheDir) : null
-      const cacheMark = cached ? kleur.green('✓') : kleur.gray('✗')
-      const convMark = f.convertible ? kleur.green('Yes') : kleur.gray('No')
+      const cacheMark = cached ? kleur.green(t('status.success')) : kleur.gray(t('status.failed'))
+      const convMark = f.convertible ? kleur.green(t('cli.output.yes')) : kleur.gray(t('cli.output.no'))
       console.log(rel.padEnd(30), colorSize(f.size).padEnd(10), cacheMark.padEnd(8), convMark)
     }
   },
