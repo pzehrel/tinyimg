@@ -68,6 +68,7 @@ const keysCommand: CommandDef = {
   },
   subCommands: {
     list: listCommand,
+    ls: listCommand,
     add: addCommand,
     del: delCommand,
   },
