@@ -59,5 +59,7 @@
   "cli.output.yes": "是",
   "cli.output.no": "否",
   "cli.output.convertiblePngsHint": "有 {count} 个 PNG 文件可以转换为 JPG 以进一步减小体积：",
-  "cli.output.convertiblePngsCommand": "执行 `tinyimg convert <paths>` 进行转换。"
+  "cli.output.convertiblePngsCommand": "执行 `tinyimg convert <paths>` 进行转换。",
+
+  "plugin.output.converted": "已转换"
 }

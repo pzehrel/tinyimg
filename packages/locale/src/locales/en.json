@@ -59,5 +59,7 @@
   "cli.output.yes": "Yes",
   "cli.output.no": "No",
   "cli.output.convertiblePngsHint": "{count} PNG files can be converted to JPG for further size reduction:",
-  "cli.output.convertiblePngsCommand": "Run `tinyimg convert <paths>` to convert them."
+  "cli.output.convertiblePngsCommand": "Run `tinyimg convert <paths>` to convert them.",
+
+  "plugin.output.converted": "converted"
 }

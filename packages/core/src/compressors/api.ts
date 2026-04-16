@@ -50,28 +50,29 @@ export async function apiCompress(
         body: buffer,
       })
 
+      const errorDetail = extractErrorMessage(res.data)
       if (res.status >= 500 && res.status <= 599) {
-        throw new ServerError(`ApiCompressor failed with status ${res.status}`, res.status)
+        throw new ServerError(`failed with status ${res.status}${errorDetail ? `: ${errorDetail}` : ''}`, res.status, 'ApiCompressor')
       }
 
       if (res.status === 401 || res.status === 429) {
-        throw new AccountError(`ApiCompressor failed with status ${res.status}`, res.status)
+        throw new AccountError(`failed with status ${res.status}${errorDetail ? `: ${errorDetail}` : ''}`, res.status, 'ApiCompressor')
       }
 
       if (res.status >= 400 && res.status <= 499) {
-        throw new ClientError(`ApiCompressor failed with status ${res.status}`, res.status)
+        throw new ClientError(`failed with status ${res.status}${errorDetail ? `: ${errorDetail}` : ''}`, res.status, 'ApiCompressor')
       }
 
       if (res.status !== 201) {
         // Unexpected status code (only 201 is considered success); treat as client error (fail fast).
-        throw new ClientError(`ApiCompressor failed with status ${res.status}`, res.status)
+        throw new ClientError(`failed with status ${res.status}${errorDetail ? `: ${errorDetail}` : ''}`, res.status, 'ApiCompressor')
       }
 
       const location = Array.isArray(res.headers.location)
         ? res.headers.location[0]
         : res.headers.location
       if (!location) {
-        throw new ClientError('ApiCompressor missing Location header', 0)
+        throw new ClientError('missing Location header', 0, 'ApiCompressor')
       }
 
       const compressed = await client.download(location)
@@ -96,8 +97,9 @@ export async function apiCompress(
 
       // Network/timeout or other unexpected errors
       throw new ConnectionError(
-        err instanceof Error ? err.message : 'ApiCompressor connection error',
+        err instanceof Error ? err.message : 'connection error',
         err instanceof Error ? err : undefined,
+        'ApiCompressor',
       )
     }
   }
@@ -107,4 +109,14 @@ export async function apiCompress(
 
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+function extractErrorMessage(data: Buffer): string | undefined {
+  try {
+    const json = JSON.parse(data.toString()) as { error?: string, message?: string }
+    return json.message || json.error
+  }
+  catch {
+    return undefined
+  }
 }

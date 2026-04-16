@@ -62,12 +62,6 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         useUserKeys: true,
       })
 
-      const projectKeys = listProjectKeys()
-      const userKeys = await listUserKeys()
-      if (projectKeys.length === 0 && userKeys.length === 0) {
-        console.log(kleur.yellow(t('cli.output.noKeysHint')))
-      }
-
       const files = await matchFiles({
         paths: inputs,
         ignores: ['node_modules/**'],
@@ -111,7 +105,9 @@ export function registerCompress(t: (key: string, params?: Record<string, string
             })
 
             if (result.error) {
-              console.log(kleur.red(t('status.failed')), relPath.padEnd(40), kleur.red().bold(t('cli.output.failed')), result.error.message, kleur.gray(`(${result.compressor})`))
+              const errorMsg = String(result.error.message || 'Unknown error').replace(/\n/g, ' ')
+              const compressorName = (result.error as any).compressor || result.compressor
+              console.log(`${kleur.red(t('status.failed'))} ${relPath.padEnd(40)} ${kleur.red().bold(t('cli.output.failed'))} ${errorMsg} ${kleur.gray(`(${compressorName})`)}`)
               failed++
               return
             }
@@ -155,6 +151,12 @@ export function registerCompress(t: (key: string, params?: Record<string, string
       if (convertiblePngs.length > 0) {
         console.log(kleur.yellow(t('cli.output.convertiblePngsHint', { count: convertiblePngs.length })))
         console.log(kleur.yellow(t('cli.output.convertiblePngsCommand')))
+      }
+
+      const projectKeys = listProjectKeys()
+      const userKeys = await listUserKeys()
+      if (projectKeys.length === 0 && userKeys.length === 0) {
+        console.log(kleur.yellow(t('cli.output.noKeysHint')))
       }
 
       const summaryParts = [

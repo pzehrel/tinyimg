@@ -35,10 +35,10 @@ function getCacheDir(cwd: string): string {
 }
 
 async function resolveCacheDir(cwd: string): Promise<string> {
-  const nodeModulesPath = getCacheDir(cwd)
+  const nodeModulesPath = path.join(cwd, 'node_modules')
   try {
     await fs.access(nodeModulesPath)
-    return nodeModulesPath
+    return getCacheDir(cwd)
   }
   catch {
     return path.join(os.homedir(), '.tinyimg')
@@ -58,9 +58,10 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
   let ext = path.extname(filePath).slice(1).toLowerCase()
   const md5 = crypto.createHash('md5').update(originalBuffer).digest('hex')
   const cacheSuffix = doConvert ? '-c' : ''
-  const cacheDir = await resolveCacheDir(process.cwd())
+  const projectCacheDir = getCacheDir(process.cwd())
+  const homeCacheDir = path.join(os.homedir(), '.tinyimg')
 
-  const cached = await readCache(`${md5}${cacheSuffix}`, ext, cacheDir)
+  const cached = await readCache(`${md5}${cacheSuffix}`, ext, projectCacheDir) || await readCache(`${md5}${cacheSuffix}`, ext, homeCacheDir)
   if (cached) {
     return {
       buffer: cached,
@@ -71,6 +72,8 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
       cached: true,
     }
   }
+
+  const writeCacheDir = await resolveCacheDir(process.cwd())
 
   let lastCompressor = ''
   let convertedPngToJpg = false
@@ -160,7 +163,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
       compressorName = res.compressor
     }
 
-    await writeCache(`${md5}${cacheSuffix}`, ext, resultBuffer, cacheDir)
+    await writeCache(`${md5}${cacheSuffix}`, ext, resultBuffer, writeCacheDir)
 
     return {
       buffer: resultBuffer,
