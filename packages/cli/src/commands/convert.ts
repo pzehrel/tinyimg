@@ -1,3 +1,4 @@
+import type { CommandDef } from 'citty'
 import type { Command } from 'commander'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -36,3 +37,13 @@ export function registerConvert(program: Command) {
       }
     })
 }
+
+export default {
+  meta: {
+    name: 'convert',
+    description: 'Convert PNG to JPG',
+  },
+  run() {
+    console.log(kleur.yellow('convert command is not yet migrated to citty'))
+  },
+} satisfies CommandDef

@@ -1,3 +1,4 @@
+import type { CommandDef } from 'citty'
 import type { Command } from 'commander'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -47,6 +48,16 @@ export function registerList(program: Command) {
       }
     })
 }
+
+export default {
+  meta: {
+    name: 'list',
+    description: 'List image files',
+  },
+  run() {
+    console.log(kleur.yellow('list command is not yet migrated to citty'))
+  },
+} satisfies CommandDef
 
 function formatSize(bytes: number): string {
   if (bytes < 1024)

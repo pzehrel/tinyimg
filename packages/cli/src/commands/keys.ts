@@ -1,3 +1,4 @@
+import type { CommandDef } from 'citty'
 import type { Command } from 'commander'
 import { addUserKeys, listUserKeys, removeUserKey } from '@pzehrel/tinyimg-core'
 import kleur from 'kleur'
@@ -43,3 +44,13 @@ export function registerKeys(program: Command) {
       console.log(kleur.green('✓'), 'Key removed')
     })
 }
+
+export default {
+  meta: {
+    name: 'keys',
+    description: 'Manage API keys',
+  },
+  run() {
+    console.log(kleur.yellow('keys command is not yet migrated to citty'))
+  },
+} satisfies CommandDef

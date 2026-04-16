@@ -1,4 +1,4 @@
-import type { Command } from 'commander'
+import type { CommandDef } from 'citty'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
@@ -6,28 +6,69 @@ import { compressFile, initKeyManager, isProcessed, markProcessed, matchFiles } 
 import kleur from 'kleur'
 import pLimit from 'p-limit'
 
-export function registerCompress(program: Command) {
-  program
-    .argument('[paths...]', 'image paths or globs')
-    .option('--replace', 'replace source files', true)
-    .option('--no-replace', 'do not replace source files')
-    .option('-o, --output <dir>', 'output directory')
-    .option('--strategy <mode>', 'compression strategy', 'AUTO')
-    .option('--no-cache', 'disable cache')
-    .option('-k, --key <keys>', 'api keys separated by comma')
-    .option('-p, --parallel <n>', 'parallel limit', '3')
-    .option('--convert', 'enable PNG to JPG conversion')
-    .option('--follow-symlinks', 'follow symbolic links')
-    .action(async (inputs: string[], options) => {
+export function registerCompress(): CommandDef {
+  return {
+    args: {
+      paths: {
+        type: 'positional',
+        description: 'image paths or globs',
+        required: false,
+        default: './',
+      },
+      replace: {
+        type: 'boolean',
+        description: 'replace source files',
+        default: true,
+      },
+      output: {
+        type: 'string',
+        description: 'output directory',
+        alias: 'o',
+      },
+      strategy: {
+        type: 'string',
+        description: 'compression strategy',
+        default: 'AUTO',
+      },
+      cache: {
+        type: 'boolean',
+        description: 'enable cache',
+        default: true,
+      },
+      key: {
+        type: 'string',
+        description: 'api keys separated by comma',
+        alias: 'k',
+      },
+      parallel: {
+        type: 'string',
+        description: 'parallel limit',
+        alias: 'p',
+        default: '3',
+      },
+      convert: {
+        type: 'boolean',
+        description: 'enable PNG to JPG conversion',
+        default: false,
+      },
+      followSymlinks: {
+        type: 'boolean',
+        description: 'follow symbolic links',
+        default: false,
+      },
+    },
+    async run({ args }) {
+      const inputs = args._.length ? args._.map(String) : [args.paths as string]
+
       initKeyManager({
-        projectKeys: options.key?.split(','),
+        projectKeys: (args.key as string | undefined)?.split(','),
         useUserKeys: true,
       })
 
       const files = await matchFiles({
-        paths: inputs.length ? inputs : ['./'],
+        paths: inputs,
         ignores: ['node_modules/**'],
-        followSymlinks: options.followSymlinks,
+        followSymlinks: args.followSymlinks as boolean,
       })
 
       if (files.length === 0) {
@@ -35,7 +76,7 @@ export function registerCompress(program: Command) {
         return
       }
 
-      const limit = pLimit(Number(options.parallel) || 3)
+      const limit = pLimit(Number(args.parallel) || 3)
       let success = 0
       let failed = 0
       let cached = 0
@@ -53,9 +94,9 @@ export function registerCompress(program: Command) {
 
             const result = await compressFile({
               filePath: file.path,
-              strategy: options.strategy,
+              strategy: args.strategy as 'AUTO' | 'API_ONLY' | 'RANDOM' | 'API_FIRST',
               maxFileSize: 5 * 1024 * 1024,
-              convertPngToJpg: options.convert,
+              convertPngToJpg: args.convert as boolean,
             })
 
             if (result.error) {
@@ -67,11 +108,12 @@ export function registerCompress(program: Command) {
             const ext = path.extname(file.path).slice(1).toLowerCase()
             const processedBuf = await markProcessed(result.buffer, ext as 'png' | 'jpg' | 'jpeg' | 'webp')
 
-            const outputPath = options.output
-              ? path.join(options.output, path.relative(process.cwd(), file.path))
+            const outputDir = args.output as string | undefined
+            const outputPath = outputDir
+              ? path.join(outputDir, path.relative(process.cwd(), file.path))
               : file.path
 
-            if (options.output) {
+            if (outputDir) {
               await fs.mkdir(path.dirname(outputPath), { recursive: true })
             }
 
@@ -92,7 +134,8 @@ export function registerCompress(program: Command) {
 
       console.log(`[tinyimg] Compression complete  Total: ${files.length}  Success: ${success}  Cached: ${cached}  Failed: ${failed}  Saved: ${formatSize(saved)}`)
       process.exit(failed > 0 ? 1 : 0)
-    })
+    },
+  }
 }
 
 function formatSize(bytes: number): string {

@@ -1,19 +1,22 @@
 #!/usr/bin/env node
-import { Command } from 'commander'
+import { defineCommand, runMain } from 'citty'
 import dotenv from 'dotenv'
 import { registerCompress } from './commands/compress'
-import { registerConvert } from './commands/convert'
-import { registerKeys } from './commands/keys'
-import { registerList } from './commands/list'
 
 dotenv.config({ path: '.env.local' })
 
-const program = new Command()
-program.name('tinyimg').description('TinyPNG image compression tool').version('0.0.0')
+const main = defineCommand({
+  meta: {
+    name: 'tinyimg',
+    description: 'TinyPNG image compression tool',
+    version: '0.0.0',
+  },
+  ...registerCompress(),
+  subCommands: {
+    convert: () => import('./commands/convert').then(m => m.default),
+    keys: () => import('./commands/keys').then(m => m.default),
+    list: () => import('./commands/list').then(m => m.default),
+  },
+})
 
-registerCompress(program)
-registerKeys(program)
-registerList(program)
-registerConvert(program)
-
-program.parse()
+runMain(main)
