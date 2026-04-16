@@ -2,7 +2,7 @@ import type { CommandDef } from 'citty'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
-import { canConvertToJpg, compressFile, initKeyManager, isProcessed, markProcessed, matchFiles, resolveProjectKeysFromEnv } from '@pzehrel/tinyimg-core'
+import { canConvertToJpg, compressFile, initKeyManager, isProcessed, listProjectKeys, listUserKeys, markProcessed, matchFiles, resolveProjectKeysFromEnv } from '@pzehrel/tinyimg-core'
 import kleur from 'kleur'
 import pLimit from 'p-limit'
 
@@ -62,6 +62,12 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         useUserKeys: true,
       })
 
+      const projectKeys = listProjectKeys()
+      const userKeys = await listUserKeys()
+      if (projectKeys.length === 0 && userKeys.length === 0) {
+        console.log(kleur.yellow(t('cli.output.noKeysHint')))
+      }
+
       const files = await matchFiles({
         paths: inputs,
         ignores: ['node_modules/**'],
@@ -77,16 +83,23 @@ export function registerCompress(t: (key: string, params?: Record<string, string
       let failed = 0
       let cached = 0
       let saved = 0
+      let compressionCount: number | undefined
+      const convertiblePngs: string[] = []
 
       await Promise.all(
         files.map(file =>
           limit(async () => {
             const buf = await fs.readFile(file.path)
             const relPath = path.relative(process.cwd(), file.path)
+            const isPng = file.path.toLowerCase().endsWith('.png')
+            const convertible = isPng ? await canConvertToJpg(file.path) : false
+            if (convertible) {
+              convertiblePngs.push(file.path)
+            }
 
             if (await isProcessed(buf)) {
-              const sizeStr = formatSize(file.size).padEnd(8)
-              console.log(kleur.green(t('status.success')), relPath.padEnd(40), `${sizeStr} → ${sizeStr.padEnd(8)}`, kleur.gray(`(${t('cli.output.usedCache')})`))
+              const sizeStr = formatSize(file.size)
+              console.log(kleur.green(t('status.success')), relPath.padEnd(40), `${sizeStr}→${sizeStr}${formatExtras(['-0%', convertible ? t('cli.output.convertible') : undefined])}`)
               cached++
               return
             }
@@ -103,6 +116,10 @@ export function registerCompress(t: (key: string, params?: Record<string, string
               return
             }
 
+            if (typeof result.compressionCount === 'number') {
+              compressionCount = result.compressionCount
+            }
+
             const ext = path.extname(file.path).slice(1).toLowerCase()
             const processedBuf = await markProcessed(result.buffer, ext as 'png' | 'jpg' | 'jpeg' | 'webp')
 
@@ -115,37 +132,51 @@ export function registerCompress(t: (key: string, params?: Record<string, string
 
             await fs.writeFile(outputPath, processedBuf)
 
+            const origStr = formatSize(result.originalSize)
+            const compStr = formatSize(result.compressedSize)
+            const ratio = Math.round((1 - result.compressedSize / result.originalSize) * 100)
+            const extras: (string | undefined)[] = [`-${ratio}%`]
             if (result.cached) {
-              console.log(kleur.green(t('status.success')), relPath.padEnd(40), `${formatSize(result.originalSize).padEnd(8)} → ${formatSize(result.compressedSize).padEnd(8)}`, kleur.gray(`(${t('cli.output.usedCache')})`))
+              extras.push(t('cli.output.usedCache'))
               cached++
             }
             else {
-              console.log(kleur.green(t('status.success')), relPath.padEnd(40), `${formatSize(result.originalSize).padEnd(8)} → ${formatSize(result.compressedSize).padEnd(8)}`)
               success++
               saved += result.originalSize - result.compressedSize
             }
+            if (convertible) {
+              extras.push(t('cli.output.convertible'))
+            }
+            console.log(kleur.green(t('status.success')), relPath.padEnd(40), `${origStr}→${compStr}${formatExtras(extras)}`)
           }),
         ),
       )
 
-      const convertiblePngs: string[] = []
-      for (const file of files) {
-        if (file.path.toLowerCase().endsWith('.png') && await canConvertToJpg(file.path)) {
-          convertiblePngs.push(file.path)
-        }
-      }
       if (convertiblePngs.length > 0) {
         console.log(kleur.yellow(t('cli.output.convertiblePngsHint', { count: convertiblePngs.length })))
-        for (const p of convertiblePngs) {
-          console.log(kleur.yellow(`  ${path.relative(process.cwd(), p)}`))
-        }
         console.log(kleur.yellow(t('cli.output.convertiblePngsCommand')))
       }
 
-      console.log(`[tinyimg] ${t('cli.output.compressionComplete')}  ${t('cli.output.total')}: ${files.length}  ${t('cli.output.success')}: ${success}  ${t('cli.output.cached')}: ${cached}  ${t('summary.failed')}: ${failed}  ${t('cli.output.saved')}: ${formatSize(saved)}`)
+      const summaryParts = [
+        t('cli.output.compressionComplete'),
+        `${t('cli.output.total')}: ${files.length}`,
+        `${t('cli.output.success')}: ${success}`,
+        `${t('cli.output.cached')}: ${cached}`,
+        `${t('summary.failed')}: ${failed}`,
+        `${t('cli.output.saved')}: ${formatSize(saved)}`,
+      ]
+      if (typeof compressionCount === 'number') {
+        summaryParts.push(`${t('cli.output.usedThisMonth')}: ${compressionCount}`)
+      }
+      console.log(summaryParts.join('  '))
       process.exit(failed > 0 ? 1 : 0)
     },
   }
+}
+
+function formatExtras(tags: (string | undefined)[]): string {
+  const filtered = tags.filter((t): t is string => typeof t === 'string')
+  return filtered.length ? ` (${filtered.join(', ')})` : ''
 }
 
 function formatSize(bytes: number): string {

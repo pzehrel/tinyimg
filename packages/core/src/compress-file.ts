@@ -26,6 +26,7 @@ export interface CompressFileResult {
   compressor: string
   cached: boolean
   convertedPngToJpg?: boolean
+  compressionCount?: number
   error?: Error
 }
 
@@ -73,6 +74,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
 
   let lastCompressor = ''
   let convertedPngToJpg = false
+  let compressionCount: number | undefined
 
   try {
     let current: Buffer = originalBuffer
@@ -104,6 +106,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
       const res = await apiCompress(current, apiKey)
       resultBuffer = res.buffer
       compressorName = res.compressor
+      compressionCount = res.compressionCount
     }
     else if (effectiveStrategy === 'RANDOM') {
       const useApi = Math.random() < 0.5 && apiKey
@@ -112,6 +115,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
         const res = await apiCompress(current, apiKey)
         resultBuffer = res.buffer
         compressorName = res.compressor
+        compressionCount = res.compressionCount
       }
       else {
         lastCompressor = 'WebCompressor'
@@ -127,6 +131,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
           const res = await apiCompress(current, apiKey)
           resultBuffer = res.buffer
           compressorName = res.compressor
+          compressionCount = res.compressionCount
         }
         catch (err: any) {
           const status = err.message.match(/status (\d+)/)?.[1]
@@ -165,6 +170,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
       compressor: compressorName,
       cached: false,
       convertedPngToJpg,
+      compressionCount,
     }
   }
   catch (err: any) {
@@ -176,6 +182,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
       compressor: lastCompressor,
       cached: false,
       convertedPngToJpg: false,
+      compressionCount,
       error: err instanceof Error ? err : new Error(String(err)),
     }
   }

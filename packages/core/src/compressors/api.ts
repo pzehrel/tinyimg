@@ -5,6 +5,7 @@ import { HttpClient } from '../http-client'
 export interface ApiCompressResult {
   buffer: Buffer
   compressor: string
+  compressionCount?: number
 }
 
 const MAX_RETRIES = 2
@@ -74,7 +75,9 @@ export async function apiCompress(
       }
 
       const compressed = await client.download(location)
-      return { buffer: compressed, compressor: 'ApiCompressor' }
+      const countHeader = res.headers['compression-count']
+      const compressionCount = countHeader ? Number.parseInt(String(countHeader), 10) : undefined
+      return { buffer: compressed, compressor: 'ApiCompressor', compressionCount }
     }
     catch (err) {
       if (err instanceof ServerError) {

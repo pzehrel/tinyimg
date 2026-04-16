@@ -37,7 +37,7 @@
   "cli.arg.convertList.description": "show only convertible PNGs (without alpha channel)",
 
   "cli.output.noFiles": "No files found",
-  "cli.output.alreadyProcessed": "already processed",
+  "cli.output.alreadyProcessed": "already compressed",
   "cli.output.failed": "failed:",
   "cli.output.compressionComplete": "Compression complete",
   "cli.output.total": "Total",
@@ -48,6 +48,7 @@
   "cli.output.skippedAlpha": "skipped (has alpha)",
   "cli.output.keyRemoved": "Key removed",
   "cli.output.noKeys": "No keys saved",
+  "cli.output.noKeysHint": "No API key configured. Set TINYIMG_KEY or run `tinyimg keys add <key>`",
   "cli.output.usedThisMonth": "used this month",
   "cli.output.project": "Environment",
   "cli.output.user": "Saved",
@@ -57,6 +58,6 @@
   "cli.output.convertible": "JPG convertible",
   "cli.output.yes": "Yes",
   "cli.output.no": "No",
-  "cli.output.convertiblePngsHint": "{{count}} PNG files can be converted to JPG for further size reduction:",
+  "cli.output.convertiblePngsHint": "{count} PNG files can be converted to JPG for further size reduction:",
   "cli.output.convertiblePngsCommand": "Run `tinyimg convert <paths>` to convert them."
 }
