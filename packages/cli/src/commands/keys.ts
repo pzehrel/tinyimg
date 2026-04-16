@@ -5,21 +5,6 @@ import kleur from 'kleur'
 
 const t = createLocaleI18n()
 
-const listCommand: CommandDef = {
-  meta: {
-    name: 'list',
-    description: t('cli.command.keys.list.description'),
-  },
-  async run() {
-    const keys = await listUserKeys()
-    if (keys.length === 0) {
-      console.log(kleur.yellow(t('cli.output.noKeys')))
-      return
-    }
-    console.table(keys)
-  },
-}
-
 const addCommand: CommandDef = {
   meta: {
     name: 'add',
@@ -69,9 +54,15 @@ const keysCommand: CommandDef = {
     name: 'keys',
     description: t('cli.command.keys.description'),
   },
+  async run() {
+    const keys = await listUserKeys()
+    if (keys.length === 0) {
+      console.log(kleur.yellow(t('cli.output.noKeys')))
+      return
+    }
+    console.table(keys)
+  },
   subCommands: {
-    list: listCommand,
-    ls: listCommand,
     add: addCommand,
     del: delCommand,
   },

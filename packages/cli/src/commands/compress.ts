@@ -13,7 +13,6 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         type: 'positional',
         description: t('cli.arg.paths.description'),
         required: false,
-        default: './',
       },
       replace: {
         type: 'boolean',
@@ -57,13 +56,18 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         default: false,
       },
     },
-    async run({ args }) {
+    async run({ args, cmd }) {
       const subCommands = ['convert', 'keys', 'list', 'ls']
       if (args._.length && subCommands.includes(args._[0] as string)) {
         return
       }
 
-      const inputs = args._.length ? args._.map(String) : [args.paths as string]
+      const inputs = args._.length ? args._.map(String) : (args.paths ? [args.paths as string] : [])
+      if (inputs.length === 0) {
+        const { renderUsage } = await import('citty')
+        console.log(await renderUsage(cmd))
+        return
+      }
 
       initKeyManager({
         projectKeys: (args.key as string | undefined)?.split(','),
@@ -91,8 +95,11 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         files.map(file =>
           limit(async () => {
             const buf = await fs.readFile(file.path)
+            const relPath = path.relative(process.cwd(), file.path)
+
             if (await isProcessed(buf)) {
-              console.log(kleur.cyan(t('status.cached')), file.path, t('cli.output.alreadyProcessed'))
+              const sizeStr = formatSize(file.size).padEnd(8)
+              console.log(kleur.green(t('status.success')), relPath.padEnd(40), `${sizeStr} → ${sizeStr.padEnd(8)}`, kleur.gray(`(${t('cli.output.usedCache')})`))
               cached++
               return
             }
@@ -105,7 +112,7 @@ export function registerCompress(t: (key: string, params?: Record<string, string
             })
 
             if (result.error) {
-              console.log(kleur.red(t('status.failed')), file.path, kleur.red().bold(t('cli.output.failed')), result.error.message)
+              console.log(kleur.red(t('status.failed')), relPath.padEnd(40), kleur.red().bold(t('cli.output.failed')), result.error.message, kleur.gray(`(${result.compressor})`))
               failed++
               return
             }
@@ -125,11 +132,11 @@ export function registerCompress(t: (key: string, params?: Record<string, string
             await fs.writeFile(outputPath, processedBuf)
 
             if (result.cached) {
-              console.log(kleur.cyan(t('status.cached')), file.path, formatSize(result.originalSize), '→', formatSize(result.compressedSize))
+              console.log(kleur.green(t('status.success')), relPath.padEnd(40), `${formatSize(result.originalSize).padEnd(8)} → ${formatSize(result.compressedSize).padEnd(8)}`, kleur.gray(`(${t('cli.output.usedCache')})`))
               cached++
             }
             else {
-              console.log(kleur.green(t('status.success')), file.path, formatSize(result.originalSize), '→', formatSize(result.compressedSize), `(${result.compressor})`)
+              console.log(kleur.green(t('status.success')), relPath.padEnd(40), `${formatSize(result.originalSize).padEnd(8)} → ${formatSize(result.compressedSize).padEnd(8)}`)
               success++
               saved += result.originalSize - result.compressedSize
             }

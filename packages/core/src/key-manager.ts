@@ -49,7 +49,8 @@ function getUserKeysPath(): string {
 async function readUserKeys(): Promise<string[]> {
   try {
     const data = await fs.readFile(getUserKeysPath(), 'utf-8')
-    return JSON.parse(data)
+    const parsed = JSON.parse(data)
+    return Array.isArray(parsed) ? parsed : []
   }
   catch {
     return []

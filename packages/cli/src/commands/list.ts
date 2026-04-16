@@ -41,7 +41,7 @@ const listCommand: CommandDef = {
       includeMd5: true,
     })
 
-    const filtered = args.convert ? files.filter(f => f.convertible) : files
+    const filtered = (args.convert ? files.filter(f => f.convertible) : files).sort((a, b) => b.size - a.size)
 
     if (args.json) {
       console.log(JSON.stringify(filtered, null, 2))
@@ -58,13 +58,47 @@ const listCommand: CommandDef = {
       cacheDirExists = false
     }
 
-    console.log(t('cli.output.file').padEnd(30), t('cli.output.size').padEnd(10), t('cli.output.cache').padEnd(8), t('cli.output.convertible'))
+    const maxPathLen = Math.max(
+      ...filtered.map(f => path.relative(process.cwd(), f.path).length),
+      20,
+    )
+
+    let cachedCount = 0
+    let convertibleCount = 0
+    const totalSize = filtered.reduce((sum, f) => sum + f.size, 0)
+
     for (const f of filtered) {
-      const rel = path.relative(process.cwd(), f.path)
+      const rel = path.relative(process.cwd(), f.path).padEnd(maxPathLen)
       const cached = cacheDirExists ? await readCache(f.md5!, path.extname(f.path).slice(1), cacheDir) : null
-      const cacheMark = cached ? kleur.green(t('status.success')) : kleur.gray(t('status.failed'))
-      const convMark = f.convertible ? kleur.green(t('cli.output.yes')) : kleur.gray(t('cli.output.no'))
-      console.log(rel.padEnd(30), colorSize(f.size).padEnd(10), cacheMark.padEnd(8), convMark)
+      const lineColor = getLineColor(f.size)
+      const parts: string[] = [rel, formatSize(f.size).padStart(8)]
+      const tags: string[] = []
+      if (cached) {
+        tags.push(t('cli.output.usedCache'))
+        cachedCount++
+      }
+      if (f.convertible) {
+        tags.push(t('cli.output.convertible'))
+        convertibleCount++
+      }
+      if (tags.length > 0) {
+        parts.push(`(${tags.join(', ')})`)
+      }
+      console.log(lineColor(parts.join('  ')))
+    }
+
+    if (filtered.length > 0) {
+      const summaryParts = [
+        `${t('cli.output.total')}: ${filtered.length}`,
+        `${t('cli.output.size')}: ${formatSize(totalSize)}`,
+      ]
+      if (cachedCount > 0) {
+        summaryParts.push(`${t('cli.output.cached')}: ${cachedCount}`)
+      }
+      if (convertibleCount > 0) {
+        summaryParts.push(`${t('cli.output.convertible')}: ${convertibleCount}`)
+      }
+      console.log(`\n${summaryParts.join('  ')}`)
     }
   },
 }
@@ -77,14 +111,14 @@ function formatSize(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)}MB`
 }
 
-function colorSize(bytes: number): string {
+function getLineColor(bytes: number) {
   if (bytes < 100 * 1024)
-    return kleur.green(formatSize(bytes))
+    return kleur.green
   if (bytes < 500 * 1024)
-    return kleur.yellow(formatSize(bytes))
+    return kleur.yellow
   if (bytes < 1024 * 1024)
-    return kleur.magenta(formatSize(bytes))
-  return kleur.red(formatSize(bytes))
+    return kleur.magenta
+  return kleur.red
 }
 
 export default listCommand

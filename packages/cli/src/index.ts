@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import process from 'node:process'
 import { createLocaleI18n } from '@pzehrel/tinyimg-locale'
 import { defineCommand, runMain } from 'citty'
 import dotenv from 'dotenv'
@@ -23,4 +24,19 @@ const main = defineCommand({
   },
 })
 
-runMain(main)
+const rawArgs = process.argv.slice(2)
+const subCommands = ['convert', 'keys', 'list', 'ls']
+const firstNonFlagIndex = rawArgs.findIndex(arg => !arg.startsWith('-'))
+let cliRawArgs = rawArgs
+if (
+  firstNonFlagIndex !== -1
+  && !subCommands.includes(rawArgs[firstNonFlagIndex])
+) {
+  cliRawArgs = [
+    ...rawArgs.slice(0, firstNonFlagIndex),
+    '--',
+    ...rawArgs.slice(firstNonFlagIndex),
+  ]
+}
+
+runMain(main, { rawArgs: cliRawArgs })

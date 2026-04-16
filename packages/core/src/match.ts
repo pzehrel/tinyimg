@@ -23,7 +23,22 @@ export interface MatchedFile {
 
 export async function matchFiles(options: MatchOptions): Promise<MatchedFile[]> {
   const cwd = options.cwd || process.cwd()
-  const entries = await fg(options.paths, {
+
+  const paths = await Promise.all(options.paths.map(async (p) => {
+    const resolved = path.resolve(cwd, p)
+    try {
+      const stat = await fs.stat(resolved)
+      if (stat.isDirectory()) {
+        return `${p}/**/*`
+      }
+    }
+    catch {
+      // path does not exist, treat as glob pattern
+    }
+    return p
+  }))
+
+  const entries = await fg(paths, {
     cwd,
     ignore: options.ignores,
     onlyFiles: true,

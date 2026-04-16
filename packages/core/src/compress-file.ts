@@ -70,6 +70,8 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
     }
   }
 
+  let lastCompressor = ''
+
   try {
     let current: Buffer = originalBuffer
 
@@ -94,6 +96,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
     if (effectiveStrategy === 'API_ONLY') {
       if (!apiKey)
         throw new Error('No API key available for API_ONLY strategy')
+      lastCompressor = 'ApiCompressor'
       const res = await apiCompress(current, apiKey)
       resultBuffer = res.buffer
       compressorName = res.compressor
@@ -101,11 +104,13 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
     else if (effectiveStrategy === 'RANDOM') {
       const useApi = Math.random() < 0.5 && apiKey
       if (useApi) {
+        lastCompressor = 'ApiCompressor'
         const res = await apiCompress(current, apiKey)
         resultBuffer = res.buffer
         compressorName = res.compressor
       }
       else {
+        lastCompressor = 'WebCompressor'
         const res = await webCompress(current)
         resultBuffer = res.buffer
         compressorName = res.compressor
@@ -114,6 +119,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
     else if (effectiveStrategy === 'API_FIRST') {
       if (apiKey) {
         try {
+          lastCompressor = 'ApiCompressor'
           const res = await apiCompress(current, apiKey)
           resultBuffer = res.buffer
           compressorName = res.compressor
@@ -121,6 +127,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
         catch (err: any) {
           const status = err.message.match(/status (\d+)/)?.[1]
           if (status === '429' || status === '401') {
+            lastCompressor = 'WebCompressor'
             const res = await webCompress(current)
             resultBuffer = res.buffer
             compressorName = res.compressor
@@ -131,12 +138,14 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
         }
       }
       else {
+        lastCompressor = 'WebCompressor'
         const res = await webCompress(current)
         resultBuffer = res.buffer
         compressorName = res.compressor
       }
     }
     else {
+      lastCompressor = 'WebCompressor'
       const res = await webCompress(current)
       resultBuffer = res.buffer
       compressorName = res.compressor
@@ -159,7 +168,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
       originalSize,
       compressedSize: originalSize,
       ratio: 1,
-      compressor: '',
+      compressor: lastCompressor,
       cached: false,
       error: err instanceof Error ? err : new Error(String(err)),
     }
