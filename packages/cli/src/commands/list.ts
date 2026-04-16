@@ -45,18 +45,19 @@ const listCommand: CommandDef = {
       return
     }
 
+    const cacheDir = path.join(process.cwd(), 'node_modules', '.tinyimg')
+    let cacheDirExists = false
+    try {
+      await fs.access(cacheDir)
+      cacheDirExists = true
+    }
+    catch {
+      cacheDirExists = false
+    }
+
     console.log('File'.padEnd(30), 'Size'.padEnd(10), 'Cache'.padEnd(8), 'Convertible')
     for (const f of filtered) {
       const rel = path.relative(process.cwd(), f.path)
-      const cacheDir = path.join(process.cwd(), 'node_modules', '.tinyimg')
-      let cacheDirExists = false
-      try {
-        await fs.access(cacheDir)
-        cacheDirExists = true
-      }
-      catch {
-        cacheDirExists = false
-      }
       const cached = cacheDirExists ? await readCache(f.md5!, path.extname(f.path).slice(1), cacheDir) : null
       const cacheMark = cached ? kleur.green('✓') : kleur.gray('✗')
       const convMark = f.convertible ? kleur.green('Yes') : kleur.gray('No')
