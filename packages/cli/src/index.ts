@@ -16,6 +16,7 @@ const main = defineCommand({
     convert: () => import('./commands/convert').then(m => m.default),
     keys: () => import('./commands/keys').then(m => m.default),
     list: () => import('./commands/list').then(m => m.default),
+    ls: () => import('./commands/list').then(m => m.default),
   },
 })
 
