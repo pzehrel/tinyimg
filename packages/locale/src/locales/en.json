@@ -1,0 +1,14 @@
+{
+  "compressor.api": "ApiCompressor",
+  "compressor.web": "WebCompressor",
+  "compressor.cache": "Cache",
+  "status.success": "✓",
+  "status.cached": "○",
+  "status.failed": "✗",
+  "error.noFiles": "No matching files found",
+  "summary.title": "Compression complete",
+  "summary.total": "Total",
+  "summary.success": "Success",
+  "summary.failed": "Failed",
+  "summary.saved": "Saved"
+}

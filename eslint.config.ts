@@ -13,6 +13,7 @@ export default antfu({
     '**/fixtures',
     '**/.git',
     '**/coverage',
+    'docs',
   ],
   rules: {
     'no-console': 'off',

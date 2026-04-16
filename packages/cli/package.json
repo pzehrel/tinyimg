@@ -1,6 +1,37 @@
 {
   "name": "@pzehrel/tinyimg-cli",
+  "version": "0.0.0",
+  "files": ["dist"],
+  "type": "module",
+  "bin": {
+    "tinyimg": "./dist/index.mjs"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
+    "build": "tsdown",
     "prepublishOnly": "test -n \"$CI\" || (echo 'Error: Publishing is only allowed from CI.' && exit 1)"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "dotenv": "^16.5.0",
+    "kleur": "^4.1.5",
+    "p-limit": "^6.2.0",
+    "pathe": "^2.0.3"
+  },
+  "devDependencies": {
+    "@pzehrel/tinyimg-core": "workspace:*",
+    "@pzehrel/tinyimg-locale": "workspace:*",
+    "@types/node": "^22.15.0",
+    "tsdown": "^0.21.8",
+    "typescript": "^5.9.3"
   }
 }

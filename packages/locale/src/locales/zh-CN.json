@@ -1,0 +1,14 @@
+{
+  "compressor.api": "ApiCompressor",
+  "compressor.web": "WebCompressor",
+  "compressor.cache": "缓存",
+  "status.success": "✓",
+  "status.cached": "○",
+  "status.failed": "✗",
+  "error.noFiles": "未找到匹配的文件",
+  "summary.title": "压缩完成",
+  "summary.total": "总计",
+  "summary.success": "成功",
+  "summary.failed": "失败",
+  "summary.saved": "节省"
+}

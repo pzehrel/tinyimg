@@ -1,6 +1,7 @@
-allowBuilds:
-  sharp: false
-shellEmulator: true
-trustPolicy: no-downgrade
 packages:
   - 'packages/*'
+allowBuilds:
+  sharp: false
+ignoreTrustDowngrade: true
+shellEmulator: true
+trustPolicy: none

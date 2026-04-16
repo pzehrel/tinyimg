@@ -1,5 +1,5 @@
 {
-  "name": "@pzehrel/tinyimg-core",
+  "name": "@pzehrel/tinyimg-locale",
   "version": "0.0.0",
   "private": true,
   "files": ["dist"],
@@ -17,15 +17,7 @@
   "scripts": {
     "build": "tsdown"
   },
-  "dependencies": {
-    "fast-glob": "^3.3.3",
-    "pathe": "^2.0.3",
-    "sharp": "^0.34.1",
-    "user-agents": "^2.0.0"
-  },
   "devDependencies": {
-    "@types/node": "^22.15.0",
-    "@types/user-agents": "^1.0.4",
     "tsdown": "^0.21.8",
     "typescript": "^5.9.3"
   }
