@@ -58,6 +58,11 @@ export function registerCompress(): CommandDef {
       },
     },
     async run({ args }) {
+      const subCommands = ['convert', 'keys', 'list', 'ls']
+      if (args._.length && subCommands.includes(args._[0] as string)) {
+        return
+      }
+
       const inputs = args._.length ? args._.map(String) : [args.paths as string]
 
       initKeyManager({
