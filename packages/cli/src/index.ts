@@ -1,11 +1,15 @@
 #!/usr/bin/env node
+import path from 'node:path'
 import process from 'node:process'
 import { createLocaleI18n } from '@pzehrel/tinyimg-locale'
 import { defineCommand, runMain } from 'citty'
 import dotenv from 'dotenv'
+import { version } from '../package.json'
 import { registerCompress } from './commands/compress'
 
-dotenv.config({ path: '.env.local' })
+const cwd = process.cwd()
+dotenv.config({ path: path.resolve(cwd, '.env') })
+dotenv.config({ path: path.resolve(cwd, '.env.local') })
 
 const t = createLocaleI18n()
 
@@ -13,7 +17,7 @@ const main = defineCommand({
   meta: {
     name: 'tinyimg',
     description: t('cli.meta.description'),
-    version: '0.0.0',
+    version,
   },
   ...registerCompress(t),
   subCommands: {

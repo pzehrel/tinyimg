@@ -2,7 +2,7 @@ import type { CommandDef } from 'citty'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
-import { compressFile, initKeyManager, isProcessed, markProcessed, matchFiles } from '@pzehrel/tinyimg-core'
+import { canConvertToJpg, compressFile, initKeyManager, isProcessed, markProcessed, matchFiles, resolveProjectKeysFromEnv } from '@pzehrel/tinyimg-core'
 import kleur from 'kleur'
 import pLimit from 'p-limit'
 
@@ -14,11 +14,6 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         description: t('cli.arg.paths.description'),
         required: false,
       },
-      replace: {
-        type: 'boolean',
-        description: t('cli.arg.replace.description'),
-        default: true,
-      },
       output: {
         type: 'string',
         description: t('cli.arg.output.description'),
@@ -27,12 +22,13 @@ export function registerCompress(t: (key: string, params?: Record<string, string
       strategy: {
         type: 'string',
         description: t('cli.arg.strategy.description'),
+        alias: 's',
         default: 'AUTO',
       },
-      cache: {
+      noCache: {
         type: 'boolean',
-        description: t('cli.arg.cache.description'),
-        default: true,
+        description: t('cli.arg.noCache.description'),
+        default: false,
       },
       key: {
         type: 'string',
@@ -44,16 +40,6 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         description: t('cli.arg.parallel.description'),
         alias: 'p',
         default: '3',
-      },
-      convert: {
-        type: 'boolean',
-        description: t('cli.arg.convert.description'),
-        default: false,
-      },
-      followSymlinks: {
-        type: 'boolean',
-        description: t('cli.arg.followSymlinks.description'),
-        default: false,
       },
     },
     async run({ args, cmd }) {
@@ -69,15 +55,16 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         return
       }
 
+      const envKeys = resolveProjectKeysFromEnv(process.env)
+      const argKeys = (args.key as string | undefined)?.split(',').map(k => k.trim()).filter(Boolean) || []
       initKeyManager({
-        projectKeys: (args.key as string | undefined)?.split(','),
+        projectKeys: [...envKeys, ...argKeys],
         useUserKeys: true,
       })
 
       const files = await matchFiles({
         paths: inputs,
         ignores: ['node_modules/**'],
-        followSymlinks: args.followSymlinks as boolean,
       })
 
       if (files.length === 0) {
@@ -108,7 +95,6 @@ export function registerCompress(t: (key: string, params?: Record<string, string
               filePath: file.path,
               strategy: args.strategy as 'AUTO' | 'API_ONLY' | 'RANDOM' | 'API_FIRST',
               maxFileSize: 5 * 1024 * 1024,
-              convertPngToJpg: args.convert as boolean,
             })
 
             if (result.error) {
@@ -121,11 +107,9 @@ export function registerCompress(t: (key: string, params?: Record<string, string
             const processedBuf = await markProcessed(result.buffer, ext as 'png' | 'jpg' | 'jpeg' | 'webp')
 
             const outputDir = args.output as string | undefined
-            const outputPath = outputDir
-              ? path.join(outputDir, path.relative(process.cwd(), file.path))
-              : file.path
-
+            let outputPath = file.path
             if (outputDir) {
+              outputPath = path.join(outputDir, path.relative(process.cwd(), outputPath))
               await fs.mkdir(path.dirname(outputPath), { recursive: true })
             }
 
@@ -143,6 +127,20 @@ export function registerCompress(t: (key: string, params?: Record<string, string
           }),
         ),
       )
+
+      const convertiblePngs: string[] = []
+      for (const file of files) {
+        if (file.path.toLowerCase().endsWith('.png') && await canConvertToJpg(file.path)) {
+          convertiblePngs.push(file.path)
+        }
+      }
+      if (convertiblePngs.length > 0) {
+        console.log(kleur.yellow(t('cli.output.convertiblePngsHint', { count: convertiblePngs.length })))
+        for (const p of convertiblePngs) {
+          console.log(kleur.yellow(`  ${path.relative(process.cwd(), p)}`))
+        }
+        console.log(kleur.yellow(t('cli.output.convertiblePngsCommand')))
+      }
 
       console.log(`[tinyimg] ${t('cli.output.compressionComplete')}  ${t('cli.output.total')}: ${files.length}  ${t('cli.output.success')}: ${success}  ${t('cli.output.cached')}: ${cached}  ${t('summary.failed')}: ${failed}  ${t('cli.output.saved')}: ${formatSize(saved)}`)
       process.exit(failed > 0 ? 1 : 0)

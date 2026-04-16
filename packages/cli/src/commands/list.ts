@@ -28,6 +28,7 @@ const listCommand: CommandDef = {
     convert: {
       type: 'boolean',
       description: t('cli.arg.convertList.description'),
+      alias: 'c',
       default: false,
     },
   },

@@ -16,17 +16,21 @@ const convertCommand: CommandDef = {
     paths: {
       type: 'positional',
       description: t('cli.arg.paths.description'),
-      required: false,
-      default: './',
+      required: true,
     },
-    replace: {
+    noRename: {
       type: 'boolean',
-      description: t('cli.arg.replace.description'),
-      default: true,
+      description: t('cli.arg.noRename.description'),
+      default: false,
     },
   },
-  async run({ args }) {
-    const inputs = args._.length ? args._.map(String) : [args.paths as string]
+  async run({ args, cmd }) {
+    const inputs = args._.length ? args._.map(String) : (args.paths ? [args.paths as string] : [])
+    if (inputs.length === 0) {
+      const { renderUsage } = await import('citty')
+      console.log(await renderUsage(cmd))
+      return
+    }
 
     const files = await matchFiles({
       paths: inputs,
@@ -42,14 +46,17 @@ const convertCommand: CommandDef = {
       }
 
       const buf = await convertPngToJpg(f.path)
-      const newPath = f.path.replace(/\.png$/i, '.jpg')
-      await fs.writeFile(newPath, buf)
 
-      if (args.replace) {
-        await fs.unlink(f.path)
+      if (args.noRename) {
+        await fs.writeFile(f.path, buf)
+        console.log(kleur.green(t('status.success')), f.path)
       }
-
-      console.log(kleur.green(t('status.success')), f.path, '→', path.basename(newPath))
+      else {
+        const newPath = f.path.replace(/\.png$/i, '.jpg')
+        await fs.writeFile(newPath, buf)
+        await fs.unlink(f.path)
+        console.log(kleur.green(t('status.success')), f.path, '→', path.basename(newPath))
+      }
     }
   },
 }

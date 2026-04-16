@@ -9,7 +9,6 @@ export interface MatchOptions {
   paths: string[]
   ignores?: string[]
   cwd?: string
-  followSymlinks?: boolean
   checkConvertible?: boolean
   includeMd5?: boolean
 }
@@ -42,7 +41,6 @@ export async function matchFiles(options: MatchOptions): Promise<MatchedFile[]> 
     cwd,
     ignore: options.ignores,
     onlyFiles: true,
-    followSymbolicLinks: options.followSymlinks ?? false,
     absolute: true,
   })
 

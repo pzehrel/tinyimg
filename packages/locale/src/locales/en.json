@@ -24,14 +24,13 @@
   "cli.command.list.description": "List image files",
 
   "cli.arg.paths.description": "image paths or globs",
-  "cli.arg.replace.description": "replace source files",
+  "cli.arg.noRename.description": "keep the original .png extension (only change encoding)",
   "cli.arg.output.description": "output directory",
   "cli.arg.strategy.description": "compression strategy",
-  "cli.arg.cache.description": "enable cache",
+  "cli.arg.noCache.description": "disable cache",
   "cli.arg.key.description": "api keys separated by comma",
   "cli.arg.parallel.description": "parallel limit",
   "cli.arg.convert.description": "enable PNG to JPG conversion (only for PNGs without alpha channel)",
-  "cli.arg.followSymlinks.description": "follow symbolic links",
   "cli.arg.keys.description": "API keys",
   "cli.arg.maskedKey.description": "Masked key to delete",
   "cli.arg.json.description": "output as JSON",
@@ -49,10 +48,15 @@
   "cli.output.skippedAlpha": "skipped (has alpha)",
   "cli.output.keyRemoved": "Key removed",
   "cli.output.noKeys": "No keys saved",
+  "cli.output.usedThisMonth": "used this month",
+  "cli.output.project": "Environment",
+  "cli.output.user": "Saved",
   "cli.output.file": "File",
   "cli.output.size": "Size",
   "cli.output.cache": "Cache",
   "cli.output.convertible": "JPG convertible",
   "cli.output.yes": "Yes",
-  "cli.output.no": "No"
+  "cli.output.no": "No",
+  "cli.output.convertiblePngsHint": "{{count}} PNG files can be converted to JPG for further size reduction:",
+  "cli.output.convertiblePngsCommand": "Run `tinyimg convert <paths>` to convert them."
 }

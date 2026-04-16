@@ -5,7 +5,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
-import { compressFile, initKeyManager } from '@pzehrel/tinyimg-core'
+import { compressFile, initKeyManager, resolveProjectKeysFromEnv } from '@pzehrel/tinyimg-core'
 import pLimit from 'p-limit'
 
 export interface PluginOptions extends Omit<CompressFileOptions, 'filePath'> {
@@ -20,7 +20,7 @@ export default class TinyimgWebpackPlugin {
 
     compiler.hooks.compilation.tap(pluginName, (compilation) => {
       initKeyManager({
-        projectKeys: [process.env.WEBPACK_TINYIMG_KEY].filter(Boolean) as string[],
+        projectKeys: resolveProjectKeysFromEnv(process.env),
         useUserKeys: process.env.USE_USER_TINYIMG_KEYS === 'true',
       })
 

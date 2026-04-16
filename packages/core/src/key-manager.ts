@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
+import process from 'node:process'
 import { HttpClient } from './http-client'
 import { maskKey } from './utils/mask'
 
@@ -64,8 +65,24 @@ async function writeUserKeys(keys: string[]): Promise<void> {
 }
 
 export async function listUserKeys(): Promise<KeyInfo[]> {
-  const keys = await readUserKeys()
+  const keys = Array.from(new Set(await readUserKeys()))
   return keys.map(k => ({ key: maskKey(k), used: 0, remaining: 500 }))
+}
+
+export function listProjectKeys(): KeyInfo[] {
+  const keys = Array.from(new Set(state?.projectKeys || []))
+  return keys.map(k => ({ key: maskKey(k), used: 0, remaining: 500 }))
+}
+
+export function resolveProjectKeysFromEnv(env: Record<string, string | undefined> = process.env): string[] {
+  const keys: string[] = []
+  const suffixRe = /^(?:.*_)?(?:TINYIMG_KEY|TINYIMG_KEYS|TINYPNG_KEY|TINYPNG_KEYS)$/
+  for (const [name, value] of Object.entries(env)) {
+    if (value && suffixRe.test(name)) {
+      keys.push(...value.split(',').map(k => k.trim()).filter(Boolean))
+    }
+  }
+  return keys
 }
 
 export async function addUserKeys(keys: string[]): Promise<VerifyResult[]> {

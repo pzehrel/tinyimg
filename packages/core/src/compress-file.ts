@@ -25,6 +25,7 @@ export interface CompressFileResult {
   ratio: number
   compressor: string
   cached: boolean
+  convertedPngToJpg?: boolean
   error?: Error
 }
 
@@ -53,7 +54,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
 
   const originalBuffer = await fs.readFile(filePath)
   const originalSize = originalBuffer.length
-  const ext = path.extname(filePath).slice(1).toLowerCase()
+  let ext = path.extname(filePath).slice(1).toLowerCase()
   const md5 = crypto.createHash('md5').update(originalBuffer).digest('hex')
   const cacheSuffix = doConvert ? '-c' : ''
   const cacheDir = await resolveCacheDir(process.cwd())
@@ -71,14 +72,17 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
   }
 
   let lastCompressor = ''
+  let convertedPngToJpg = false
 
   try {
     let current: Buffer = originalBuffer
 
     if (doConvert && ext === 'png') {
-      const hasAlpha = await import('./convert').then(m => m.canConvertToJpg(filePath))
-      if (hasAlpha) {
+      const canConvert = await import('./convert').then(m => m.canConvertToJpg(filePath))
+      if (canConvert) {
         current = await convertPngToJpg(filePath)
+        convertedPngToJpg = true
+        ext = 'jpg'
       }
     }
 
@@ -160,6 +164,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
       ratio: resultBuffer.length / originalSize,
       compressor: compressorName,
       cached: false,
+      convertedPngToJpg,
     }
   }
   catch (err: any) {
@@ -170,6 +175,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
       ratio: 1,
       compressor: lastCompressor,
       cached: false,
+      convertedPngToJpg: false,
       error: err instanceof Error ? err : new Error(String(err)),
     }
   }
