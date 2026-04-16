@@ -1,63 +1,69 @@
 import type { CommandDef } from 'citty'
-import type { Command } from 'commander'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
 import { matchFiles, readCache } from '@pzehrel/tinyimg-core'
 import kleur from 'kleur'
 
-export function registerList(program: Command) {
-  program
-    .command('list')
-    .alias('ls')
-    .argument('[paths...]', 'image paths')
-    .option('--json', 'output as JSON')
-    .option('--convert', 'show only convertible PNGs')
-    .action(async (inputs: string[], options) => {
-      const files = await matchFiles({
-        paths: inputs.length ? inputs : ['./'],
-        ignores: ['node_modules/**'],
-        checkConvertible: true,
-        includeMd5: true,
-      })
-
-      const filtered = options.convert ? files.filter(f => f.convertible) : files
-
-      if (options.json) {
-        console.log(JSON.stringify(filtered, null, 2))
-        return
-      }
-
-      // Simple table output
-      console.log('File'.padEnd(30), 'Size'.padEnd(10), 'Cache'.padEnd(8), 'Convertible')
-      for (const f of filtered) {
-        const rel = path.relative(process.cwd(), f.path)
-        const cacheDir = path.join(process.cwd(), 'node_modules', '.tinyimg')
-        let cacheDirExists = false
-        try {
-          await fs.access(cacheDir)
-          cacheDirExists = true
-        }
-        catch {
-          cacheDirExists = false
-        }
-        const cached = cacheDirExists ? await readCache(f.md5!, path.extname(f.path).slice(1), cacheDir) : null
-        const cacheMark = cached ? kleur.green('✓') : kleur.gray('✗')
-        const convMark = f.convertible ? kleur.green('Yes') : kleur.gray('No')
-        console.log(rel.padEnd(30), colorSize(f.size).padEnd(10), cacheMark.padEnd(8), convMark)
-      }
-    })
-}
-
-export default {
+const listCommand: CommandDef = {
   meta: {
     name: 'list',
     description: 'List image files',
   },
-  run() {
-    console.log(kleur.yellow('list command is not yet migrated to citty'))
+  args: {
+    paths: {
+      type: 'positional',
+      description: 'image paths',
+      required: false,
+      default: './',
+    },
+    json: {
+      type: 'boolean',
+      description: 'output as JSON',
+      default: false,
+    },
+    convert: {
+      type: 'boolean',
+      description: 'show only convertible PNGs',
+      default: false,
+    },
   },
-} satisfies CommandDef
+  async run({ args }) {
+    const inputs = args._.length ? args._.map(String) : [args.paths as string]
+
+    const files = await matchFiles({
+      paths: inputs,
+      ignores: ['node_modules/**'],
+      checkConvertible: true,
+      includeMd5: true,
+    })
+
+    const filtered = args.convert ? files.filter(f => f.convertible) : files
+
+    if (args.json) {
+      console.log(JSON.stringify(filtered, null, 2))
+      return
+    }
+
+    console.log('File'.padEnd(30), 'Size'.padEnd(10), 'Cache'.padEnd(8), 'Convertible')
+    for (const f of filtered) {
+      const rel = path.relative(process.cwd(), f.path)
+      const cacheDir = path.join(process.cwd(), 'node_modules', '.tinyimg')
+      let cacheDirExists = false
+      try {
+        await fs.access(cacheDir)
+        cacheDirExists = true
+      }
+      catch {
+        cacheDirExists = false
+      }
+      const cached = cacheDirExists ? await readCache(f.md5!, path.extname(f.path).slice(1), cacheDir) : null
+      const cacheMark = cached ? kleur.green('✓') : kleur.gray('✗')
+      const convMark = f.convertible ? kleur.green('Yes') : kleur.gray('No')
+      console.log(rel.padEnd(30), colorSize(f.size).padEnd(10), cacheMark.padEnd(8), convMark)
+    }
+  },
+}
 
 function formatSize(bytes: number): string {
   if (bytes < 1024)
@@ -76,3 +82,5 @@ function colorSize(bytes: number): string {
     return kleur.magenta(formatSize(bytes))
   return kleur.red(formatSize(bytes))
 }
+
+export default listCommand
