@@ -21,7 +21,7 @@
     "prepublishOnly": "test -n \"$CI\" || (echo 'Error: Publishing is only allowed from CI.' && exit 1)"
   },
   "dependencies": {
-    "commander": "^13.1.0",
+    "citty": "^0.1.6",
     "dotenv": "^16.5.0",
     "kleur": "^4.1.5",
     "p-limit": "^6.2.0",
