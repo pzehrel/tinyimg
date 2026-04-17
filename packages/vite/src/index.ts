@@ -70,9 +70,9 @@ export default function tinyimgVite(options: PluginOptions = {}): Plugin {
       const reporter = createReporter({
         t,
         reporter: {
-          info: msg => console.log(msg),
-          warn: msg => console.warn(msg),
-          error: msg => console.error(msg),
+          info: msg => console.log(`[tinyimg] ${msg}`),
+          warn: msg => console.warn(`[tinyimg] ${msg}`),
+          error: msg => console.error(`[tinyimg] ${msg}`),
         },
       })
 
