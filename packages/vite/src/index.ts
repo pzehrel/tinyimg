@@ -71,7 +71,7 @@ export default function tinyimgVite(options: PluginOptions = {}): Plugin {
         t,
         reporter: {
           info: msg => this.info(msg),
-          warn: msg => this.warn(msg),
+          warn: msg => console.warn(msg),
           error: msg => console.error(msg),
         },
       })
