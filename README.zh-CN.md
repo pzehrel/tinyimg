@@ -12,7 +12,7 @@
 
 ## 特性
 
-- 多种压缩策略（仅 API、仅 Web、API 优先回退、随机、自动）
+- 多种压缩策略（仅 API、随机、API 优先回退、自动）
 - 内置缓存（结果存储在 `node_modules/.tinyimg` 或 `~/.tinyimg`）
 - 支持无透明通道 PNG 转 JPG
 - 可配置并发数的并行压缩
@@ -22,18 +22,16 @@
 
 ## 包一览
 
-| 包名                    | 说明                   | 发布状态 |
-| ----------------------- | ---------------------- | -------- |
-| `@pz4l/tinyimg-cli`     | 命令行压缩工具         | 已发布   |
-| `@pz4l/tinyimg-vite`    | Vite 插件              | 已发布   |
-| `@pz4l/tinyimg-webpack` | Webpack 插件           | 已发布   |
-| `@pz4l/tinyimg-rsbuild` | Rsbuild 插件           | 已发布   |
-| `@pz4l/tinyimg-core`    | 核心压缩逻辑（内部包） | 未发布   |
-| `@pz4l/tinyimg-locale`  | 国际化支持（内部包）   | 未发布   |
+已发布的包：
+
+- [`@pz4l/tinyimg-cli`](https://www.npmjs.com/package/@pz4l/tinyimg-cli) — CLI 工具
+- [`@pz4l/tinyimg-vite`](https://www.npmjs.com/package/@pz4l/tinyimg-vite) — Vite 插件
+- [`@pz4l/tinyimg-webpack`](https://www.npmjs.com/package/@pz4l/tinyimg-webpack) — Webpack 插件
+- [`@pz4l/tinyimg-rsbuild`](https://www.npmjs.com/package/@pz4l/tinyimg-rsbuild) — Rsbuild 插件
 
 ---
 
-## CLI 快速开始
+## CLI
 
 ### 安装
 
@@ -41,22 +39,63 @@
 npm i -g @pz4l/tinyimg-cli
 ```
 
-### 使用
+### 全局选项
+
+| 选项                        | 别名 | 说明                | 默认值  |
+| --------------------------- | ---- | ------------------- | ------- |
+| `-o, --output <dir>`        | —    | 输出目录            | —       |
+| `-s, --strategy <strategy>` | —    | 压缩策略            | `AUTO`  |
+| `--no-cache`                | —    | 禁用缓存            | `false` |
+| `-k, --key <keys>`          | —    | 逗号分隔的 API 密钥 | —       |
+| `-p, --parallel <number>`   | —    | 并行限制            | `3`     |
+
+### 命令
+
+#### 默认命令（压缩）
 
 ```bash
-# 压缩图片
 tinyimg src/assets/**
-
-# 带选项
-tinyimg src/assets/** -s API_FIRST -k YOUR_API_KEY -o dist/images
+tinyimg src/assets/** -o dist/images
+tinyimg src/assets/** -s API_FIRST -k YOUR_API_KEY
 ```
 
-### 子命令
+#### `tinyimg convert <paths>`
 
-- `tinyimg convert <paths>` — 转换图片格式
-- `tinyimg keys add <key>` — 添加用户级 API 密钥
-- `tinyimg keys del` — 删除用户级 API 密钥
-- `tinyimg list <paths>`（别名 `ls`）— 列出图片信息
+将无透明通道的 PNG 转换为 JPG。
+
+- `--noRename` — 保留原始 `.png` 扩展名（仅更改编码）
+
+```bash
+tinyimg convert src/assets/**
+tinyimg convert src/assets/** --noRename
+```
+
+#### `tinyimg keys <subcommand>`
+
+管理 API 密钥。
+
+- `tinyimg keys add <key>` — 添加并验证 API 密钥（支持同时添加多个）
+- `tinyimg keys del <maskedKey>` — 删除已保存的密钥
+- `tinyimg keys`（无子命令）— 列出所有密钥
+
+```bash
+tinyimg keys add your_api_key
+tinyimg keys add key1 key2 key3
+tinyimg keys del xxxx...xxxx
+tinyimg keys
+```
+
+#### `tinyimg list <paths>`（别名 `ls`）
+
+列出图片文件及其元数据。
+
+- `--json` — 以 JSON 格式输出
+- `--convert` 或 `-c` — 仅显示可转换的 PNG
+
+```bash
+tinyimg list src/assets/**
+tinyimg ls src/assets/** -c
+```
 
 ---
 
@@ -74,13 +113,19 @@ import { defineConfig } from 'vite';
 import tinyimg from '@pz4l/tinyimg-vite';
 
 export default defineConfig({
-  plugins: [
-    tinyimg({
-      strategy: 'AUTO',
-      parallel: 3,
-    }),
-  ],
+  plugins: [tinyimg()],
 });
+```
+
+带配置：
+
+```ts
+plugins: [
+  tinyimg({
+    strategy: 'AUTO',
+    parallel: 3,
+  }),
+]
 ```
 
 ### Webpack
@@ -94,13 +139,19 @@ npm i -D @pz4l/tinyimg-webpack
 import TinyimgWebpackPlugin from '@pz4l/tinyimg-webpack';
 
 export default {
-  plugins: [
-    new TinyimgWebpackPlugin({
-      strategy: 'AUTO',
-      parallel: 3,
-    }),
-  ],
+  plugins: [new TinyimgWebpackPlugin()],
 };
+```
+
+带配置：
+
+```ts
+plugins: [
+  new TinyimgWebpackPlugin({
+    strategy: 'AUTO',
+    parallel: 3,
+  }),
+]
 ```
 
 ### Rsbuild
@@ -115,13 +166,19 @@ import { defineConfig } from '@rsbuild/core';
 import tinyimg from '@pz4l/tinyimg-rsbuild';
 
 export default defineConfig({
-  plugins: [
-    tinyimg({
-      strategy: 'AUTO',
-      parallel: 3,
-    }),
-  ],
+  plugins: [tinyimg()],
 });
+```
+
+带配置：
+
+```ts
+plugins: [
+  tinyimg({
+    strategy: 'AUTO',
+    parallel: 3,
+  }),
+]
 ```
 
 ---
@@ -141,32 +198,41 @@ export default defineConfig({
 
 ## 压缩策略说明
 
-| 策略        | 说明                                                   |
-| ----------- | ------------------------------------------------------ |
-| `API_ONLY`  | 始终使用 TinyPNG API。需要提供 API key。               |
-| `RANDOM`    | 随机在 API 和 Web 压缩器之间选择。                     |
-| `API_FIRST` | 优先使用 API；遇到 401/429 时回退到 Web 压缩器。       |
-| `AUTO`      | 有 API key 时等同于 `API_FIRST`，否则等同于 `RANDOM`。 |
+| 策略        | 说明                                                       |
+| ----------- | ---------------------------------------------------------- |
+| `API_ONLY`  | 始终使用 TinyPNG API。需要提供 API key。                   |
+| `RANDOM`    | 随机在 API 和 Web 端点之间选择。                           |
+| `API_FIRST` | 优先使用 API；当 API key 无效或触发限流时回退到 Web 端点。 |
+| `AUTO`      | 有 API key 时等同于 `API_FIRST`，否则等同于 `RANDOM`。     |
 
 ---
 
-## API 密钥设置
+## 环境变量 — CLI
 
-### 环境变量
+CLI 从两个来源读取 API 密钥：
 
-运行前设置环境变量：
+**项目级密钥** — CLI 启动时自动读取当前工作目录下的 `.env` 和 `.env.local`。支持的变量名：`TINYIMG_KEY`、`TINYIMG_KEYS`、`TINYPNG_KEY`、`TINYPNG_KEYS`（以及任何带前缀的变体，如 `VITE_TINYIMG_KEY` — 按后缀匹配）。
+
+**用户级密钥** — 通过 `tinyimg keys add <key>` 存储在 `~/.tinyimg/keys.json` 中。当没有项目级密钥时作为回退使用。
+
+`.env.local` 示例：
 
 ```bash
-export TINYIMG_KEY=your_api_key
+TINYIMG_KEY=your_api_key
 ```
 
-支持的环境变量名：`TINYIMG_KEY`、`TINYIMG_KEYS`、`TINYPNG_KEY`、`TINYPNG_KEYS`
+---
 
-### 用户级密钥
+## 环境变量 — 插件
+
+插件本身不读取 `.env` 文件；由构建工具（Vite/Webpack/Rsbuild）加载。建议使用 `.env.local` 存放本地密钥（不提交到 git）。
+
+支持的变量名：任何以 `TINYIMG_KEY`、`TINYIMG_KEYS`、`TINYPNG_KEY`、`TINYPNG_KEYS` 结尾的变量。
+
+带框架前缀的示例：
 
 ```bash
-tinyimg keys add your_api_key
-export USE_USER_TINYIMG_KEYS=true
+VITE_TINYIMG_KEY=your_api_key
 ```
 
 ---

@@ -10,7 +10,7 @@ TinyPNG image compression tool with multi-architecture support. Compress images 
 
 ## Features
 
-- **Multiple compression strategies** — choose between API-only, web-only, API-first fallback, random, or auto selection
+- **Multiple compression strategies** — choose between API-only, random, API-first fallback, or auto selection
 - **Built-in cache** — stores compressed results locally in `node_modules/.tinyimg` or `~/.tinyimg` to avoid redundant processing
 - **PNG-to-JPG conversion** — optionally convert PNGs without alpha channels to JPG for smaller file sizes
 - **Parallel compression** — configurable concurrency for faster batch processing
@@ -18,97 +18,159 @@ TinyPNG image compression tool with multi-architecture support. Compress images 
 
 ## Packages
 
-| Package                                                                        | Description                                           |
-| ------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| [`@pz4l/tinyimg-cli`](https://www.npmjs.com/package/@pz4l/tinyimg-cli)         | CLI tool for compressing images from the command line |
-| [`@pz4l/tinyimg-vite`](https://www.npmjs.com/package/@pz4l/tinyimg-vite)       | Vite plugin                                           |
-| [`@pz4l/tinyimg-webpack`](https://www.npmjs.com/package/@pz4l/tinyimg-webpack) | Webpack plugin                                        |
-| [`@pz4l/tinyimg-rsbuild`](https://www.npmjs.com/package/@pz4l/tinyimg-rsbuild) | Rsbuild plugin                                        |
+Published packages:
 
-Internal packages: `@pz4l/tinyimg-core`, `@pz4l/tinyimg-locale`
+- [`@pz4l/tinyimg-cli`](https://www.npmjs.com/package/@pz4l/tinyimg-cli) — CLI tool
+- [`@pz4l/tinyimg-vite`](https://www.npmjs.com/package/@pz4l/tinyimg-vite) — Vite plugin
+- [`@pz4l/tinyimg-webpack`](https://www.npmjs.com/package/@pz4l/tinyimg-webpack) — Webpack plugin
+- [`@pz4l/tinyimg-rsbuild`](https://www.npmjs.com/package/@pz4l/tinyimg-rsbuild) — Rsbuild plugin
 
-## Installation
+## CLI
 
-### CLI
+### Installation
 
 ```bash
 npm i -g @pz4l/tinyimg-cli
 ```
 
-### Plugins
+### Global Options
 
-```bash
-npm i -D @pz4l/tinyimg-vite
-npm i -D @pz4l/tinyimg-webpack
-npm i -D @pz4l/tinyimg-rsbuild
-```
+| Option                      | Alias | Description              | Default |
+| --------------------------- | ----- | ------------------------ | ------- |
+| `-o, --output <dir>`        | —     | Output directory         | —       |
+| `-s, --strategy <strategy>` | —     | Compression strategy     | `AUTO`  |
+| `--no-cache`                | —     | Disable cache            | `false` |
+| `-k, --key <keys>`          | —     | Comma-separated API keys | —       |
+| `-p, --parallel <number>`   | —     | Parallel limit           | `3`     |
 
-## CLI Quick Start
+### Commands
+
+#### Default command (compress)
 
 ```bash
 tinyimg src/assets/**
+tinyimg src/assets/** -o dist/images
+tinyimg src/assets/** -s API_FIRST -k YOUR_API_KEY
 ```
 
-With options:
+#### `tinyimg convert <paths>`
+
+Convert PNGs without alpha channels to JPG.
+
+- `--noRename` — Keep original `.png` extension (only changes encoding)
 
 ```bash
-tinyimg src/assets/** -s API_FIRST -k YOUR_API_KEY -o dist/images
+tinyimg convert src/assets/**
+tinyimg convert src/assets/** --noRename
 ```
 
-### Subcommands
+#### `tinyimg keys <subcommand>`
 
-- `tinyimg convert <paths>` — convert PNGs to JPGs without alpha channels
-- `tinyimg keys add <key>` — add a user-level API key
-- `tinyimg keys del` — delete user-level API keys
-- `tinyimg list <paths>` (alias `ls`) — list image files with metadata
+Manage API keys.
+
+- `tinyimg keys add <key>` — Add and verify an API key (supports multiple keys at once)
+- `tinyimg keys del <maskedKey>` — Delete a saved key
+- `tinyimg keys` (no subcommand) — List all keys
+
+```bash
+tinyimg keys add your_api_key
+tinyimg keys add key1 key2 key3
+tinyimg keys del xxxx...xxxx
+tinyimg keys
+```
+
+#### `tinyimg list <paths>` (alias `ls`)
+
+List image files with metadata.
+
+- `--json` — Output as JSON
+- `--convert` or `-c` — Show only convertible PNGs
+
+```bash
+tinyimg list src/assets/**
+tinyimg ls src/assets/** -c
+```
 
 ## Plugin Quick Start
 
 ### Vite
 
+```bash
+npm i -D @pz4l/tinyimg-vite
+```
+
 ```ts
+// vite.config.ts
 import { defineConfig } from 'vite'
 import tinyimg from '@pz4l/tinyimg-vite'
 
 export default defineConfig({
-  plugins: [
-    tinyimg({
-      strategy: 'AUTO',
-      parallel: 3,
-    }),
-  ],
+  plugins: [tinyimg()],
 })
+```
+
+With options:
+
+```ts
+plugins: [
+  tinyimg({
+    strategy: 'AUTO',
+    parallel: 3,
+  }),
+]
 ```
 
 ### Webpack
 
+```bash
+npm i -D @pz4l/tinyimg-webpack
+```
+
 ```ts
+// webpack.config.ts
 import TinyimgWebpackPlugin from '@pz4l/tinyimg-webpack'
 
 export default {
-  plugins: [
-    new TinyimgWebpackPlugin({
-      strategy: 'AUTO',
-      parallel: 3,
-    }),
-  ],
+  plugins: [new TinyimgWebpackPlugin()],
 }
+```
+
+With options:
+
+```ts
+plugins: [
+  new TinyimgWebpackPlugin({
+    strategy: 'AUTO',
+    parallel: 3,
+  }),
+]
 ```
 
 ### Rsbuild
 
+```bash
+npm i -D @pz4l/tinyimg-rsbuild
+```
+
 ```ts
+// rsbuild.config.ts
 import { defineConfig } from '@rsbuild/core'
 import tinyimg from '@pz4l/tinyimg-rsbuild'
 
 export default defineConfig({
-  plugins: [
-    tinyimg({
-      strategy: 'AUTO',
-      parallel: 3,
-    }),
-  ],
+  plugins: [tinyimg()],
 })
+```
+
+With options:
+
+```ts
+plugins: [
+  tinyimg({
+    strategy: 'AUTO',
+    parallel: 3,
+  }),
+]
 ```
 
 ## Options
@@ -125,25 +187,34 @@ All plugins share the following options:
 ## Compression Strategies
 
 - `API_ONLY`: Always use the TinyPNG API. Requires an API key.
-- `RANDOM`: Randomly choose between the TinyPNG API and the web compressor.
-- `API_FIRST`: Prefer the TinyPNG API; fallback to the web compressor on `401` or `429` errors.
+- `RANDOM`: Randomly choose between the TinyPNG API and the web endpoint.
+- `API_FIRST`: Prefer the TinyPNG API; fallback to the web endpoint when the API key is invalid or rate-limited.
 - `AUTO`: Same as `API_FIRST` when an API key is available, otherwise falls back to `RANDOM`.
 
-## API Key Setup
+## Environment Variables — CLI
 
-Set an environment variable before running:
+The CLI reads API keys from two sources:
+
+**Project-level keys** — The CLI automatically reads `.env` and `.env.local` in the current working directory on startup. Supported variable names: `TINYIMG_KEY`, `TINYIMG_KEYS`, `TINYPNG_KEY`, `TINYPNG_KEYS` (and any prefixed variant like `VITE_TINYIMG_KEY` — matched by suffix).
+
+**User-level keys** — Stored via `tinyimg keys add <key>` in `~/.tinyimg/keys.json`. Used as fallback when no project keys are available.
+
+Example `.env.local`:
 
 ```bash
-export TINYIMG_KEY=your_api_key
+TINYIMG_KEY=your_api_key
 ```
 
-Supported variable names: `TINYIMG_KEY`, `TINYIMG_KEYS`, `TINYPNG_KEY`, `TINYPNG_KEYS`
+## Environment Variables — Plugins
 
-Or use user-level keys:
+Plugins themselves do not read `.env` files; the build tool (Vite/Webpack/Rsbuild) loads them. We recommend `.env.local` for local secrets (not committed to git).
+
+Supported variable names: any ending with `TINYIMG_KEY`, `TINYIMG_KEYS`, `TINYPNG_KEY`, `TINYPNG_KEYS`.
+
+Example with framework prefix:
 
 ```bash
-tinyimg keys add your_api_key
-export USE_USER_TINYIMG_KEYS=true
+VITE_TINYIMG_KEY=your_api_key
 ```
 
 ## Examples
