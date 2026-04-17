@@ -138,6 +138,9 @@ importers:
       fast-glob:
         specifier: ^3.3.3
         version: 3.3.3
+      kleur:
+        specifier: ^4.1.5
+        version: 4.1.5
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
