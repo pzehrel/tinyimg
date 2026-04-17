@@ -43,7 +43,7 @@ export interface PluginOptions extends Omit<CompressFileOptions, 'filePath'> {
 }
 
 export default function tinyimgVite(options: PluginOptions = {}): Plugin {
-  return {
+  const plugin: Plugin = {
     name: 'tinyimg',
     apply: 'build',
     buildStart() {
@@ -142,4 +142,6 @@ export default function tinyimgVite(options: PluginOptions = {}): Plugin {
       }
     },
   }
+
+  return plugin
 }
