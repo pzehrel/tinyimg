@@ -8,5 +8,10 @@
   "linked": [],
   "access": "public",
   "baseBranch": "main",
-  "updateInternalDependencies": "patch"
+  "updateInternalDependencies": "patch",
+  "ignore": [
+    "tinyimg-vite-example",
+    "tinyimg-webpack-example",
+    "tinyimg-rsbuild-example"
+  ]
 }

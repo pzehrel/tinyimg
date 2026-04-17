@@ -1,0 +1,14 @@
+{
+  "name": "tinyimg-rsbuild-example",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "rsbuild build",
+    "dev": "rsbuild dev"
+  },
+  "devDependencies": {
+    "@pzehrel/tinyimg-rsbuild": "workspace:*",
+    "@rsbuild/core": "^1.3.0",
+    "typescript": "^5.9.3"
+  }
+}

@@ -20,6 +20,7 @@
     "**/node_modules/**",
     "**/*.md",
     "**/dist/**",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "examples/**"
   ]
 }

@@ -1,0 +1,14 @@
+{
+  "name": "tinyimg-vite-example",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite"
+  },
+  "devDependencies": {
+    "@pzehrel/tinyimg-vite": "workspace:*",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0"
+  }
+}
