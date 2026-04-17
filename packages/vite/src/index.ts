@@ -56,6 +56,10 @@ export default function tinyimgVite(options: PluginOptions = {}): Plugin {
       const limit = pLimit(options.parallel || 3)
       const images = Object.entries(bundle).filter(([name]) => /\.(?:png|jpg|jpeg|webp|avif)$/.test(name))
 
+      if (images.length > 0) {
+        console.log()
+      }
+
       let success = 0
       let cached = 0
       let failed = 0
