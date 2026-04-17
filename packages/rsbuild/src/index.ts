@@ -58,6 +58,10 @@ export default function tinyimgRsbuild(options: PluginOptions = {}): RsbuildPlug
         const images = Object.keys(assets).filter(name => /\.(?:png|jpg|jpeg|webp|avif)$/.test(name))
         const logger = api.logger
 
+        if (images.length > 0) {
+          console.log()
+        }
+
         let success = 0
         let cached = 0
         let failed = 0

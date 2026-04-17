@@ -64,6 +64,10 @@ export default class TinyimgWebpackPlugin {
           const assets = compilation.getAssets()
           const images = assets.filter(a => /\.(?:png|jpg|jpeg|webp|avif)$/.test(a.name))
 
+          if (images.length > 0) {
+            console.log()
+          }
+
           let success = 0
           let cached = 0
           let failed = 0
