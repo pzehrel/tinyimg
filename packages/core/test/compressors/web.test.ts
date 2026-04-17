@@ -82,7 +82,7 @@ describe('webCompress', () => {
       }),
     )
 
-    await expect(webCompress(Buffer.from('input'), client)).rejects.toThrow(
+    await expect(webCompress(Buffer.from('input'), client, 0)).rejects.toThrow(
       ServerError,
     )
     expect(client.request).toHaveBeenCalledTimes(3)
@@ -105,7 +105,7 @@ describe('webCompress', () => {
       async () => Buffer.from('recovered'),
     )
 
-    const result = await webCompress(Buffer.from('input'), client)
+    const result = await webCompress(Buffer.from('input'), client, 0)
     expect(result.buffer.toString()).toBe('recovered')
     expect(calls).toBe(2)
   })

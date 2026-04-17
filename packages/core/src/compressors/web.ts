@@ -49,6 +49,7 @@ async function acquire(): Promise<() => void> {
 export async function webCompress(
   buffer: Buffer,
   client: HttpClient = new HttpClient(),
+  retryDelayMs: number = RETRY_DELAY_MS,
 ): Promise<WebCompressResult> {
   const release = await acquire()
   try {
@@ -101,7 +102,7 @@ export async function webCompress(
         if (err instanceof ServerError) {
           lastError = err
           if (attempt < MAX_RETRIES) {
-            await sleep(randomDelay(RETRY_DELAY_MS, RETRY_DELAY_MS + 3000))
+            await sleep(randomDelay(retryDelayMs, retryDelayMs + 3000))
             attempt++
             continue
           }
