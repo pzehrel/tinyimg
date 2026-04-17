@@ -63,7 +63,6 @@ export default class TinyimgWebpackPlugin {
           const limit = pLimit(this.options.parallel || 3)
           const assets = compilation.getAssets()
           const images = assets.filter(a => /\.(?:png|jpg|jpeg|webp|avif)$/.test(a.name))
-          const logger = compilation.getLogger(pluginName)
 
           let success = 0
           let cached = 0
@@ -128,7 +127,7 @@ export default class TinyimgWebpackPlugin {
                 if (result.convertedPngToJpg) {
                   extras.push(t('plugin.output.converted'))
                 }
-                logger.info(`${t('status.success')} ${asset.name.padEnd(40)} ${origStr}\u2192${compStr}${formatExtras(extras)}`)
+                console.log(`${t('status.success')} ${asset.name.padEnd(40)} ${origStr}\u2192${compStr}${formatExtras(extras)}`)
               }),
             ),
           )
@@ -145,18 +144,18 @@ export default class TinyimgWebpackPlugin {
             if (typeof compressionCount === 'number') {
               summaryParts.push(`${t('cli.output.usedThisMonth')}: ${compressionCount}`)
             }
-            logger.info(summaryParts.join('  '))
+            console.log(summaryParts.join('  '))
           }
 
           if (convertiblePngs.length > 0) {
-            logger.warn(t('cli.output.convertiblePngsHint', { count: convertiblePngs.length }))
-            logger.warn(t('cli.output.convertiblePngsCommand'))
+            console.warn(t('cli.output.convertiblePngsHint', { count: convertiblePngs.length }))
+            console.warn(t('cli.output.convertiblePngsCommand'))
           }
 
           const projectKeys = listProjectKeys()
           const userKeys = await listUserKeys()
           if (projectKeys.length === 0 && userKeys.length === 0) {
-            logger.warn(t('cli.output.noKeysHint'))
+            console.warn(t('cli.output.noKeysHint'))
           }
         },
       )
