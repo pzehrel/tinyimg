@@ -70,7 +70,7 @@ export default function tinyimgVite(options: PluginOptions = {}): Plugin {
       const reporter = createReporter({
         t,
         reporter: {
-          info: msg => this.info(msg),
+          info: msg => console.log(msg),
           warn: msg => console.warn(msg),
           error: msg => console.error(msg),
         },
