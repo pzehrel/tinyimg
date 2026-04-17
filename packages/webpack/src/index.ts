@@ -142,16 +142,16 @@ export default class TinyimgWebpackPlugin {
               saved,
               compressionCount,
             })
-          }
 
-          if (convertiblePngs.length > 0) {
-            reporter.logConvertiblePngs(convertiblePngs.length)
-          }
+            if (convertiblePngs.length > 0) {
+              reporter.logConvertiblePngs(convertiblePngs.length)
+            }
 
-          const projectKeys = listProjectKeys()
-          const userKeys = await listUserKeys()
-          if (projectKeys.length === 0 && userKeys.length === 0) {
-            reporter.logNoKeysHint()
+            const projectKeys = listProjectKeys()
+            const userKeys = await listUserKeys()
+            if (projectKeys.length === 0 && userKeys.length === 0) {
+              reporter.logNoKeysHint()
+            }
           }
         },
       )
