@@ -33,12 +33,12 @@ export default {
 
 ## Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| strategy | `'API_ONLY' \| 'RANDOM' \| 'API_FIRST' \| 'AUTO'` | `'AUTO'` | Compression strategy |
-| maxFileSize | `number` | `5 * 1024 * 1024` | Max file size in bytes before local pre-compression |
-| convertPngToJpg | `boolean` | `false` | Convert PNG without alpha to JPG |
-| parallel | `number` | `3` | Max parallel compression count |
+| Option          | Type                                              | Default           | Description                                         |
+| --------------- | ------------------------------------------------- | ----------------- | --------------------------------------------------- |
+| strategy        | `'API_ONLY' \| 'RANDOM' \| 'API_FIRST' \| 'AUTO'` | `'AUTO'`          | Compression strategy                                |
+| maxFileSize     | `number`                                          | `5 * 1024 * 1024` | Max file size in bytes before local pre-compression |
+| convertPngToJpg | `boolean`                                         | `false`           | Convert PNG without alpha to JPG                    |
+| parallel        | `number`                                          | `3`               | Max parallel compression count                      |
 
 ## Compression Strategies
 

@@ -16,12 +16,12 @@ TinyPNG image compression tool with multi-architecture support. Compress images 
 
 ## Packages
 
-| Package | Description |
-|---------|-------------|
-| [`@pzehrel/tinyimg-cli`](https://www.npmjs.com/package/@pzehrel/tinyimg-cli) | CLI tool for compressing images from the command line |
-| [`@pzehrel/tinyimg-vite`](https://www.npmjs.com/package/@pzehrel/tinyimg-vite) | Vite plugin |
-| [`@pzehrel/tinyimg-webpack`](https://www.npmjs.com/package/@pzehrel/tinyimg-webpack) | Webpack plugin |
-| [`@pzehrel/tinyimg-rsbuild`](https://www.npmjs.com/package/@pzehrel/tinyimg-rsbuild) | Rsbuild plugin |
+| Package                                                                              | Description                                           |
+| ------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| [`@pzehrel/tinyimg-cli`](https://www.npmjs.com/package/@pzehrel/tinyimg-cli)         | CLI tool for compressing images from the command line |
+| [`@pzehrel/tinyimg-vite`](https://www.npmjs.com/package/@pzehrel/tinyimg-vite)       | Vite plugin                                           |
+| [`@pzehrel/tinyimg-webpack`](https://www.npmjs.com/package/@pzehrel/tinyimg-webpack) | Webpack plugin                                        |
+| [`@pzehrel/tinyimg-rsbuild`](https://www.npmjs.com/package/@pzehrel/tinyimg-rsbuild) | Rsbuild plugin                                        |
 
 Internal packages: `@pzehrel/tinyimg-core`, `@pzehrel/tinyimg-locale`
 
@@ -113,12 +113,12 @@ export default defineConfig({
 
 All plugins share the following options:
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `strategy` | `'API_ONLY' \| 'RANDOM' \| 'API_FIRST' \| 'AUTO'` | `'AUTO'` | Compression strategy to use |
-| `maxFileSize` | `number` | `5 * 1024 * 1024` (5MB) | Maximum file size allowed for compression |
-| `convertPngToJpg` | `boolean` | `false` | Convert PNGs without alpha channels to JPG |
-| `parallel` | `number` | `3` | Number of concurrent compression tasks |
+| Option            | Type                                              | Default                 | Description                                |
+| ----------------- | ------------------------------------------------- | ----------------------- | ------------------------------------------ |
+| `strategy`        | `'API_ONLY' \| 'RANDOM' \| 'API_FIRST' \| 'AUTO'` | `'AUTO'`                | Compression strategy to use                |
+| `maxFileSize`     | `number`                                          | `5 * 1024 * 1024` (5MB) | Maximum file size allowed for compression  |
+| `convertPngToJpg` | `boolean`                                         | `false`                 | Convert PNGs without alpha channels to JPG |
+| `parallel`        | `number`                                          | `3`                     | Number of concurrent compression tasks     |
 
 ## Compression Strategies
 

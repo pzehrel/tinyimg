@@ -20,14 +20,14 @@
 
 ## 包一览
 
-| 包名 | 说明 | 发布状态 |
-|------|------|----------|
-| `@pzehrel/tinyimg-cli` | 命令行压缩工具 | 已发布 |
-| `@pzehrel/tinyimg-vite` | Vite 插件 | 已发布 |
-| `@pzehrel/tinyimg-webpack` | Webpack 插件 | 已发布 |
-| `@pzehrel/tinyimg-rsbuild` | Rsbuild 插件 | 已发布 |
-| `@pzehrel/tinyimg-core` | 核心压缩逻辑（内部包） | 未发布 |
-| `@pzehrel/tinyimg-locale` | 国际化支持（内部包） | 未发布 |
+| 包名                       | 说明                   | 发布状态 |
+| -------------------------- | ---------------------- | -------- |
+| `@pzehrel/tinyimg-cli`     | 命令行压缩工具         | 已发布   |
+| `@pzehrel/tinyimg-vite`    | Vite 插件              | 已发布   |
+| `@pzehrel/tinyimg-webpack` | Webpack 插件           | 已发布   |
+| `@pzehrel/tinyimg-rsbuild` | Rsbuild 插件           | 已发布   |
+| `@pzehrel/tinyimg-core`    | 核心压缩逻辑（内部包） | 未发布   |
+| `@pzehrel/tinyimg-locale`  | 国际化支持（内部包）   | 未发布   |
 
 ---
 
@@ -128,23 +128,23 @@ export default defineConfig({
 
 所有插件通用以下配置项：
 
-| 配置项 | 类型 | 默认值 | 说明 |
-|--------|------|--------|------|
-| `strategy` | `'API_ONLY' \| 'RANDOM' \| 'API_FIRST' \| 'AUTO'` | `'AUTO'` | 压缩策略 |
-| `maxFileSize` | `number` | `5 * 1024 * 1024`（5MB） | 单个文件最大大小限制 |
-| `convertPngToJpg` | `boolean` | `false` | 是否将无透明通道的 PNG 转为 JPG |
-| `parallel` | `number` | `3` | 并行压缩数量 |
+| 配置项            | 类型                                              | 默认值                   | 说明                            |
+| ----------------- | ------------------------------------------------- | ------------------------ | ------------------------------- |
+| `strategy`        | `'API_ONLY' \| 'RANDOM' \| 'API_FIRST' \| 'AUTO'` | `'AUTO'`                 | 压缩策略                        |
+| `maxFileSize`     | `number`                                          | `5 * 1024 * 1024`（5MB） | 单个文件最大大小限制            |
+| `convertPngToJpg` | `boolean`                                         | `false`                  | 是否将无透明通道的 PNG 转为 JPG |
+| `parallel`        | `number`                                          | `3`                      | 并行压缩数量                    |
 
 ---
 
 ## 压缩策略说明
 
-| 策略 | 说明 |
-|------|------|
-| `API_ONLY` | 始终使用 TinyPNG API。需要提供 API key。 |
-| `RANDOM` | 随机在 API 和 Web 压缩器之间选择。 |
-| `API_FIRST` | 优先使用 API；遇到 401/429 时回退到 Web 压缩器。 |
-| `AUTO` | 有 API key 时等同于 `API_FIRST`，否则等同于 `RANDOM`。 |
+| 策略        | 说明                                                   |
+| ----------- | ------------------------------------------------------ |
+| `API_ONLY`  | 始终使用 TinyPNG API。需要提供 API key。               |
+| `RANDOM`    | 随机在 API 和 Web 压缩器之间选择。                     |
+| `API_FIRST` | 优先使用 API；遇到 401/429 时回退到 Web 压缩器。       |
+| `AUTO`      | 有 API key 时等同于 `API_FIRST`，否则等同于 `RANDOM`。 |
 
 ---
 

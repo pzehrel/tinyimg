@@ -28,13 +28,13 @@ tinyimg src/assets/** -s API_FIRST -k YOUR_API_KEY
 
 ## CLI Options
 
-| Option | Description |
-|--------|-------------|
-| `-o, --output <dir>` | Output directory |
+| Option                      | Description                            |
+| --------------------------- | -------------------------------------- |
+| `-o, --output <dir>`        | Output directory                       |
 | `-s, --strategy <strategy>` | Compression strategy (default: `AUTO`) |
-| `--noCache` | Disable cache |
-| `-k, --key <keys>` | Comma-separated API keys |
-| `-p, --parallel <number>` | Parallel limit (default: `3`) |
+| `--noCache`                 | Disable cache                          |
+| `-k, --key <keys>`          | Comma-separated API keys               |
+| `-p, --parallel <number>`   | Parallel limit (default: `3`)          |
 
 ## Subcommands
 
