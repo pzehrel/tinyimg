@@ -3,3 +3,5 @@ export { compressFile, type CompressFileOptions, type CompressFileResult } from 
 export { canConvertToJpg, convertPngToJpg, isProcessed, markProcessed } from './convert'
 export { addUserKeys, initKeyManager, type KeyInfo, listProjectKeys, listUserKeys, removeUserKey, resolveProjectKeysFromEnv, type VerifyResult } from './key-manager'
 export { type MatchedFile, matchFiles, type MatchOptions } from './match'
+export { createReporter, type Reporter, type ReporterOptions, type ReporterSummary } from './reporter'
+export { formatExtras, formatSize } from './utils/format'

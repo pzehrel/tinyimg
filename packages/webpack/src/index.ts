@@ -5,7 +5,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
-import { canConvertToJpg, compressFile, initKeyManager, listProjectKeys, listUserKeys, resolveProjectKeysFromEnv } from '@pzehrel/tinyimg-core'
+import { canConvertToJpg, compressFile, createReporter, initKeyManager, listProjectKeys, listUserKeys, resolveProjectKeysFromEnv } from '@pzehrel/tinyimg-core'
 import { createLocaleI18n } from '@pzehrel/tinyimg-locale'
 import pLimit from 'p-limit'
 
@@ -71,6 +71,15 @@ export default class TinyimgWebpackPlugin {
           let compressionCount: number | undefined
           const convertiblePngs: string[] = []
 
+          const reporter = createReporter({
+            t,
+            reporter: {
+              info: msg => console.log(msg),
+              warn: msg => console.warn(msg),
+              error: msg => console.error(msg),
+            },
+          })
+
           await Promise.all(
             images.map(asset =>
               limit(async () => {
@@ -97,9 +106,7 @@ export default class TinyimgWebpackPlugin {
 
                 if (result.error) {
                   failed++
-                  const errorMsg = String(result.error.message || 'Unknown error').replace(/\n/g, ' ')
-                  const compressorName = (result.error as any).compressor || result.compressor
-                  console.error(`${t('status.failed')} ${asset.name.padEnd(40)} ${t('cli.output.failed')} ${errorMsg} (${compressorName})`)
+                  reporter.logError(asset.name, result)
                   return
                 }
 
@@ -117,61 +124,33 @@ export default class TinyimgWebpackPlugin {
                   compressionCount = result.compressionCount
                 }
 
-                const ratio = Math.round((1 - result.compressedSize / result.originalSize) * 100)
-                const origStr = formatSize(result.originalSize)
-                const compStr = formatSize(result.compressedSize)
-                const extras: (string | undefined)[] = [`-${ratio}%`]
-                if (result.cached) {
-                  extras.push(t('cli.output.usedCache'))
-                }
-                if (result.convertedPngToJpg) {
-                  extras.push(t('plugin.output.converted'))
-                }
-                console.log(`${t('status.success')} ${asset.name.padEnd(40)} ${origStr}\u2192${compStr}${formatExtras(extras)}`)
+                reporter.logItem(asset.name, result)
               }),
             ),
           )
 
           if (images.length > 0) {
-            const summaryParts = [
-              t('cli.output.compressionComplete'),
-              `${t('cli.output.total')}: ${images.length}`,
-              `${t('cli.output.success')}: ${success}`,
-              `${t('cli.output.cached')}: ${cached}`,
-              `${t('summary.failed')}: ${failed}`,
-              `${t('cli.output.saved')}: ${formatSize(saved)}`,
-            ]
-            if (typeof compressionCount === 'number') {
-              summaryParts.push(`${t('cli.output.usedThisMonth')}: ${compressionCount}`)
-            }
-            console.log(summaryParts.join('  '))
+            reporter.logSummary({
+              total: images.length,
+              success,
+              cached,
+              failed,
+              saved,
+              compressionCount,
+            })
           }
 
           if (convertiblePngs.length > 0) {
-            console.warn(t('cli.output.convertiblePngsHint', { count: convertiblePngs.length }))
-            console.warn(t('cli.output.convertiblePngsCommand'))
+            reporter.logConvertiblePngs(convertiblePngs.length)
           }
 
           const projectKeys = listProjectKeys()
           const userKeys = await listUserKeys()
           if (projectKeys.length === 0 && userKeys.length === 0) {
-            console.warn(t('cli.output.noKeysHint'))
+            reporter.logNoKeysHint()
           }
         },
       )
     })
   }
-}
-
-function formatExtras(tags: (string | undefined)[]): string {
-  const filtered = tags.filter((t): t is string => typeof t === 'string')
-  return filtered.length ? ` (${filtered.join(', ')})` : ''
-}
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024)
-    return `${bytes}B`
-  if (bytes < 1024 * 1024)
-    return `${(bytes / 1024).toFixed(1)}KB`
-  return `${(bytes / 1024 / 1024).toFixed(1)}MB`
 }

@@ -5,7 +5,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
-import { canConvertToJpg, compressFile, initKeyManager, listProjectKeys, listUserKeys, resolveProjectKeysFromEnv } from '@pzehrel/tinyimg-core'
+import { canConvertToJpg, compressFile, createReporter, initKeyManager, listProjectKeys, listUserKeys, resolveProjectKeysFromEnv } from '@pzehrel/tinyimg-core'
 import { createLocaleI18n } from '@pzehrel/tinyimg-locale'
 import pLimit from 'p-limit'
 
@@ -65,6 +65,15 @@ export default function tinyimgRsbuild(options: PluginOptions = {}): RsbuildPlug
         let compressionCount: number | undefined
         const convertiblePngs: string[] = []
 
+        const reporter = createReporter({
+          t,
+          reporter: {
+            info: msg => logger.info(msg),
+            warn: msg => logger.warn(msg),
+            error: msg => logger.error(msg),
+          },
+        })
+
         await Promise.all(
           images.map(name =>
             limit(async () => {
@@ -93,9 +102,7 @@ export default function tinyimgRsbuild(options: PluginOptions = {}): RsbuildPlug
 
               if (result.error) {
                 failed++
-                const errorMsg = String(result.error.message || 'Unknown error').replace(/\n/g, ' ')
-                const compressorName = (result.error as any).compressor || result.compressor
-                logger.error(`${t('status.failed')} ${name.padEnd(40)} ${t('cli.output.failed')} ${errorMsg} (${compressorName})`)
+                reporter.logError(name, result)
                 return
               }
 
@@ -113,60 +120,32 @@ export default function tinyimgRsbuild(options: PluginOptions = {}): RsbuildPlug
                 compressionCount = result.compressionCount
               }
 
-              const ratio = Math.round((1 - result.compressedSize / result.originalSize) * 100)
-              const origStr = formatSize(result.originalSize)
-              const compStr = formatSize(result.compressedSize)
-              const extras: (string | undefined)[] = [`-${ratio}%`]
-              if (result.cached) {
-                extras.push(t('cli.output.usedCache'))
-              }
-              if (result.convertedPngToJpg) {
-                extras.push(t('plugin.output.converted'))
-              }
-              logger.info(`${t('status.success')} ${name.padEnd(40)} ${origStr}\u2192${compStr}${formatExtras(extras)}`)
+              reporter.logItem(name, result)
             }),
           ),
         )
 
         if (images.length > 0) {
-          const summaryParts = [
-            t('cli.output.compressionComplete'),
-            `${t('cli.output.total')}: ${images.length}`,
-            `${t('cli.output.success')}: ${success}`,
-            `${t('cli.output.cached')}: ${cached}`,
-            `${t('summary.failed')}: ${failed}`,
-            `${t('cli.output.saved')}: ${formatSize(saved)}`,
-          ]
-          if (typeof compressionCount === 'number') {
-            summaryParts.push(`${t('cli.output.usedThisMonth')}: ${compressionCount}`)
-          }
-          logger.info(summaryParts.join('  '))
+          reporter.logSummary({
+            total: images.length,
+            success,
+            cached,
+            failed,
+            saved,
+            compressionCount,
+          })
         }
 
         if (convertiblePngs.length > 0) {
-          logger.warn(t('cli.output.convertiblePngsHint', { count: convertiblePngs.length }))
-          logger.warn(t('cli.output.convertiblePngsCommand'))
+          reporter.logConvertiblePngs(convertiblePngs.length)
         }
 
         const projectKeys = listProjectKeys()
         const userKeys = await listUserKeys()
         if (projectKeys.length === 0 && userKeys.length === 0) {
-          logger.warn(t('cli.output.noKeysHint'))
+          reporter.logNoKeysHint()
         }
       })
     },
   }
-}
-
-function formatExtras(tags: (string | undefined)[]): string {
-  const filtered = tags.filter((t): t is string => typeof t === 'string')
-  return filtered.length ? ` (${filtered.join(', ')})` : ''
-}
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024)
-    return `${bytes}B`
-  if (bytes < 1024 * 1024)
-    return `${(bytes / 1024).toFixed(1)}KB`
-  return `${(bytes / 1024 / 1024).toFixed(1)}MB`
 }
