@@ -2,6 +2,11 @@
   "name": "@pz4l/tinyimg-webpack",
   "type": "module",
   "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pzehrel/tinyimg.git",
+    "directory": "packages/webpack"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -12,7 +17,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsdown",
     "prepublishOnly": "test -n \"$CI\" || (echo 'Error: Publishing is only allowed from CI.' && exit 1)"
