@@ -6,6 +6,53 @@ import kleur from 'kleur'
 
 const t = createLocaleI18n()
 
+export interface KeysConsole {
+  log: (...args: any[]) => void
+}
+
+export async function runKeysAdd(args: { keys: string | undefined, _: string[] }, console_: KeysConsole) {
+  const rawKeys = args._.length ? args._.map(String) : [args.keys as string]
+  const results = await addUserKeys(rawKeys)
+  for (const r of results) {
+    if (r.valid) {
+      console_.log(kleur.green(t('status.success')), r.key, r.remaining !== undefined ? `(${r.remaining} remaining)` : '')
+    }
+    else {
+      console_.log(kleur.red(t('status.failed')), r.key, r.error || '')
+    }
+  }
+}
+
+export async function runKeysDel(args: { maskedKey: string }, console_: KeysConsole) {
+  await removeUserKey(args.maskedKey)
+  console_.log(kleur.green(t('status.success')), t('cli.output.keyRemoved'))
+}
+
+export async function runKeysList(console_: KeysConsole) {
+  initKeyManager({ projectKeys: resolveProjectKeysFromEnv(process.env) })
+  const projectKeys = listProjectKeys()
+  const userKeys = await listUserKeys()
+
+  if (projectKeys.length === 0 && userKeys.length === 0) {
+    console_.log(kleur.yellow(t('cli.output.noKeys')))
+    return
+  }
+
+  if (projectKeys.length > 0) {
+    console_.log(kleur.cyan(`${t('cli.output.project')}:`))
+    projectKeys.forEach((k, i) => {
+      console_.log(`  ${i + 1}. ${k.key} (${t('cli.output.usedThisMonth')}: ${k.used})`)
+    })
+  }
+
+  if (userKeys.length > 0) {
+    console_.log(kleur.cyan(`${t('cli.output.user')}:`))
+    userKeys.forEach((k, i) => {
+      console_.log(`  ${i + 1}. ${k.key} (${t('cli.output.usedThisMonth')}: ${k.used})`)
+    })
+  }
+}
+
 const addCommand: CommandDef = {
   meta: {
     name: 'add',
@@ -19,16 +66,7 @@ const addCommand: CommandDef = {
     },
   },
   async run({ args }) {
-    const rawKeys = args._.length ? args._.map(String) : [args.keys as string]
-    const results = await addUserKeys(rawKeys)
-    for (const r of results) {
-      if (r.valid) {
-        console.log(kleur.green(t('status.success')), r.key, r.remaining !== undefined ? `(${r.remaining} remaining)` : '')
-      }
-      else {
-        console.log(kleur.red(t('status.failed')), r.key, r.error || '')
-      }
-    }
+    await runKeysAdd({ keys: args.keys as string, _: args._.map(String) }, console)
   },
 }
 
@@ -45,8 +83,7 @@ const delCommand: CommandDef = {
     },
   },
   async run({ args }) {
-    await removeUserKey(args.maskedKey as string)
-    console.log(kleur.green(t('status.success')), t('cli.output.keyRemoved'))
+    await runKeysDel({ maskedKey: args.maskedKey as string }, console)
   },
 }
 
@@ -56,28 +93,7 @@ const keysCommand: CommandDef = {
     description: t('cli.command.keys.description'),
   },
   async run() {
-    initKeyManager({ projectKeys: resolveProjectKeysFromEnv(process.env) })
-    const projectKeys = listProjectKeys()
-    const userKeys = await listUserKeys()
-
-    if (projectKeys.length === 0 && userKeys.length === 0) {
-      console.log(kleur.yellow(t('cli.output.noKeys')))
-      return
-    }
-
-    if (projectKeys.length > 0) {
-      console.log(kleur.cyan(`${t('cli.output.project')}:`))
-      projectKeys.forEach((k, i) => {
-        console.log(`  ${i + 1}. ${k.key} (${t('cli.output.usedThisMonth')}: ${k.used})`)
-      })
-    }
-
-    if (userKeys.length > 0) {
-      console.log(kleur.cyan(`${t('cli.output.user')}:`))
-      userKeys.forEach((k, i) => {
-        console.log(`  ${i + 1}. ${k.key} (${t('cli.output.usedThisMonth')}: ${k.used})`)
-      })
-    }
+    await runKeysList(console)
   },
   subCommands: {
     add: addCommand,
