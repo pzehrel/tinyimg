@@ -1,8 +1,8 @@
 import type { CommandDef } from 'citty'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { canConvertToJpg, convertPngToJpg, matchFiles } from '@pzehrel/tinyimg-core'
-import { createLocaleI18n } from '@pzehrel/tinyimg-locale'
+import { canConvertToJpg, convertPngToJpg, matchFiles } from '@pz4l/tinyimg-core'
+import { createLocaleI18n } from '@pz4l/tinyimg-locale'
 import kleur from 'kleur'
 
 const t = createLocaleI18n()

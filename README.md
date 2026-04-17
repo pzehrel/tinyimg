@@ -1,8 +1,10 @@
 # tinyimg
 
-[![npm version](https://img.shields.io/npm/v/@pzehrel/tinyimg-cli)](https://www.npmjs.com/package/@pzehrel/tinyimg-cli)
+[![npm version](https://img.shields.io/npm/v/@pz4l/tinyimg-cli)](https://www.npmjs.com/package/@pz4l/tinyimg-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/pzehrel/tinyimg/blob/main/LICENSE)
 [![Node.js >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org/)
+
+[中文文档](./README.zh-CN.md)
 
 TinyPNG image compression tool with multi-architecture support. Compress images via CLI or integrate directly into your build pipeline with Vite, Webpack, and Rsbuild plugins.
 
@@ -18,27 +20,27 @@ TinyPNG image compression tool with multi-architecture support. Compress images 
 
 | Package                                                                              | Description                                           |
 | ------------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| [`@pzehrel/tinyimg-cli`](https://www.npmjs.com/package/@pzehrel/tinyimg-cli)         | CLI tool for compressing images from the command line |
-| [`@pzehrel/tinyimg-vite`](https://www.npmjs.com/package/@pzehrel/tinyimg-vite)       | Vite plugin                                           |
-| [`@pzehrel/tinyimg-webpack`](https://www.npmjs.com/package/@pzehrel/tinyimg-webpack) | Webpack plugin                                        |
-| [`@pzehrel/tinyimg-rsbuild`](https://www.npmjs.com/package/@pzehrel/tinyimg-rsbuild) | Rsbuild plugin                                        |
+| [`@pz4l/tinyimg-cli`](https://www.npmjs.com/package/@pz4l/tinyimg-cli)         | CLI tool for compressing images from the command line |
+| [`@pz4l/tinyimg-vite`](https://www.npmjs.com/package/@pz4l/tinyimg-vite)       | Vite plugin                                           |
+| [`@pz4l/tinyimg-webpack`](https://www.npmjs.com/package/@pz4l/tinyimg-webpack) | Webpack plugin                                        |
+| [`@pz4l/tinyimg-rsbuild`](https://www.npmjs.com/package/@pz4l/tinyimg-rsbuild) | Rsbuild plugin                                        |
 
-Internal packages: `@pzehrel/tinyimg-core`, `@pzehrel/tinyimg-locale`
+Internal packages: `@pz4l/tinyimg-core`, `@pz4l/tinyimg-locale`
 
 ## Installation
 
 ### CLI
 
 ```bash
-npm i -g @pzehrel/tinyimg-cli
+npm i -g @pz4l/tinyimg-cli
 ```
 
 ### Plugins
 
 ```bash
-npm i -D @pzehrel/tinyimg-vite
-npm i -D @pzehrel/tinyimg-webpack
-npm i -D @pzehrel/tinyimg-rsbuild
+npm i -D @pz4l/tinyimg-vite
+npm i -D @pz4l/tinyimg-webpack
+npm i -D @pz4l/tinyimg-rsbuild
 ```
 
 ## CLI Quick Start
@@ -66,7 +68,7 @@ tinyimg src/assets/** -s API_FIRST -k YOUR_API_KEY -o dist/images
 
 ```ts
 import { defineConfig } from 'vite'
-import tinyimg from '@pzehrel/tinyimg-vite'
+import tinyimg from '@pz4l/tinyimg-vite'
 
 export default defineConfig({
   plugins: [
@@ -81,7 +83,7 @@ export default defineConfig({
 ### Webpack
 
 ```ts
-import TinyimgWebpackPlugin from '@pzehrel/tinyimg-webpack'
+import TinyimgWebpackPlugin from '@pz4l/tinyimg-webpack'
 
 export default {
   plugins: [
@@ -97,7 +99,7 @@ export default {
 
 ```ts
 import { defineConfig } from '@rsbuild/core'
-import tinyimg from '@pzehrel/tinyimg-rsbuild'
+import tinyimg from '@pz4l/tinyimg-rsbuild'
 
 export default defineConfig({
   plugins: [

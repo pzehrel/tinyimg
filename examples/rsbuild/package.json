@@ -7,7 +7,7 @@
     "dev": "rsbuild dev"
   },
   "devDependencies": {
-    "@pzehrel/tinyimg-rsbuild": "workspace:*",
+    "@pz4l/tinyimg-rsbuild": "workspace:*",
     "@rsbuild/core": "^1.3.0",
     "typescript": "^5.9.3"
   }

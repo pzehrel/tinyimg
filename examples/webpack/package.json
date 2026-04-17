@@ -6,7 +6,7 @@
     "build": "webpack"
   },
   "devDependencies": {
-    "@pzehrel/tinyimg-webpack": "workspace:*",
+    "@pz4l/tinyimg-webpack": "workspace:*",
     "css-loader": "^7.0.0",
     "html-webpack-plugin": "^5.6.0",
     "style-loader": "^4.0.0",

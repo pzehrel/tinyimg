@@ -1,20 +1,20 @@
-# @pzehrel/tinyimg-vite
+# @pz4l/tinyimg-vite
 
-[![npm version](https://img.shields.io/npm/v/@pzehrel/tinyimg-vite)](https://www.npmjs.com/package/@pzehrel/tinyimg-vite)
+[![npm version](https://img.shields.io/npm/v/@pz4l/tinyimg-vite)](https://www.npmjs.com/package/@pz4l/tinyimg-vite)
 
 TinyPNG image compression plugin for Vite.
 
 ## Installation
 
 ```bash
-npm i -D @pzehrel/tinyimg-vite
+npm i -D @pz4l/tinyimg-vite
 ```
 
 ## Usage
 
 ```ts
 // vite.config.ts
-import tinyimg from '@pzehrel/tinyimg-vite'
+import tinyimg from '@pz4l/tinyimg-vite'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
@@ -57,7 +57,7 @@ export TINYIMG_KEY=your_api_key
 Or use the CLI to manage user keys:
 
 ```bash
-npx @pzehrel/tinyimg-cli keys add your_api_key
+npx @pz4l/tinyimg-cli keys add your_api_key
 export USE_USER_TINYIMG_KEYS=true
 ```
 

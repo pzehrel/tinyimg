@@ -1,7 +1,7 @@
 import type { CommandDef } from 'citty'
 import process from 'node:process'
-import { addUserKeys, initKeyManager, listProjectKeys, listUserKeys, removeUserKey, resolveProjectKeysFromEnv } from '@pzehrel/tinyimg-core'
-import { createLocaleI18n } from '@pzehrel/tinyimg-locale'
+import { addUserKeys, initKeyManager, listProjectKeys, listUserKeys, removeUserKey, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
+import { createLocaleI18n } from '@pz4l/tinyimg-locale'
 import kleur from 'kleur'
 
 const t = createLocaleI18n()

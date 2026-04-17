@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import path from 'node:path'
 import process from 'node:process'
-import { createLocaleI18n } from '@pzehrel/tinyimg-locale'
+import { createLocaleI18n } from '@pz4l/tinyimg-locale'
 import { defineCommand, runMain } from 'citty'
 import dotenv from 'dotenv'
 import { version } from '../package.json'

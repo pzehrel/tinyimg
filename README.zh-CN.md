@@ -2,9 +2,11 @@
 
 基于 TinyPNG 的多端图片压缩工具
 
-[![npm version](https://img.shields.io/npm/v/@pzehrel/tinyimg-cli)](https://www.npmjs.com/package/@pzehrel/tinyimg-cli)
+[![npm version](https://img.shields.io/npm/v/@pz4l/tinyimg-cli)](https://www.npmjs.com/package/@pz4l/tinyimg-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org/)
+
+[English](./README.md)
 
 ---
 
@@ -22,12 +24,12 @@
 
 | 包名                       | 说明                   | 发布状态 |
 | -------------------------- | ---------------------- | -------- |
-| `@pzehrel/tinyimg-cli`     | 命令行压缩工具         | 已发布   |
-| `@pzehrel/tinyimg-vite`    | Vite 插件              | 已发布   |
-| `@pzehrel/tinyimg-webpack` | Webpack 插件           | 已发布   |
-| `@pzehrel/tinyimg-rsbuild` | Rsbuild 插件           | 已发布   |
-| `@pzehrel/tinyimg-core`    | 核心压缩逻辑（内部包） | 未发布   |
-| `@pzehrel/tinyimg-locale`  | 国际化支持（内部包）   | 未发布   |
+| `@pz4l/tinyimg-cli`     | 命令行压缩工具         | 已发布   |
+| `@pz4l/tinyimg-vite`    | Vite 插件              | 已发布   |
+| `@pz4l/tinyimg-webpack` | Webpack 插件           | 已发布   |
+| `@pz4l/tinyimg-rsbuild` | Rsbuild 插件           | 已发布   |
+| `@pz4l/tinyimg-core`    | 核心压缩逻辑（内部包） | 未发布   |
+| `@pz4l/tinyimg-locale`  | 国际化支持（内部包）   | 未发布   |
 
 ---
 
@@ -36,7 +38,7 @@
 ### 安装
 
 ```bash
-npm i -g @pzehrel/tinyimg-cli
+npm i -g @pz4l/tinyimg-cli
 ```
 
 ### 使用
@@ -63,13 +65,13 @@ tinyimg src/assets/** -s API_FIRST -k YOUR_API_KEY -o dist/images
 ### Vite
 
 ```bash
-npm i -D @pzehrel/tinyimg-vite
+npm i -D @pz4l/tinyimg-vite
 ```
 
 ```ts
 // vite.config.ts
 import { defineConfig } from 'vite';
-import tinyimg from '@pzehrel/tinyimg-vite';
+import tinyimg from '@pz4l/tinyimg-vite';
 
 export default defineConfig({
   plugins: [
@@ -84,12 +86,12 @@ export default defineConfig({
 ### Webpack
 
 ```bash
-npm i -D @pzehrel/tinyimg-webpack
+npm i -D @pz4l/tinyimg-webpack
 ```
 
 ```ts
 // webpack.config.ts
-import TinyimgWebpackPlugin from '@pzehrel/tinyimg-webpack';
+import TinyimgWebpackPlugin from '@pz4l/tinyimg-webpack';
 
 export default {
   plugins: [
@@ -104,13 +106,13 @@ export default {
 ### Rsbuild
 
 ```bash
-npm i -D @pzehrel/tinyimg-rsbuild
+npm i -D @pz4l/tinyimg-rsbuild
 ```
 
 ```ts
 // rsbuild.config.ts
 import { defineConfig } from '@rsbuild/core';
-import tinyimg from '@pzehrel/tinyimg-rsbuild';
+import tinyimg from '@pz4l/tinyimg-rsbuild';
 
 export default defineConfig({
   plugins: [

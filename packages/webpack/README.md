@@ -1,6 +1,6 @@
-# @pzehrel/tinyimg-webpack
+# @pz4l/tinyimg-webpack
 
-[![npm version](https://img.shields.io/npm/v/@pzehrel/tinyimg-webpack)](https://www.npmjs.com/package/@pzehrel/tinyimg-webpack)
+[![npm version](https://img.shields.io/npm/v/@pz4l/tinyimg-webpack)](https://www.npmjs.com/package/@pz4l/tinyimg-webpack)
 
 TinyPNG image compression plugin for Webpack.
 
@@ -9,14 +9,14 @@ Peer dependency: `webpack ^5.0.0`
 ## Installation
 
 ```bash
-npm i -D @pzehrel/tinyimg-webpack
+npm i -D @pz4l/tinyimg-webpack
 ```
 
 ## Usage
 
 ```ts
 // webpack.config.ts
-import TinyimgWebpackPlugin from '@pzehrel/tinyimg-webpack'
+import TinyimgWebpackPlugin from '@pz4l/tinyimg-webpack'
 
 export default {
   // ...other config
@@ -59,7 +59,7 @@ export TINYIMG_KEY=your_api_key
 Or use the CLI to manage user keys:
 
 ```bash
-npx @pzehrel/tinyimg-cli keys add your_api_key
+npx @pz4l/tinyimg-cli keys add your_api_key
 export USE_USER_TINYIMG_KEYS=true
 ```
 

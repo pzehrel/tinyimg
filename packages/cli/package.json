@@ -1,5 +1,5 @@
 {
-  "name": "@pzehrel/tinyimg-cli",
+  "name": "@pz4l/tinyimg-cli",
   "type": "module",
   "version": "0.0.0",
   "exports": {
@@ -28,8 +28,8 @@
     "pathe": "^2.0.3"
   },
   "devDependencies": {
-    "@pzehrel/tinyimg-core": "workspace:*",
-    "@pzehrel/tinyimg-locale": "workspace:*",
+    "@pz4l/tinyimg-core": "workspace:*",
+    "@pz4l/tinyimg-locale": "workspace:*",
     "@types/node": "^22.15.0",
     "tsdown": "^0.21.8",
     "typescript": "^5.9.3"

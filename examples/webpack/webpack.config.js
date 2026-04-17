@@ -1,4 +1,4 @@
-import TinyimgWebpackPlugin from '@pzehrel/tinyimg-webpack'
+import TinyimgWebpackPlugin from '@pz4l/tinyimg-webpack'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 
 /** @type {import('webpack').Configuration} */

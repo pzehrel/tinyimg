@@ -1,19 +1,19 @@
-# @pzehrel/tinyimg-cli
+# @pz4l/tinyimg-cli
 
-[![npm](https://img.shields.io/npm/v/@pzehrel/tinyimg-cli)](https://www.npmjs.com/package/@pzehrel/tinyimg-cli)
+[![npm](https://img.shields.io/npm/v/@pz4l/tinyimg-cli)](https://www.npmjs.com/package/@pz4l/tinyimg-cli)
 
 TinyPNG image compression CLI.
 
 ## Installation
 
 ```bash
-npm i -g @pzehrel/tinyimg-cli
+npm i -g @pz4l/tinyimg-cli
 ```
 
 Or use via `npx` without installing:
 
 ```bash
-npx @pzehrel/tinyimg-cli src/assets/**
+npx @pz4l/tinyimg-cli src/assets/**
 ```
 
 ## Usage

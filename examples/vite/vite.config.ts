@@ -1,4 +1,4 @@
-import tinyimg from '@pzehrel/tinyimg-vite'
+import tinyimg from '@pz4l/tinyimg-vite'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
