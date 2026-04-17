@@ -42,7 +42,7 @@ export interface PluginOptions extends Omit<CompressFileOptions, 'filePath'> {
   parallel?: number
 }
 
-export default function tinyimgVite(options: PluginOptions = {}): Plugin {
+export default function tinyimgVite(options: PluginOptions = {}): any {
   const plugin: Plugin = {
     name: 'tinyimg',
     apply: 'build',
