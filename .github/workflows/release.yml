@@ -97,14 +97,30 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add package.json packages/*/package.json CHANGELOG.md
-          git commit -m "chore: release v${{ steps.get_version.outputs.version }}"
-          git push origin HEAD:main
-        continue-on-error: true
+          git diff --cached --quiet || git commit -m "chore: release v${{ steps.get_version.outputs.version }}"
+        # Skip pushing to main since branch protection prevents it;
+        # version bumps should already be committed in the release tag.
 
       - name: Publish to npm
         run: |
-          # Publish all packages
-          pnpm -r --filter './packages/**' publish --access public --no-git-checks
+          VERSION=${{ steps.get_version.outputs.version }}
+          # Publish each package, skipping those already published at this version
+          for pkg_dir in packages/*/; do
+            pkg_name=$(jq -r .name "$pkg_dir/package.json")
+            # Skip private packages
+            is_private=$(jq -r '.private // false' "$pkg_dir/package.json")
+            if [ "$is_private" = "true" ]; then
+              echo "Skipping private package: $pkg_name"
+              continue
+            fi
+            # Check if this version is already published
+            if npm view "$pkg_name@$VERSION" version >/dev/null 2>&1; then
+              echo "Skipping $pkg_name@$VERSION (already published)"
+              continue
+            fi
+            echo "Publishing $pkg_name@$VERSION ..."
+            pnpm --filter "$pkg_name" publish --access public --no-git-checks
+          done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
