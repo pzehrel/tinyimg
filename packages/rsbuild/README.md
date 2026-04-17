@@ -1,13 +1,13 @@
-# @pzehrel/tinyimg-rsbuild
+# @pz4l/tinyimg-rsbuild
 
-[![npm version](https://img.shields.io/npm/v/@pzehrel/tinyimg-rsbuild)](https://www.npmjs.com/package/@pzehrel/tinyimg-rsbuild)
+[![npm version](https://img.shields.io/npm/v/@pz4l/tinyimg-rsbuild)](https://www.npmjs.com/package/@pz4l/tinyimg-rsbuild)
 
 TinyPNG image compression plugin for Rsbuild.
 
 ## Installation
 
 ```bash
-npm i -D @pzehrel/tinyimg-rsbuild
+npm i -D @pz4l/tinyimg-rsbuild
 ```
 
 ## Usage
@@ -15,7 +15,7 @@ npm i -D @pzehrel/tinyimg-rsbuild
 ```ts
 // rsbuild.config.ts
 import { defineConfig } from '@rsbuild/core'
-import tinyimg from '@pzehrel/tinyimg-rsbuild'
+import tinyimg from '@pz4l/tinyimg-rsbuild'
 
 export default defineConfig({
   plugins: [
@@ -57,7 +57,7 @@ export TINYIMG_KEY=your_api_key
 Or use the CLI to manage user keys:
 
 ```bash
-npx @pzehrel/tinyimg-cli keys add your_api_key
+npx @pz4l/tinyimg-cli keys add your_api_key
 export USE_USER_TINYIMG_KEYS=true
 ```
 

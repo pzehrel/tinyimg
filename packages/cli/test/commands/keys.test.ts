@@ -1,10 +1,10 @@
-import { addUserKeys, listProjectKeys, listUserKeys, removeUserKey, resolveProjectKeysFromEnv } from '@pzehrel/tinyimg-core'
+import { addUserKeys, listProjectKeys, listUserKeys, removeUserKey, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { runKeysAdd, runKeysDel, runKeysList } from '../../src/commands/keys'
 
-vi.mock('@pzehrel/tinyimg-core', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@pzehrel/tinyimg-core')>()
+vi.mock('@pz4l/tinyimg-core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@pz4l/tinyimg-core')>()
   return {
     ...actual,
     addUserKeys: vi.fn(),

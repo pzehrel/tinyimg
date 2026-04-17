@@ -1,4 +1,4 @@
-# @pzehrel/tinyimg-vite Example
+# @pz4l/tinyimg-vite Example
 
 A minimal web project demonstrating the `tinyimg` Vite plugin.
 

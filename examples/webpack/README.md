@@ -1,4 +1,4 @@
-# @pzehrel/tinyimg-webpack Example
+# @pz4l/tinyimg-webpack Example
 
 A minimal web project demonstrating the `tinyimg` Webpack plugin.
 

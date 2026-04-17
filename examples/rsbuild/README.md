@@ -1,4 +1,4 @@
-# @pzehrel/tinyimg-rsbuild Example
+# @pz4l/tinyimg-rsbuild Example
 
 A minimal web project demonstrating the `tinyimg` Rsbuild plugin.
 

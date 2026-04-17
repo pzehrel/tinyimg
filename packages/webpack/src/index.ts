@@ -1,12 +1,12 @@
-import type { CompressFileOptions } from '@pzehrel/tinyimg-core'
+import type { CompressFileOptions } from '@pz4l/tinyimg-core'
 import type { Compiler } from 'webpack'
 import { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
-import { canConvertToJpg, compressFile, createReporter, initKeyManager, listProjectKeys, listUserKeys, resolveProjectKeysFromEnv } from '@pzehrel/tinyimg-core'
-import { createLocaleI18n } from '@pzehrel/tinyimg-locale'
+import { canConvertToJpg, compressFile, createReporter, initKeyManager, listProjectKeys, listUserKeys, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
+import { createLocaleI18n } from '@pz4l/tinyimg-locale'
 import pLimit from 'p-limit'
 
 const t = createLocaleI18n()

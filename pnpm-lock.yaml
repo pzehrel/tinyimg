@@ -50,7 +50,7 @@ importers:
 
   examples/rsbuild:
     devDependencies:
-      '@pzehrel/tinyimg-rsbuild':
+      '@pz4l/tinyimg-rsbuild':
         specifier: workspace:*
         version: link:../../packages/rsbuild
       '@rsbuild/core':
@@ -62,7 +62,7 @@ importers:
 
   examples/vite:
     devDependencies:
-      '@pzehrel/tinyimg-vite':
+      '@pz4l/tinyimg-vite':
         specifier: workspace:*
         version: link:../../packages/vite
       typescript:
@@ -74,7 +74,7 @@ importers:
 
   examples/webpack:
     devDependencies:
-      '@pzehrel/tinyimg-webpack':
+      '@pz4l/tinyimg-webpack':
         specifier: workspace:*
         version: link:../../packages/webpack
       css-loader:
@@ -117,10 +117,10 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
     devDependencies:
-      '@pzehrel/tinyimg-core':
+      '@pz4l/tinyimg-core':
         specifier: workspace:*
         version: link:../core
-      '@pzehrel/tinyimg-locale':
+      '@pz4l/tinyimg-locale':
         specifier: workspace:*
         version: link:../locale
       '@types/node':
@@ -182,10 +182,10 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
     devDependencies:
-      '@pzehrel/tinyimg-core':
+      '@pz4l/tinyimg-core':
         specifier: workspace:*
         version: link:../core
-      '@pzehrel/tinyimg-locale':
+      '@pz4l/tinyimg-locale':
         specifier: workspace:*
         version: link:../locale
       '@rsbuild/core':
@@ -207,10 +207,10 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
     devDependencies:
-      '@pzehrel/tinyimg-core':
+      '@pz4l/tinyimg-core':
         specifier: workspace:*
         version: link:../core
-      '@pzehrel/tinyimg-locale':
+      '@pz4l/tinyimg-locale':
         specifier: workspace:*
         version: link:../locale
       tsdown:
@@ -232,10 +232,10 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
     devDependencies:
-      '@pzehrel/tinyimg-core':
+      '@pz4l/tinyimg-core':
         specifier: workspace:*
         version: link:../core
-      '@pzehrel/tinyimg-locale':
+      '@pz4l/tinyimg-locale':
         specifier: workspace:*
         version: link:../locale
       tsdown:

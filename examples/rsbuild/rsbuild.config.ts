@@ -1,4 +1,4 @@
-import tinyimg from '@pzehrel/tinyimg-rsbuild'
+import tinyimg from '@pz4l/tinyimg-rsbuild'
 import { defineConfig } from '@rsbuild/core'
 
 export default defineConfig({

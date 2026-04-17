@@ -2,7 +2,7 @@ import type { CommandDef } from 'citty'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
-import { canConvertToJpg, compressFile, initKeyManager, isProcessed, listProjectKeys, listUserKeys, markProcessed, matchFiles, resolveProjectKeysFromEnv } from '@pzehrel/tinyimg-core'
+import { canConvertToJpg, compressFile, initKeyManager, isProcessed, listProjectKeys, listUserKeys, markProcessed, matchFiles, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
 import kleur from 'kleur'
 import pLimit from 'p-limit'
 

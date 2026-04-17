@@ -1,5 +1,5 @@
 {
-  "name": "@pzehrel/tinyimg-webpack",
+  "name": "@pz4l/tinyimg-webpack",
   "type": "module",
   "version": "0.0.0",
   "exports": {
@@ -25,8 +25,8 @@
     "pathe": "^2.0.3"
   },
   "devDependencies": {
-    "@pzehrel/tinyimg-core": "workspace:*",
-    "@pzehrel/tinyimg-locale": "workspace:*",
+    "@pz4l/tinyimg-core": "workspace:*",
+    "@pz4l/tinyimg-locale": "workspace:*",
     "tsdown": "^0.21.8",
     "typescript": "^5.9.3",
     "webpack": "^5.98.0"

@@ -7,7 +7,7 @@
     "dev": "vite"
   },
   "devDependencies": {
-    "@pzehrel/tinyimg-vite": "workspace:*",
+    "@pz4l/tinyimg-vite": "workspace:*",
     "typescript": "^5.9.3",
     "vite": "^6.0.0"
   }
