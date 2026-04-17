@@ -18,7 +18,19 @@ npx @pz4l/tinyimg-cli src/assets/**
 
 ## Usage
 
-Compress images:
+### Global Options
+
+| Option                      | Alias | Description              | Default |
+| --------------------------- | ----- | ------------------------ | ------- |
+| `-o, --output <dir>`        | —     | Output directory         | —       |
+| `-s, --strategy <strategy>` | —     | Compression strategy     | `AUTO`  |
+| `--no-cache`                | —     | Disable cache            | `false` |
+| `-k, --key <keys>`          | —     | Comma-separated API keys | —       |
+| `-p, --parallel <number>`   | —     | Parallel limit           | `3`     |
+
+### Commands
+
+#### Default command (compress)
 
 ```bash
 tinyimg src/assets/**
@@ -26,59 +38,74 @@ tinyimg src/assets/** -o dist/images
 tinyimg src/assets/** -s API_FIRST -k YOUR_API_KEY
 ```
 
-## CLI Options
+#### `tinyimg convert <paths>`
 
-| Option                      | Description                            |
-| --------------------------- | -------------------------------------- |
-| `-o, --output <dir>`        | Output directory                       |
-| `-s, --strategy <strategy>` | Compression strategy (default: `AUTO`) |
-| `--noCache`                 | Disable cache                          |
-| `-k, --key <keys>`          | Comma-separated API keys               |
-| `-p, --parallel <number>`   | Parallel limit (default: `3`)          |
+Convert PNGs without alpha to JPG.
 
-## Subcommands
+- `--noRename` — Keep original `.png` extension (only changes encoding)
 
-### `tinyimg convert <paths>`
-
-Convert PNG to JPG (only for PNGs without alpha).
-
-- `--noRename` — Keep original `.png` extension.
-
-### `tinyimg keys add <key>`
-
-Add and verify an API key.
-
-### `tinyimg keys del`
-
-Delete a saved key.
-
-### `tinyimg list <paths>` (alias `ls`)
-
-List image files.
-
-## Compression Strategies
-
-- `API_ONLY`: always use TinyPNG API. Requires an API key.
-- `RANDOM`: randomly choose between API and web compressor.
-- `API_FIRST`: prefer API; fallback to web compressor on 401/429.
-- `AUTO`: same as `API_FIRST` when an API key is available, otherwise `RANDOM`.
-
-## API Key Setup
-
-Set an environment variable before running:
+Example:
 
 ```bash
-export TINYIMG_KEY=your_api_key
+tinyimg convert src/assets/**
+tinyimg convert src/assets/** --noRename
 ```
 
-Supported variable names: `TINYIMG_KEY`, `TINYIMG_KEYS`, `TINYPNG_KEY`, `TINYPNG_KEYS`.
+#### `tinyimg keys <subcommand>`
 
-Or use user-level keys:
+Manage API keys.
+
+- `tinyimg keys add <key>` — Add and verify an API key (supports multiple keys at once)
+- `tinyimg keys del <maskedKey>` — Delete a saved key
+- `tinyimg keys` (no subcommand) — List all keys
+
+Example:
 
 ```bash
 tinyimg keys add your_api_key
-export USE_USER_TINYIMG_KEYS=true
+tinyimg keys add key1 key2 key3
+tinyimg keys del xxxx...xxxx
+tinyimg keys
 ```
+
+#### `tinyimg list <paths>` (alias `ls`)
+
+List image files with metadata.
+
+- `--json` — Output as JSON
+- `--convert` or `-c` — Show only convertible PNGs
+
+Example:
+
+```bash
+tinyimg list src/assets/**
+tinyimg ls src/assets/** -c
+```
+
+## Compression Strategies
+
+- `API_ONLY`: Always use the TinyPNG API. Requires an API key.
+- `RANDOM`: Randomly choose between the TinyPNG API and the web endpoint.
+- `API_FIRST`: Prefer the TinyPNG API; fallback to the web endpoint when the API key is invalid or rate-limited.
+- `AUTO`: Same as `API_FIRST` when an API key is available, otherwise falls back to `RANDOM`.
+
+## API Key Setup
+
+### Project-level keys
+
+The CLI automatically reads `.env` and `.env.local` in the current working directory on startup.
+
+Supported variable names: `TINYIMG_KEY`, `TINYIMG_KEYS`, `TINYPNG_KEY`, `TINYPNG_KEYS` (and any prefixed variant like `VITE_TINYIMG_KEY` — matched by suffix).
+
+Example `.env.local`:
+
+```bash
+TINYIMG_KEY=your_api_key
+```
+
+### User-level keys
+
+Stored via `tinyimg keys add <key>` in `~/.tinyimg/keys.json`. Used as fallback when no project keys are available.
 
 ## License
 

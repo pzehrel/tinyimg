@@ -12,6 +12,20 @@ npm i -D @pz4l/tinyimg-rsbuild
 
 ## Usage
 
+Zero-config usage:
+
+```ts
+// rsbuild.config.ts
+import { defineConfig } from '@rsbuild/core'
+import tinyimg from '@pz4l/tinyimg-rsbuild'
+
+export default defineConfig({
+  plugins: [tinyimg()],
+})
+```
+
+With options:
+
 ```ts
 // rsbuild.config.ts
 import { defineConfig } from '@rsbuild/core'
@@ -40,25 +54,21 @@ export default defineConfig({
 
 ## Compression Strategies
 
-- `API_ONLY`: always use TinyPNG API. Requires an API key.
-- `RANDOM`: randomly choose between API and web compressor.
-- `API_FIRST`: prefer API; fallback to web compressor on 401/429.
-- `AUTO`: same as `API_FIRST` when an API key is available, otherwise `RANDOM`.
+- `API_ONLY`: Always use the TinyPNG API. Requires an API key.
+- `RANDOM`: Randomly choose between the TinyPNG API and the web endpoint.
+- `API_FIRST`: Prefer the TinyPNG API; fallback to the web endpoint when the API key is invalid or rate-limited.
+- `AUTO`: Same as `API_FIRST` when an API key is available, otherwise falls back to `RANDOM`.
 
 ## API Key Setup
 
-Set environment variable before building:
+Plugins do not read `.env` files themselves; the build tool (Rsbuild) loads them. It is recommended to use `.env.local` for local secrets.
+
+Supported variable names: any ending with `TINYIMG_KEY`, `TINYIMG_KEYS`, `TINYPNG_KEY`, `TINYPNG_KEYS`. You can also add a prefix, e.g. `APP_TINYIMG_KEY`.
+
+Example:
 
 ```bash
-export TINYIMG_KEY=your_api_key
-# Supported: TINYIMG_KEY, TINYIMG_KEYS, TINYPNG_KEY, TINYPNG_KEYS
-```
-
-Or use the CLI to manage user keys:
-
-```bash
-npx @pz4l/tinyimg-cli keys add your_api_key
-export USE_USER_TINYIMG_KEYS=true
+RSBUILD_TINYIMG_KEY=your_api_key
 ```
 
 ## Example
