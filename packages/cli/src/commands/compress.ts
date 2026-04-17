@@ -91,7 +91,7 @@ export function registerCompress(t: (key: string, params?: Record<string, string
               convertiblePngs.push(file.path)
             }
 
-            if (await isProcessed(buf)) {
+            if (!args.noCache && await isProcessed(buf)) {
               const sizeStr = formatSize(file.size)
               console.log(kleur.green(t('status.success')), relPath.padEnd(40), `${sizeStr}→${sizeStr}${formatExtras(['-0%', convertible ? t('cli.output.convertible') : undefined])}`)
               cached++
