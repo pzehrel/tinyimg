@@ -18,8 +18,8 @@ TinyPNG image compression tool with multi-architecture support. Compress images 
 
 ## Packages
 
-| Package                                                                              | Description                                           |
-| ------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| Package                                                                        | Description                                           |
+| ------------------------------------------------------------------------------ | ----------------------------------------------------- |
 | [`@pz4l/tinyimg-cli`](https://www.npmjs.com/package/@pz4l/tinyimg-cli)         | CLI tool for compressing images from the command line |
 | [`@pz4l/tinyimg-vite`](https://www.npmjs.com/package/@pz4l/tinyimg-vite)       | Vite plugin                                           |
 | [`@pz4l/tinyimg-webpack`](https://www.npmjs.com/package/@pz4l/tinyimg-webpack) | Webpack plugin                                        |
