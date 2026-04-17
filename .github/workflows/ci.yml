@@ -54,7 +54,7 @@ jobs:
         run: pnpm build
 
       - name: Type check all packages
-        run: pnpm -r --filter './packages/**' run typecheck
+        run: pnpm exec tsc --noEmit
 
   test:
     name: Test
