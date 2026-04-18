@@ -41,6 +41,11 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         alias: 'p',
         default: '3',
       },
+      convert: {
+        type: 'boolean',
+        description: t('cli.arg.convert.description'),
+        default: true,
+      },
     },
     async run({ args, cmd }) {
       const subCommands = ['convert', 'keys', 'list', 'ls']
@@ -79,6 +84,7 @@ export function registerCompress(t: (key: string, params?: Record<string, string
       let saved = 0
       let compressionCount: number | undefined
       const convertiblePngs: string[] = []
+      const convertedPngs: string[] = []
 
       await Promise.all(
         files.map(file =>
@@ -102,6 +108,7 @@ export function registerCompress(t: (key: string, params?: Record<string, string
               filePath: file.path,
               strategy: args.strategy as 'AUTO' | 'API_ONLY' | 'RANDOM' | 'API_FIRST',
               maxFileSize: 5 * 1024 * 1024,
+              convertPngToJpg: args.convert as boolean,
             })
 
             if (result.error) {
@@ -116,8 +123,11 @@ export function registerCompress(t: (key: string, params?: Record<string, string
               compressionCount = result.compressionCount
             }
 
-            const ext = path.extname(file.path).slice(1).toLowerCase()
-            const processedBuf = await markProcessed(result.buffer, ext as 'png' | 'jpg' | 'jpeg' | 'webp')
+            if (result.convertedPngToJpg) {
+              convertedPngs.push(file.path)
+            }
+
+            const processedBuf = await markProcessed(result.buffer, result.outputExt)
 
             const outputDir = args.output as string | undefined
             let outputPath = file.path
@@ -148,7 +158,10 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         ),
       )
 
-      if (convertiblePngs.length > 0) {
+      if (args.convert && convertedPngs.length > 0) {
+        console.log(kleur.yellow(t('cli.output.convertedPngsHint', { count: convertedPngs.length })))
+      }
+      else if (!args.convert && convertiblePngs.length > 0) {
         console.log(kleur.yellow(t('cli.output.convertiblePngsHint', { count: convertiblePngs.length })))
         console.log(kleur.yellow(t('cli.output.convertiblePngsCommand')))
       }

@@ -20,13 +20,14 @@ npx @pz4l/tinyimg-cli src/assets/**
 
 ### Global Options
 
-| Option                      | Alias | Description              | Default |
-| --------------------------- | ----- | ------------------------ | ------- |
-| `-o, --output <dir>`        | —     | Output directory         | —       |
-| `-s, --strategy <strategy>` | —     | Compression strategy     | `AUTO`  |
-| `--no-cache`                | —     | Disable cache            | `false` |
-| `-k, --key <keys>`          | —     | Comma-separated API keys | —       |
-| `-p, --parallel <number>`   | —     | Parallel limit           | `3`     |
+| Option                      | Alias | Description                   | Default |
+| --------------------------- | ----- | ----------------------------- | ------- |
+| `-o, --output <dir>`        | —     | Output directory              | —       |
+| `-s, --strategy <strategy>` | —     | Compression strategy          | `AUTO`  |
+| `--no-convert`              | —     | Disable PNG to JPG conversion | `false` |
+| `--no-cache`                | —     | Disable cache                 | `false` |
+| `-k, --key <keys>`          | —     | Comma-separated API keys      | —       |
+| `-p, --parallel <number>`   | —     | Parallel limit                | `3`     |
 
 ### Commands
 
@@ -36,6 +37,7 @@ npx @pz4l/tinyimg-cli src/assets/**
 tinyimg src/assets/**
 tinyimg src/assets/** -o dist/images
 tinyimg src/assets/** -s API_FIRST -k YOUR_API_KEY
+tinyimg src/assets/** --no-convert
 ```
 
 #### `tinyimg convert <paths>`

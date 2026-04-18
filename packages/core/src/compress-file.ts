@@ -27,6 +27,7 @@ export interface CompressFileResult {
   cached: boolean
   convertedPngToJpg?: boolean
   compressionCount?: number
+  outputExt: 'png' | 'jpg' | 'jpeg' | 'webp'
   error?: Error
 }
 
@@ -56,6 +57,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
   const originalBuffer = await fs.readFile(filePath)
   const originalSize = originalBuffer.length
   let ext = path.extname(filePath).slice(1).toLowerCase()
+  const originalExt = ext
   const md5 = crypto.createHash('md5').update(originalBuffer).digest('hex')
   const cacheSuffix = doConvert ? '-c' : ''
   const projectCacheDir = getCacheDir(process.cwd())
@@ -70,6 +72,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
       ratio: cached.length / originalSize,
       compressor: 'Cache',
       cached: true,
+      outputExt: ext as 'png' | 'jpg' | 'jpeg' | 'webp',
     }
   }
 
@@ -174,6 +177,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
       cached: false,
       convertedPngToJpg,
       compressionCount,
+      outputExt: ext as 'png' | 'jpg' | 'jpeg' | 'webp',
     }
   }
   catch (err: any) {
@@ -186,6 +190,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
       cached: false,
       convertedPngToJpg: false,
       compressionCount,
+      outputExt: originalExt as 'png' | 'jpg' | 'jpeg' | 'webp',
       error: err instanceof Error ? err : new Error(String(err)),
     }
   }
