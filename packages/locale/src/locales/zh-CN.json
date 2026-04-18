@@ -31,6 +31,7 @@
   "cli.arg.key.description": "以逗号分隔的 API 密钥",
   "cli.arg.parallel.description": "并行限制",
   "cli.arg.convert.description": "启用 PNG 转 JPG（仅对不含透明通道的 PNG 生效）",
+  "cli.arg.noConvert.description": "禁用 PNG 转 JPG",
   "cli.arg.keys.description": "API 密钥",
   "cli.arg.maskedKey.description": "要删除的掩码密钥",
   "cli.arg.json.description": "以 JSON 格式输出",
@@ -60,6 +61,7 @@
   "cli.output.no": "否",
   "cli.output.convertiblePngsHint": "有 {count} 个 PNG 文件可以转换为 JPG 以进一步减小体积：",
   "cli.output.convertiblePngsCommand": "执行 `tinyimg convert <paths>` 进行转换。",
+  "cli.output.convertedPngsHint": "有 {count} 个 PNG 文件已自动转换为 JPG 编码。",
 
   "plugin.output.converted": "已转换"
 }
