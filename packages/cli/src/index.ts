@@ -21,6 +21,7 @@ const main = defineCommand({
   },
   ...registerCompress(t),
   subCommands: {
+    cache: () => import('./commands/cache').then(m => m.default),
     convert: () => import('./commands/convert').then(m => m.default),
     keys: () => import('./commands/keys').then(m => m.default),
     list: () => import('./commands/list').then(m => m.default),
@@ -29,7 +30,7 @@ const main = defineCommand({
 })
 
 const rawArgs = process.argv.slice(2)
-const subCommands = ['convert', 'keys', 'list', 'ls']
+const subCommands = ['cache', 'convert', 'keys', 'list', 'ls']
 const firstNonFlagIndex = rawArgs.findIndex(arg => !arg.startsWith('-'))
 let cliRawArgs = rawArgs
 if (
