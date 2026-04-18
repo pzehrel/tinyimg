@@ -24,7 +24,7 @@
   "cli.command.list.description": "List image files",
 
   "cli.arg.paths.description": "image paths or globs",
-  "cli.arg.noRename.description": "keep the original .png extension (only change encoding)",
+  "cli.arg.rename.description": "rename .png to .jpg extension",
   "cli.arg.output.description": "output directory",
   "cli.arg.strategy.description": "compression strategy",
   "cli.arg.noCache.description": "disable cache",
