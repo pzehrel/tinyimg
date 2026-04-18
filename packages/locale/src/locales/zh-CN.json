@@ -24,7 +24,7 @@
   "cli.command.list.description": "列出图片文件",
 
   "cli.arg.paths.description": "图片路径或通配符",
-  "cli.arg.noRename.description": "保留原 .png 扩展名（仅改变编码）",
+  "cli.arg.rename.description": "将 .png 扩展名替换为 .jpg",
   "cli.arg.output.description": "输出目录",
   "cli.arg.strategy.description": "压缩策略",
   "cli.arg.noCache.description": "禁用缓存",
