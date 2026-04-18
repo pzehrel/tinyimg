@@ -30,20 +30,37 @@ export interface WebCompressResult {
   compressor: string
 }
 
-const MAX_RETRIES = 2
+const MAX_RETRIES = 5
 const RETRY_DELAY_MS = 1000
+const MAX_BACKOFF_MS = 7000
 
-let lock = Promise.resolve()
+let concurrencyLimit = Infinity
+let activeCount = 0
+const waitQueue: Array<() => void> = []
 
-async function acquire(): Promise<() => void> {
-  let release: () => void
-  const next = new Promise<void>((resolve) => {
-    release = resolve
+function acquire(): Promise<() => void> {
+  return new Promise((resolve) => {
+    if (activeCount < concurrencyLimit) {
+      activeCount++
+      resolve(() => {
+        activeCount--
+        const next = waitQueue.shift()
+        if (next)
+          next()
+      })
+    }
+    else {
+      waitQueue.push(() => {
+        activeCount++
+        resolve(() => {
+          activeCount--
+          const next = waitQueue.shift()
+          if (next)
+            next()
+        })
+      })
+    }
   })
-  const prev = lock
-  lock = lock.then(() => next)
-  await prev
-  return release!
 }
 
 export async function webCompress(
@@ -53,7 +70,7 @@ export async function webCompress(
 ): Promise<WebCompressResult> {
   const release = await acquire()
   try {
-    let lastError: ServerError | undefined
+    let lastError: ServerError | ClientError | undefined
     let attempt = 0
 
     while (attempt <= MAX_RETRIES) {
@@ -78,6 +95,10 @@ export async function webCompress(
           throw new ServerError(`failed with status ${res.status}${errorDetail ? `: ${errorDetail}` : ''}`, res.status, 'WebCompressor')
         }
 
+        if (res.status === 429) {
+          throw new ClientError(`rate limited: ${res.status}${errorDetail ? `: ${errorDetail}` : ''}`, res.status, 'WebCompressor')
+        }
+
         if (res.status >= 400 && res.status <= 499) {
           throw new ClientError(`failed with status ${res.status}${errorDetail ? `: ${errorDetail}` : ''}`, res.status, 'WebCompressor')
         }
@@ -99,10 +120,16 @@ export async function webCompress(
         return { buffer: compressed, compressor: 'WebCompressor' }
       }
       catch (err) {
-        if (err instanceof ServerError) {
+        const isRateLimit = err instanceof ClientError && err.status === 429
+        if (isRateLimit && concurrencyLimit === Infinity) {
+          concurrencyLimit = 2
+        }
+
+        if (err instanceof ServerError || isRateLimit) {
           lastError = err
           if (attempt < MAX_RETRIES) {
-            await sleep(randomDelay(retryDelayMs, retryDelayMs + 3000))
+            const baseDelay = Math.min(retryDelayMs * (2 ** attempt), MAX_BACKOFF_MS)
+            await sleep(randomDelay(baseDelay, baseDelay + 3000))
             attempt++
             continue
           }

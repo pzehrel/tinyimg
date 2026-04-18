@@ -73,7 +73,7 @@ describe('webCompress', () => {
     expect(client.request).toHaveBeenCalledTimes(1)
   })
 
-  it('maps 500 to ServerError and retries up to 2 times', async () => {
+  it('maps 500 to ServerError and retries up to 5 times', async () => {
     const client = createMockClient(
       async () => ({
         status: 500,
@@ -85,8 +85,23 @@ describe('webCompress', () => {
     await expect(webCompress(Buffer.from('input'), client, 0)).rejects.toThrow(
       ServerError,
     )
-    expect(client.request).toHaveBeenCalledTimes(3)
-  })
+    expect(client.request).toHaveBeenCalledTimes(6)
+  }, 20000)
+
+  it('maps 429 to ClientError and retries up to 5 times', async () => {
+    const client = createMockClient(
+      async () => ({
+        status: 429,
+        headers: {},
+        data: Buffer.from(''),
+      }),
+    )
+
+    await expect(webCompress(Buffer.from('input'), client, 0)).rejects.toThrow(
+      ClientError,
+    )
+    expect(client.request).toHaveBeenCalledTimes(6)
+  }, 20000)
 
   it('recovers after a single 5xx error', async () => {
     let calls = 0
@@ -95,6 +110,28 @@ describe('webCompress', () => {
         calls++
         if (calls === 1) {
           return { status: 503, headers: {}, data: Buffer.from('') }
+        }
+        return {
+          status: 200,
+          headers: {},
+          data: Buffer.from(JSON.stringify({ output: { url: 'https://tinypng.com/output/ok' } })),
+        }
+      },
+      async () => Buffer.from('recovered'),
+    )
+
+    const result = await webCompress(Buffer.from('input'), client, 0)
+    expect(result.buffer.toString()).toBe('recovered')
+    expect(calls).toBe(2)
+  })
+
+  it('recovers after a single 429 error', async () => {
+    let calls = 0
+    const client = createMockClient(
+      async () => {
+        calls++
+        if (calls === 1) {
+          return { status: 429, headers: {}, data: Buffer.from('') }
         }
         return {
           status: 200,
