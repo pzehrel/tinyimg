@@ -1,10 +1,10 @@
 import type { CommandDef } from 'citty'
 import fs from 'node:fs/promises'
-import path from 'node:path'
 import process from 'node:process'
 import { matchFiles, readCache } from '@pz4l/tinyimg-core'
 import { createLocaleI18n } from '@pz4l/tinyimg-locale'
 import kleur from 'kleur'
+import path from 'pathe'
 
 const t = createLocaleI18n()
 

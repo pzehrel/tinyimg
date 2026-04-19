@@ -1,8 +1,8 @@
 import { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
 import os from 'node:os'
-import path from 'node:path'
 import process from 'node:process'
+import path from 'pathe'
 import { HttpClient } from './http-client'
 import { maskKey } from './utils/mask'
 
