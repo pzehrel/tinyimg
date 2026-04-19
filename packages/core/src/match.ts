@@ -1,8 +1,8 @@
 import crypto from 'node:crypto'
 import fs from 'node:fs/promises'
-import path from 'node:path'
 import process from 'node:process'
 import fg from 'fast-glob'
+import path from 'pathe'
 import { canConvertToJpg } from './convert'
 
 export interface MatchOptions {

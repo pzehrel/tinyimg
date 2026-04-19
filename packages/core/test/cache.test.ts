@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
 import os from 'node:os'
-import path from 'node:path'
+import path from 'pathe'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { clearCache, getCacheDir, getUserCacheDir, listCacheEntries, readCache, writeCache } from '../src/cache'
 

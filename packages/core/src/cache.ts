@@ -1,7 +1,7 @@
 import type { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
 import os from 'node:os'
-import path from 'node:path'
+import path from 'pathe'
 
 export async function readCache(md5: string, ext: string, cacheDir: string): Promise<Buffer | null> {
   const filePath = path.join(cacheDir, `${md5}.${ext}`)

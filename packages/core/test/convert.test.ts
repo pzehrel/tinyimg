@@ -1,7 +1,7 @@
 import type { Buffer } from 'node:buffer'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join } from 'pathe'
 import sharp from 'sharp'
 import { describe, expect, it } from 'vitest'
 import { canConvertToJpg, convertPngToJpg, isProcessed, markProcessed } from '../src/convert'
