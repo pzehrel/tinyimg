@@ -65,6 +65,7 @@ export default function tinyimgRsbuild(options: PluginOptions = {}): RsbuildPlug
         let success = 0
         let cached = 0
         let failed = 0
+        let alreadyProcessed = 0
         let saved = 0
         let compressionCount: number | undefined
         const convertiblePngs: string[] = []
@@ -112,7 +113,10 @@ export default function tinyimgRsbuild(options: PluginOptions = {}): RsbuildPlug
 
               compilation.updateAsset(name, new sources.RawSource(result.buffer))
 
-              if (result.cached) {
+              if (result.alreadyProcessed) {
+                alreadyProcessed++
+              }
+              else if (result.cached) {
                 cached++
               }
               else {
@@ -136,6 +140,7 @@ export default function tinyimgRsbuild(options: PluginOptions = {}): RsbuildPlug
             cached,
             failed,
             saved,
+            alreadyProcessed,
             compressionCount,
           })
 

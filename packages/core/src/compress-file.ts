@@ -8,7 +8,7 @@ import { readCache, writeCache } from './cache'
 import { apiCompress } from './compressors/api'
 import { localCompress } from './compressors/local'
 import { webCompress } from './compressors/web'
-import { convertPngToJpg } from './convert'
+import { convertPngToJpg, isProcessed } from './convert'
 import { getKey, getUserKey } from './key-manager'
 
 export interface CompressFileOptions {
@@ -25,6 +25,7 @@ export interface CompressFileResult {
   ratio: number
   compressor: string
   cached: boolean
+  alreadyProcessed?: boolean
   convertedPngToJpg?: boolean
   compressionCount?: number
   outputExt: 'png' | 'jpg' | 'jpeg' | 'webp'
@@ -58,6 +59,20 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
   const originalSize = originalBuffer.length
   let ext = path.extname(filePath).slice(1).toLowerCase()
   const originalExt = ext
+
+  if (await isProcessed(originalBuffer)) {
+    return {
+      buffer: originalBuffer,
+      originalSize,
+      compressedSize: originalSize,
+      ratio: 1,
+      compressor: 'AlreadyProcessed',
+      cached: false,
+      alreadyProcessed: true,
+      outputExt: originalExt as 'png' | 'jpg' | 'jpeg' | 'webp',
+    }
+  }
+
   const md5 = crypto.createHash('md5').update(originalBuffer).digest('hex')
   const cacheSuffix = doConvert ? '-c' : ''
   const projectCacheDir = getCacheDir(process.cwd())

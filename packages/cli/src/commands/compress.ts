@@ -1,7 +1,7 @@
 import type { CommandDef } from 'citty'
 import fs from 'node:fs/promises'
 import process from 'node:process'
-import { canConvertToJpg, compressFile, initKeyManager, isProcessed, listProjectKeys, listUserKeys, markProcessed, matchFiles, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
+import { canConvertToJpg, compressFile, initKeyManager, listProjectKeys, listUserKeys, markProcessed, matchFiles, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
 import kleur from 'kleur'
 import pLimit from 'p-limit'
 import path from 'pathe'
@@ -81,6 +81,7 @@ export function registerCompress(t: (key: string, params?: Record<string, string
       let success = 0
       let failed = 0
       let cached = 0
+      let alreadyProcessed = 0
       let saved = 0
       let compressionCount: number | undefined
       const convertiblePngs: string[] = []
@@ -89,19 +90,11 @@ export function registerCompress(t: (key: string, params?: Record<string, string
       await Promise.all(
         files.map(file =>
           limit(async () => {
-            const buf = await fs.readFile(file.path)
             const relPath = path.relative(process.cwd(), file.path)
             const isPng = file.path.toLowerCase().endsWith('.png')
             const convertible = isPng ? await canConvertToJpg(file.path) : false
             if (convertible) {
               convertiblePngs.push(file.path)
-            }
-
-            if (!args.noCache && await isProcessed(buf)) {
-              const sizeStr = formatSize(file.size)
-              console.log(kleur.green(t('status.success')), relPath.padEnd(40), `${sizeStr}→${sizeStr}${formatExtras(['-0%', convertible ? t('cli.output.convertible') : undefined])}`)
-              cached++
-              return
             }
 
             const result = await compressFile({
@@ -127,28 +120,42 @@ export function registerCompress(t: (key: string, params?: Record<string, string
               convertedPngs.push(file.path)
             }
 
-            const processedBuf = await markProcessed(result.buffer, result.outputExt)
+            if (!result.alreadyProcessed) {
+              const processedBuf = await markProcessed(result.buffer, result.outputExt)
 
-            const outputDir = args.output as string | undefined
-            let outputPath = file.path
-            if (outputDir) {
-              outputPath = path.join(outputDir, path.relative(process.cwd(), outputPath))
-              await fs.mkdir(path.dirname(outputPath), { recursive: true })
+              const outputDir = args.output as string | undefined
+              let outputPath = file.path
+              if (outputDir) {
+                outputPath = path.join(outputDir, path.relative(process.cwd(), outputPath))
+                await fs.mkdir(path.dirname(outputPath), { recursive: true })
+              }
+
+              await fs.writeFile(outputPath, processedBuf)
             }
 
-            await fs.writeFile(outputPath, processedBuf)
-
-            const origStr = formatSize(result.originalSize)
-            const compStr = formatSize(result.compressedSize)
-            const ratio = Math.round((1 - result.compressedSize / result.originalSize) * 100)
-            const extras: (string | undefined)[] = [`-${ratio}%`]
-            if (result.cached) {
-              extras.push(t('cli.output.usedCache'))
+            if (result.alreadyProcessed) {
+              alreadyProcessed++
+            }
+            else if (result.cached) {
               cached++
             }
             else {
               success++
               saved += result.originalSize - result.compressedSize
+            }
+
+            const origStr = formatSize(result.originalSize)
+            const compStr = formatSize(result.compressedSize)
+            const extras: (string | undefined)[] = []
+            if (result.alreadyProcessed) {
+              extras.push(t('cli.output.alreadyProcessed'))
+            }
+            else {
+              const ratio = Math.round((1 - result.compressedSize / result.originalSize) * 100)
+              extras.push(`-${ratio}%`)
+              if (result.cached) {
+                extras.push(t('cli.output.usedCache'))
+              }
             }
             if (convertible) {
               extras.push(t('cli.output.convertible'))
@@ -180,6 +187,9 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         `${t('summary.failed')}: ${failed}`,
         `${t('cli.output.saved')}: ${formatSize(saved)}`,
       ]
+      if (alreadyProcessed > 0) {
+        summaryParts.push(`${t('summary.processed')}: ${alreadyProcessed}`)
+      }
       if (typeof compressionCount === 'number') {
         summaryParts.push(`${t('cli.output.usedThisMonth')}: ${compressionCount}`)
       }

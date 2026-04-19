@@ -19,6 +19,7 @@ export interface ReporterSummary {
   cached: number
   failed: number
   saved: number
+  alreadyProcessed?: number
   compressionCount?: number
 }
 
@@ -30,9 +31,15 @@ export function createReporter(options: ReporterOptions) {
       const ratio = Math.round((1 - result.compressedSize / result.originalSize) * 100)
       const origStr = formatSize(result.originalSize)
       const compStr = formatSize(result.compressedSize)
-      const extras: (string | undefined)[] = [`-${ratio}%`]
-      if (result.cached) {
-        extras.push(t('cli.output.usedCache'))
+      const extras: (string | undefined)[] = []
+      if (result.alreadyProcessed) {
+        extras.push(t('cli.output.alreadyProcessed'))
+      }
+      else {
+        extras.push(`-${ratio}%`)
+        if (result.cached) {
+          extras.push(t('cli.output.usedCache'))
+        }
       }
       if (result.convertedPngToJpg) {
         extras.push(t('plugin.output.converted'))
@@ -55,6 +62,9 @@ export function createReporter(options: ReporterOptions) {
         `${t('summary.failed')}: ${summary.failed}`,
         `${t('cli.output.saved')}: ${formatSize(summary.saved)}`,
       ]
+      if (typeof summary.alreadyProcessed === 'number' && summary.alreadyProcessed > 0) {
+        parts.push(`${t('summary.processed')}: ${summary.alreadyProcessed}`)
+      }
       if (typeof summary.compressionCount === 'number') {
         parts.push(`${t('cli.output.usedThisMonth')}: ${summary.compressionCount}`)
       }
