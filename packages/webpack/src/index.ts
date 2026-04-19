@@ -71,6 +71,7 @@ export default class TinyimgWebpackPlugin {
           let success = 0
           let cached = 0
           let failed = 0
+          let alreadyProcessed = 0
           let saved = 0
           let compressionCount: number | undefined
           const convertiblePngs: string[] = []
@@ -116,7 +117,10 @@ export default class TinyimgWebpackPlugin {
 
                 compilation.updateAsset(asset.name, new compiler.webpack.sources.RawSource(result.buffer))
 
-                if (result.cached) {
+                if (result.alreadyProcessed) {
+                  alreadyProcessed++
+                }
+                else if (result.cached) {
                   cached++
                 }
                 else {
@@ -140,6 +144,7 @@ export default class TinyimgWebpackPlugin {
               cached,
               failed,
               saved,
+              alreadyProcessed,
               compressionCount,
             })
 

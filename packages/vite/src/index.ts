@@ -63,6 +63,7 @@ export default function tinyimgVite(options: PluginOptions = {}): any {
       let success = 0
       let cached = 0
       let failed = 0
+      let alreadyProcessed = 0
       let saved = 0
       let compressionCount: number | undefined
       const convertiblePngs: string[] = []
@@ -107,7 +108,10 @@ export default function tinyimgVite(options: PluginOptions = {}): any {
 
             asset.source = result.buffer
 
-            if (result.cached) {
+            if (result.alreadyProcessed) {
+              alreadyProcessed++
+            }
+            else if (result.cached) {
               cached++
             }
             else {
@@ -131,6 +135,7 @@ export default function tinyimgVite(options: PluginOptions = {}): any {
           cached,
           failed,
           saved,
+          alreadyProcessed,
           compressionCount,
         })
 
