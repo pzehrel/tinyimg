@@ -1,7 +1,7 @@
 import type { CommandDef } from 'citty'
 import fs from 'node:fs/promises'
 import process from 'node:process'
-import { canConvertToJpg, compressFile, initKeyManager, listProjectKeys, listUserKeys, markProcessed, matchFiles, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
+import { canConvertToJpg, compressFile, formatExtras, formatSize, initKeyManager, listProjectKeys, listUserKeys, markProcessed, matchFiles, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
 import kleur from 'kleur'
 import pLimit from 'p-limit'
 import path from 'pathe'
@@ -108,6 +108,9 @@ export function registerCompress(t: (key: string, params?: Record<string, string
               noCache: args.noCache as boolean,
             })
 
+            totalOriginalSize += result.originalSize
+            totalCompressedSize += result.compressedSize
+
             if (result.error) {
               const errorMsg = String(result.error.message || 'Unknown error').replace(/\n/g, ' ')
               const compressorName = (result.error as any).compressor || result.compressor
@@ -124,17 +127,16 @@ export function registerCompress(t: (key: string, params?: Record<string, string
               convertedPngs.push(file.path)
             }
 
-            if (!result.alreadyProcessed) {
+            const outputDir = args.output as string | undefined
+            if (outputDir) {
+              const outputPath = path.join(outputDir, path.relative(process.cwd(), file.path))
+              await fs.mkdir(path.dirname(outputPath), { recursive: true })
+              const buf = result.alreadyProcessed ? result.buffer : await markProcessed(result.buffer, result.outputExt)
+              await fs.writeFile(outputPath, buf)
+            }
+            else if (!result.alreadyProcessed) {
               const processedBuf = await markProcessed(result.buffer, result.outputExt)
-
-              const outputDir = args.output as string | undefined
-              let outputPath = file.path
-              if (outputDir) {
-                outputPath = path.join(outputDir, path.relative(process.cwd(), outputPath))
-                await fs.mkdir(path.dirname(outputPath), { recursive: true })
-              }
-
-              await fs.writeFile(outputPath, processedBuf)
+              await fs.writeFile(file.path, processedBuf)
             }
 
             totalOriginalSize += result.originalSize
@@ -209,17 +211,4 @@ export function registerCompress(t: (key: string, params?: Record<string, string
       process.exit(failed > 0 ? 1 : 0)
     },
   }
-}
-
-function formatExtras(tags: (string | undefined)[]): string {
-  const filtered = tags.filter((t): t is string => typeof t === 'string')
-  return filtered.length ? ` (${filtered.join(', ')})` : ''
-}
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024)
-    return `${bytes}B`
-  if (bytes < 1024 * 1024)
-    return `${(bytes / 1024).toFixed(1)}KB`
-  return `${(bytes / 1024 / 1024).toFixed(1)}MB`
 }
