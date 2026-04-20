@@ -1,7 +1,7 @@
 import type { CommandDef } from 'citty'
 import fs from 'node:fs/promises'
 import process from 'node:process'
-import { matchFiles, readCache } from '@pz4l/tinyimg-core'
+import { formatSize, matchFiles, readCache } from '@pz4l/tinyimg-core'
 import { createLocaleI18n } from '@pz4l/tinyimg-locale'
 import kleur from 'kleur'
 import path from 'pathe'
@@ -85,14 +85,6 @@ export async function runList(args: { paths: string | undefined, _: string[], js
     }
     deps.log(`\n${summaryParts.join('  ')}`)
   }
-}
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024)
-    return `${bytes}B`
-  if (bytes < 1024 * 1024)
-    return `${(bytes / 1024).toFixed(1)}KB`
-  return `${(bytes / 1024 / 1024).toFixed(1)}MB`
 }
 
 function getLineColor(bytes: number) {
