@@ -21,12 +21,77 @@ export interface ReporterSummary {
   saved: number
   alreadyProcessed?: number
   compressionCount?: number
+  totalOriginalSize?: number
+  totalCompressedSize?: number
+}
+
+class StatsCollector {
+  total = 0
+  success = 0
+  failed = 0
+  cached = 0
+  alreadyProcessed = 0
+  saved = 0
+  totalOriginalSize = 0
+  totalCompressedSize = 0
+  compressionCount?: number
+
+  track(result: CompressFileResult): 'success' | 'failed' {
+    this.total++
+    this.totalOriginalSize += result.originalSize
+    this.totalCompressedSize += result.compressedSize
+
+    if (result.error) {
+      this.failed++
+      return 'failed'
+    }
+
+    if (result.alreadyProcessed) {
+      this.alreadyProcessed++
+    }
+    else if (result.cached) {
+      this.cached++
+    }
+    else {
+      this.success++
+      this.saved += result.originalSize - result.compressedSize
+    }
+
+    if (typeof result.compressionCount === 'number') {
+      this.compressionCount = result.compressionCount
+    }
+
+    return 'success'
+  }
+
+  getSummary(): ReporterSummary {
+    return {
+      total: this.total,
+      success: this.success,
+      cached: this.cached,
+      failed: this.failed,
+      saved: this.saved,
+      alreadyProcessed: this.alreadyProcessed,
+      compressionCount: this.compressionCount,
+      totalOriginalSize: this.totalOriginalSize,
+      totalCompressedSize: this.totalCompressedSize,
+    }
+  }
 }
 
 export function createReporter(options: ReporterOptions) {
   const { t, reporter } = options
+  const stats = new StatsCollector()
 
   return {
+    track(result: CompressFileResult): boolean {
+      return stats.track(result) === 'success'
+    },
+
+    getSummary(): ReporterSummary {
+      return stats.getSummary()
+    },
+
     logItem(name: string, result: CompressFileResult): void {
       const ratio = Math.round((1 - result.compressedSize / result.originalSize) * 100)
       const origStr = formatSize(result.originalSize)
@@ -53,20 +118,27 @@ export function createReporter(options: ReporterOptions) {
       reporter.error(`${kleur.red(t('status.failed'))} ${name.padEnd(40)} ${kleur.red().bold(t('cli.output.failed'))} ${errorMsg} ${kleur.gray(`(${compressorName})`)}`)
     },
 
-    logSummary(summary: ReporterSummary): void {
+    logSummary(summary?: ReporterSummary): void {
+      const s = summary ?? stats.getSummary()
       const parts = [
         t('cli.output.compressionComplete'),
-        `${t('cli.output.total')}: ${summary.total}`,
-        `${t('cli.output.success')}: ${summary.success}`,
-        `${t('cli.output.cached')}: ${summary.cached}`,
-        `${t('summary.failed')}: ${summary.failed}`,
-        `${t('cli.output.saved')}: ${formatSize(summary.saved)}`,
+        `${t('cli.output.total')}: ${s.total}`,
+        `${t('cli.output.success')}: ${s.success}`,
+        `${t('cli.output.cached')}: ${s.cached}`,
+        `${t('summary.failed')}: ${s.failed}`,
+        `${t('cli.output.saved')}: ${formatSize(s.saved)}`,
       ]
-      if (typeof summary.alreadyProcessed === 'number' && summary.alreadyProcessed > 0) {
-        parts.push(`${t('summary.processed')}: ${summary.alreadyProcessed}`)
+      if (typeof s.alreadyProcessed === 'number' && s.alreadyProcessed > 0) {
+        parts.push(`${t('summary.processed')}: ${s.alreadyProcessed}`)
       }
-      if (typeof summary.compressionCount === 'number') {
-        parts.push(`${t('cli.output.usedThisMonth')}: ${summary.compressionCount}`)
+      if (typeof s.compressionCount === 'number') {
+        parts.push(`${t('cli.output.usedThisMonth')}: ${s.compressionCount}`)
+      }
+      if (typeof s.totalOriginalSize === 'number') {
+        parts.push(`${t('cli.output.originalSize')}: ${formatSize(s.totalOriginalSize)}`)
+      }
+      if (typeof s.totalCompressedSize === 'number') {
+        parts.push(`${t('cli.output.compressedSize')}: ${formatSize(s.totalCompressedSize)}`)
       }
       reporter.info(parts.join('  '))
     },

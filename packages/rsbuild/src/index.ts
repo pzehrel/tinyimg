@@ -62,12 +62,6 @@ export default function tinyimgRsbuild(options: PluginOptions = {}): RsbuildPlug
           console.log()
         }
 
-        let success = 0
-        let cached = 0
-        let failed = 0
-        let alreadyProcessed = 0
-        let saved = 0
-        let compressionCount: number | undefined
         const convertiblePngs: string[] = []
 
         const reporter = createReporter({
@@ -105,44 +99,20 @@ export default function tinyimgRsbuild(options: PluginOptions = {}): RsbuildPlug
 
               await fs.unlink(tmpPath).catch(() => {})
 
-              if (result.error) {
-                failed++
+              const ok = reporter.track(result)
+              if (!ok) {
                 reporter.logError(name, result)
                 return
               }
 
               compilation.updateAsset(name, new sources.RawSource(result.buffer))
-
-              if (result.alreadyProcessed) {
-                alreadyProcessed++
-              }
-              else if (result.cached) {
-                cached++
-              }
-              else {
-                success++
-                saved += result.originalSize - result.compressedSize
-              }
-
-              if (typeof result.compressionCount === 'number') {
-                compressionCount = result.compressionCount
-              }
-
               reporter.logItem(name, result)
             }),
           ),
         )
 
         if (images.length > 0) {
-          reporter.logSummary({
-            total: images.length,
-            success,
-            cached,
-            failed,
-            saved,
-            alreadyProcessed,
-            compressionCount,
-          })
+          reporter.logSummary()
 
           if (convertiblePngs.length > 0) {
             reporter.logConvertiblePngs(convertiblePngs.length)
