@@ -44,6 +44,7 @@ export function registerCompress(t: (key: string, params?: Record<string, string
       convert: {
         type: 'boolean',
         description: t('cli.arg.convert.description'),
+        alias: 'c',
         default: true,
       },
     },
@@ -83,6 +84,8 @@ export function registerCompress(t: (key: string, params?: Record<string, string
       let cached = 0
       let alreadyProcessed = 0
       let saved = 0
+      let totalOriginalSize = 0
+      let totalCompressedSize = 0
       let compressionCount: number | undefined
       const convertiblePngs: string[] = []
       const convertedPngs: string[] = []
@@ -102,6 +105,7 @@ export function registerCompress(t: (key: string, params?: Record<string, string
               strategy: args.strategy as 'AUTO' | 'API_ONLY' | 'RANDOM' | 'API_FIRST',
               maxFileSize: 5 * 1024 * 1024,
               convertPngToJpg: args.convert as boolean,
+              noCache: args.noCache as boolean,
             })
 
             if (result.error) {
@@ -133,6 +137,9 @@ export function registerCompress(t: (key: string, params?: Record<string, string
               await fs.writeFile(outputPath, processedBuf)
             }
 
+            totalOriginalSize += result.originalSize
+            totalCompressedSize += result.compressedSize
+
             if (result.alreadyProcessed) {
               alreadyProcessed++
             }
@@ -157,7 +164,10 @@ export function registerCompress(t: (key: string, params?: Record<string, string
                 extras.push(t('cli.output.usedCache'))
               }
             }
-            if (convertible) {
+            if (result.convertedPngToJpg) {
+              extras.push(t('cli.output.converted'))
+            }
+            else if (!args.convert && convertible) {
               extras.push(t('cli.output.convertible'))
             }
             console.log(kleur.green(t('status.success')), relPath.padEnd(40), `${origStr}→${compStr}${formatExtras(extras)}`)
@@ -186,6 +196,8 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         `${t('cli.output.cached')}: ${cached}`,
         `${t('summary.failed')}: ${failed}`,
         `${t('cli.output.saved')}: ${formatSize(saved)}`,
+        `${t('cli.output.originalSize')}: ${formatSize(totalOriginalSize)}`,
+        `${t('cli.output.compressedSize')}: ${formatSize(totalCompressedSize)}`,
       ]
       if (alreadyProcessed > 0) {
         summaryParts.push(`${t('summary.processed')}: ${alreadyProcessed}`)

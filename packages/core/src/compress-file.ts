@@ -8,7 +8,7 @@ import { readCache, writeCache } from './cache'
 import { apiCompress } from './compressors/api'
 import { localCompress } from './compressors/local'
 import { webCompress } from './compressors/web'
-import { convertPngToJpg, isProcessed } from './convert'
+import { canConvertToJpg, convertPngToJpg, isProcessed } from './convert'
 import { getKey, getUserKey } from './key-manager'
 
 export interface CompressFileOptions {
@@ -16,6 +16,7 @@ export interface CompressFileOptions {
   strategy?: 'API_ONLY' | 'RANDOM' | 'API_FIRST' | 'AUTO'
   maxFileSize?: number
   convertPngToJpg?: boolean
+  noCache?: boolean
 }
 
 export interface CompressFileResult {
@@ -53,6 +54,7 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
     strategy = 'AUTO',
     maxFileSize = 5 * 1024 * 1024,
     convertPngToJpg: doConvert = false,
+    noCache = false,
   } = options
 
   const originalBuffer = await fs.readFile(filePath)
@@ -60,34 +62,23 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
   let ext = path.extname(filePath).slice(1).toLowerCase()
   const originalExt = ext
 
-  if (await isProcessed(originalBuffer)) {
-    return {
-      buffer: originalBuffer,
-      originalSize,
-      compressedSize: originalSize,
-      ratio: 1,
-      compressor: 'AlreadyProcessed',
-      cached: false,
-      alreadyProcessed: true,
-      outputExt: originalExt as 'png' | 'jpg' | 'jpeg' | 'webp',
-    }
-  }
-
   const md5 = crypto.createHash('md5').update(originalBuffer).digest('hex')
   const cacheSuffix = doConvert ? '-c' : ''
   const projectCacheDir = getCacheDir(process.cwd())
   const homeCacheDir = path.join(os.homedir(), '.tinyimg')
 
-  const cached = await readCache(`${md5}${cacheSuffix}`, ext, projectCacheDir) || await readCache(`${md5}${cacheSuffix}`, ext, homeCacheDir)
-  if (cached) {
-    return {
-      buffer: cached,
-      originalSize,
-      compressedSize: cached.length,
-      ratio: cached.length / originalSize,
-      compressor: 'Cache',
-      cached: true,
-      outputExt: ext as 'png' | 'jpg' | 'jpeg' | 'webp',
+  if (!noCache) {
+    const cached = await readCache(`${md5}${cacheSuffix}`, ext, projectCacheDir) || await readCache(`${md5}${cacheSuffix}`, ext, homeCacheDir)
+    if (cached) {
+      return {
+        buffer: cached,
+        originalSize,
+        compressedSize: cached.length,
+        ratio: cached.length / originalSize,
+        compressor: 'Cache',
+        cached: true,
+        outputExt: ext as 'png' | 'jpg' | 'jpeg' | 'webp',
+      }
     }
   }
 
@@ -101,11 +92,25 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
     let current: Buffer = originalBuffer
 
     if (doConvert && ext === 'png') {
-      const canConvert = await import('./convert').then(m => m.canConvertToJpg(filePath))
+      const canConvert = await canConvertToJpg(filePath)
       if (canConvert) {
         current = await convertPngToJpg(filePath)
         convertedPngToJpg = true
         ext = 'jpg'
+      }
+    }
+
+    if (await isProcessed(current)) {
+      return {
+        buffer: current,
+        originalSize,
+        compressedSize: current.length,
+        ratio: current.length / originalSize,
+        compressor: 'AlreadyProcessed',
+        cached: false,
+        alreadyProcessed: true,
+        convertedPngToJpg,
+        outputExt: ext as 'png' | 'jpg' | 'jpeg' | 'webp',
       }
     }
 
@@ -181,7 +186,9 @@ export async function compressFile(options: CompressFileOptions): Promise<Compre
       compressorName = res.compressor
     }
 
-    await writeCache(`${md5}${cacheSuffix}`, ext, resultBuffer, writeCacheDir)
+    if (!noCache) {
+      await writeCache(`${md5}${cacheSuffix}`, ext, resultBuffer, writeCacheDir)
+    }
 
     return {
       buffer: resultBuffer,
