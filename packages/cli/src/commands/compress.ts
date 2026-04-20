@@ -1,7 +1,7 @@
 import type { CommandDef } from 'citty'
 import fs from 'node:fs/promises'
 import process from 'node:process'
-import { canConvertToJpg, compressFile, formatExtras, formatSize, initKeyManager, listProjectKeys, listUserKeys, markProcessed, matchFiles, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
+import { canConvertToJpg, compressFile, createReporter, formatExtras, formatSize, initKeyManager, listProjectKeys, listUserKeys, markProcessed, matchFiles, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
 import kleur from 'kleur'
 import pLimit from 'p-limit'
 import path from 'pathe'
@@ -79,16 +79,17 @@ export function registerCompress(t: (key: string, params?: Record<string, string
       }
 
       const limit = pLimit(Number(args.parallel) || 3)
-      let success = 0
-      let failed = 0
-      let cached = 0
-      let alreadyProcessed = 0
-      let saved = 0
-      let totalOriginalSize = 0
-      let totalCompressedSize = 0
-      let compressionCount: number | undefined
       const convertiblePngs: string[] = []
       const convertedPngs: string[] = []
+
+      const reporter = createReporter({
+        t,
+        reporter: {
+          info: msg => console.log(msg),
+          warn: msg => console.warn(msg),
+          error: msg => console.error(msg),
+        },
+      })
 
       await Promise.all(
         files.map(file =>
@@ -108,19 +109,12 @@ export function registerCompress(t: (key: string, params?: Record<string, string
               noCache: args.noCache as boolean,
             })
 
-            totalOriginalSize += result.originalSize
-            totalCompressedSize += result.compressedSize
-
-            if (result.error) {
-              const errorMsg = String(result.error.message || 'Unknown error').replace(/\n/g, ' ')
-              const compressorName = (result.error as any).compressor || result.compressor
+            const ok = reporter.track(result)
+            if (!ok) {
+              const errorMsg = String(result.error!.message || 'Unknown error').replace(/\n/g, ' ')
+              const compressorName = (result.error as any)?.compressor || result.compressor
               console.log(`${kleur.red(t('status.failed'))} ${relPath.padEnd(40)} ${kleur.red().bold(t('cli.output.failed'))} ${errorMsg} ${kleur.gray(`(${compressorName})`)}`)
-              failed++
               return
-            }
-
-            if (typeof result.compressionCount === 'number') {
-              compressionCount = result.compressionCount
             }
 
             if (result.convertedPngToJpg) {
@@ -137,20 +131,6 @@ export function registerCompress(t: (key: string, params?: Record<string, string
             else if (!result.alreadyProcessed) {
               const processedBuf = await markProcessed(result.buffer, result.outputExt)
               await fs.writeFile(file.path, processedBuf)
-            }
-
-            totalOriginalSize += result.originalSize
-            totalCompressedSize += result.compressedSize
-
-            if (result.alreadyProcessed) {
-              alreadyProcessed++
-            }
-            else if (result.cached) {
-              cached++
-            }
-            else {
-              success++
-              saved += result.originalSize - result.compressedSize
             }
 
             const origStr = formatSize(result.originalSize)
@@ -191,24 +171,8 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         console.log(kleur.yellow(t('cli.output.noKeysHint')))
       }
 
-      const summaryParts = [
-        t('cli.output.compressionComplete'),
-        `${t('cli.output.total')}: ${files.length}`,
-        `${t('cli.output.success')}: ${success}`,
-        `${t('cli.output.cached')}: ${cached}`,
-        `${t('summary.failed')}: ${failed}`,
-        `${t('cli.output.saved')}: ${formatSize(saved)}`,
-        `${t('cli.output.originalSize')}: ${formatSize(totalOriginalSize)}`,
-        `${t('cli.output.compressedSize')}: ${formatSize(totalCompressedSize)}`,
-      ]
-      if (alreadyProcessed > 0) {
-        summaryParts.push(`${t('summary.processed')}: ${alreadyProcessed}`)
-      }
-      if (typeof compressionCount === 'number') {
-        summaryParts.push(`${t('cli.output.usedThisMonth')}: ${compressionCount}`)
-      }
-      console.log(summaryParts.join('  '))
-      process.exit(failed > 0 ? 1 : 0)
+      reporter.logSummary(reporter.getSummary())
+      process.exit(reporter.getSummary().failed > 0 ? 1 : 0)
     },
   }
 }
