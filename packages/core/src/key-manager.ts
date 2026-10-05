@@ -8,8 +8,8 @@ import { maskKey } from './utils/mask'
 
 export interface KeyInfo {
   key: string
-  used: number
-  remaining: number
+  used?: number
+  remaining?: number
 }
 
 export interface VerifyResult {
@@ -23,22 +23,25 @@ export interface VerifyResult {
 interface KeyManagerState {
   projectKeys: string[]
   useUserKeys: boolean
+  unavailable: Set<string>
 }
 
 let state: KeyManagerState | null = null
 
 export function initKeyManager(options: { projectKeys?: string[], useUserKeys?: boolean }): void {
   state = {
-    projectKeys: options.projectKeys?.filter(Boolean) || [],
+    projectKeys: [...new Set(options.projectKeys?.map(key => key.trim()).filter(Boolean) || [])],
     useUserKeys: options.useUserKeys ?? false,
+    unavailable: new Set(),
   }
 }
 
 export function getKey(): string | null {
   if (!state)
     return null
-  if (state.projectKeys.length > 0) {
-    return state.projectKeys[Math.floor(Math.random() * state.projectKeys.length)]
+  const keys = state.projectKeys.filter(key => !state!.unavailable.has(key))
+  if (keys.length > 0) {
+    return keys[Math.floor(Math.random() * keys.length)]
   }
   return null
 }
@@ -51,7 +54,7 @@ async function readUserKeys(): Promise<string[]> {
   try {
     const data = await fs.readFile(getUserKeysPath(), 'utf-8')
     const parsed = JSON.parse(data)
-    return Array.isArray(parsed) ? parsed : []
+    return Array.isArray(parsed) ? parsed.filter((key): key is string => typeof key === 'string' && !!key.trim()) : []
   }
   catch {
     return []
@@ -61,17 +64,17 @@ async function readUserKeys(): Promise<string[]> {
 async function writeUserKeys(keys: string[]): Promise<void> {
   const dir = path.dirname(getUserKeysPath())
   await fs.mkdir(dir, { recursive: true })
-  await fs.writeFile(getUserKeysPath(), JSON.stringify(keys, null, 2))
+  await fs.writeFile(getUserKeysPath(), JSON.stringify(keys, null, 2), { mode: 0o600 })
 }
 
 export async function listUserKeys(): Promise<KeyInfo[]> {
   const keys = Array.from(new Set(await readUserKeys()))
-  return keys.map(k => ({ key: maskKey(k), used: 0, remaining: 500 }))
+  return keys.map(k => ({ key: maskKey(k) }))
 }
 
 export function listProjectKeys(): KeyInfo[] {
   const keys = Array.from(new Set(state?.projectKeys || []))
-  return keys.map(k => ({ key: maskKey(k), used: 0, remaining: 500 }))
+  return keys.map(k => ({ key: maskKey(k) }))
 }
 
 export function resolveProjectKeysFromEnv(env: Record<string, string | undefined> = process.env): string[] {
@@ -146,8 +149,25 @@ export async function removeUserKey(maskedKey: string): Promise<void> {
 }
 
 export async function getUserKey(): Promise<string | null> {
-  const keys = await readUserKeys()
+  if (!state?.useUserKeys)
+    return null
+  const keys = (await readUserKeys()).filter(key => !state!.unavailable.has(key))
   if (keys.length === 0)
     return null
   return keys[Math.floor(Math.random() * keys.length)]
+}
+
+export async function getCompressionKeys(): Promise<string[]> {
+  const keys = state?.projectKeys.length
+    ? state.projectKeys
+    : state?.useUserKeys ? await readUserKeys() : []
+  const available = [...new Set(keys)].filter(key => !state?.unavailable.has(key))
+  if (!available.length)
+    return []
+  const start = Math.floor(Math.random() * available.length)
+  return [...available.slice(start), ...available.slice(0, start)]
+}
+
+export function invalidateKey(key: string): void {
+  state?.unavailable.add(key)
 }

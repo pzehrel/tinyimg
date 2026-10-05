@@ -5,11 +5,13 @@ import { defineCommand, runMain } from 'citty'
 import dotenv from 'dotenv'
 import path from 'pathe'
 import { version } from '../package.json'
+import { routeCliArgs } from './cli-args'
 import { registerCompress } from './commands/compress'
 
 const cwd = process.cwd()
-dotenv.config({ path: path.resolve(cwd, '.env') })
+// dotenv preserves shell values; load local overrides before the shared env file.
 dotenv.config({ path: path.resolve(cwd, '.env.local') })
+dotenv.config({ path: path.resolve(cwd, '.env') })
 
 const t = createLocaleI18n()
 
@@ -19,8 +21,8 @@ const main = defineCommand({
     description: t('cli.meta.description'),
     version,
   },
-  ...registerCompress(t),
   subCommands: {
+    compress: defineCommand(registerCompress(t)),
     cache: () => import('./commands/cache').then(m => m.default),
     convert: () => import('./commands/convert').then(m => m.default),
     keys: () => import('./commands/keys').then(m => m.default),
@@ -29,19 +31,4 @@ const main = defineCommand({
   },
 })
 
-const rawArgs = process.argv.slice(2)
-const subCommands = ['cache', 'convert', 'keys', 'list', 'ls']
-const firstNonFlagIndex = rawArgs.findIndex(arg => !arg.startsWith('-'))
-let cliRawArgs = rawArgs
-if (
-  firstNonFlagIndex !== -1
-  && !subCommands.includes(rawArgs[firstNonFlagIndex])
-) {
-  cliRawArgs = [
-    ...rawArgs.slice(0, firstNonFlagIndex),
-    '--',
-    ...rawArgs.slice(firstNonFlagIndex),
-  ]
-}
-
-runMain(main, { rawArgs: cliRawArgs })
+runMain(main, { rawArgs: routeCliArgs(process.argv.slice(2)) })

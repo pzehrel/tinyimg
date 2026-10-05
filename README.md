@@ -57,11 +57,11 @@ tinyimg src/assets/** -s API_FIRST -k YOUR_API_KEY
 
 Convert PNGs without alpha channels to JPG.
 
-- `--noRename` — Keep original `.png` extension (only changes encoding)
+- `--rename` — Rename `.png` to `.jpg`; the default keeps the filename and changes only the encoding
 
 ```bash
 tinyimg convert src/assets/**
-tinyimg convert src/assets/** --noRename
+tinyimg convert src/assets/** --rename
 ```
 
 #### `tinyimg keys <subcommand>`
@@ -195,7 +195,7 @@ All plugins share the following options:
 
 The CLI reads API keys from two sources:
 
-**Project-level keys** — The CLI automatically reads `.env` and `.env.local` in the current working directory on startup. Supported variable names: `TINYIMG_KEY`, `TINYIMG_KEYS`, `TINYPNG_KEY`, `TINYPNG_KEYS` (and any prefixed variant like `VITE_TINYIMG_KEY` — matched by suffix).
+**Project-level keys** — The CLI automatically reads `.env` and `.env.local` in the current working directory on startup. Supported variable names: `TINYIMG_KEY`, `TINYIMG_KEYS`, `TINYPNG_KEY`, `TINYPNG_KEYS` (and any prefixed variant like `BUILD_TINYIMG_KEY` — matched by suffix).
 
 **User-level keys** — Stored via `tinyimg keys add <key>` in `~/.tinyimg/keys.json`. Used as fallback when no project keys are available.
 
@@ -207,14 +207,14 @@ TINYIMG_KEY=your_api_key
 
 ## Environment Variables — Plugins
 
-Plugins themselves do not read `.env` files; the build tool (Vite/Webpack/Rsbuild) loads them. We recommend `.env.local` for local secrets (not committed to git).
+The Vite plugin loads `.env` files using the resolved `mode` and `envDir`. Webpack/Rsbuild plugins read `process.env`; their host configuration must load environment files. We recommend `.env.local` for local secrets (not committed to git).
 
 Supported variable names: any ending with `TINYIMG_KEY`, `TINYIMG_KEYS`, `TINYPNG_KEY`, `TINYPNG_KEYS`.
 
-Example with framework prefix:
+Example for a build-only secret (do not use a VITE\_ prefix):
 
 ```bash
-VITE_TINYIMG_KEY=your_api_key
+TINYIMG_KEY=your_api_key
 ```
 
 ## Examples
@@ -232,3 +232,28 @@ Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, commit c
 ## License
 
 MIT © [pzehrel](https://github.com/pzehrel)
+
+## Cache and output behavior
+
+Processed sources skip remote compression; explicitly requested PNG-to-JPG conversion is performed locally. `--no-cache` (CLI) or `noCache: true` (plugins) disables cache reads and writes, without forcing marked sources to be recompressed. Cache clearing preserves saved API keys. PNG-to-JPG conversion keeps the filename; it defaults to off for both the CLI and plugins. Use `--convert` (CLI) or `convertPngToJpg: true` (plugins) to enable it. Plugins report compression errors and keep the original asset. Saved user keys are disabled in plugins unless `USE_USER_TINYIMG_KEYS=true`.
+
+## Converted file extensions
+
+Plugins default to `renameConvertedFiles: false`, preserving filenames. Set both `convertPngToJpg: true` and `renameConvertedFiles: true` to emit converted opaque PNGs as `.jpg`, retaining the directory, basename and hash portion while updating JS/CSS/HTML/manifest references. Transparent PNGs and compression failures retain their names. Existing target names fail the build instead of overwriting assets. Renaming does not change the compression cache identity or enable conversion by itself.
+
+```ts
+tinyimg({
+  convertPngToJpg: true,
+  renameConvertedFiles: true,
+})
+```
+
+## Compression logs
+
+The CLI and plugins default to a start message, one summary and actionable errors. Eligible opaque PNGs trigger an info hint for `--convert` or `convertPngToJpg: true`, without guaranteeing a smaller output. The hint is suppressed when conversion is already enabled. Enable per-image, filename-sorted details with `--verbose` (CLI) or `verbose: true` (plugins). Empty builds stay quiet.
+
+Plugins use native host logging: Vite `config.logger`, Webpack `compiler.getInfrastructureLogger('tinyimg')`, and Rsbuild `api.logger`, respecting host log levels.
+
+## Host compiler versions
+
+Plugins preserve existing peer minimums. Development and examples now use Vite 8.3.2, Webpack 5.111.1 and Rsbuild 2.2.11. See [host compatibility](docs/host-compatibility.md) for ranges, tested versions and Node requirements.

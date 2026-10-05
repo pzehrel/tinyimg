@@ -13,9 +13,7 @@
   "summary.failed": "失败",
   "summary.saved": "节省",
   "summary.processed": "已处理",
-
   "cli.meta.description": "TinyPNG 图片压缩工具",
-
   "cli.command.convert.description": "将 PNG 转换为 JPG（仅支持不含透明通道的 PNG）",
   "cli.command.keys.description": "管理 API 密钥",
   "cli.command.keys.list.description": "列出已保存的密钥",
@@ -26,7 +24,6 @@
   "cli.command.cache.list.description": "列出缓存的压缩结果",
   "cli.command.cache.info.description": "显示缓存统计信息",
   "cli.command.cache.clear.description": "清空压缩缓存",
-
   "cli.arg.paths.description": "图片路径或通配符",
   "cli.arg.global.description": "使用用户级缓存 (~/.tinyimg)",
   "cli.arg.yes.description": "跳过确认提示",
@@ -42,7 +39,6 @@
   "cli.arg.maskedKey.description": "要删除的掩码密钥",
   "cli.arg.json.description": "以 JSON 格式输出",
   "cli.arg.convertList.description": "仅显示可转换的 PNG（不含透明通道）",
-
   "cli.output.noFiles": "未找到文件",
   "cli.output.alreadyProcessed": "已压缩",
   "cli.output.failed": "失败:",
@@ -79,6 +75,19 @@
   "cli.output.convertiblePngsHint": "有 {count} 个 PNG 文件可以转换为 JPG 以进一步减小体积：",
   "cli.output.convertiblePngsCommand": "执行 `tinyimg convert <paths>` 进行转换。",
   "cli.output.convertedPngsHint": "有 {count} 个 PNG 文件已自动转换为 JPG 编码。",
-
-  "plugin.output.converted": "已转换"
+  "plugin.output.converted": "已转换",
+  "log.start": "正在优化 {count} 张图片…",
+  "log.images": "{count} 张图片",
+  "log.compressed": "压缩 {count}",
+  "log.cached": "缓存 {count}",
+  "log.processed": "已处理 {count}",
+  "log.failed": "失败 {count}",
+  "log.converted": "PNG → JPG",
+  "log.cacheWarning": "{name} 缓存不可用：{message}",
+  "log.conversionHint.cli": "{count} 张不透明 PNG 转为 JPEG 后可能进一步减小体积。使用 --convert 开启，文件名保持不变。",
+  "log.conversionHint.plugin": "{count} 张不透明 PNG 转为 JPEG 后可能进一步减小体积。设置 convertPngToJpg: true 开启；配合 renameConvertedFiles: true 可改为 .jpg 扩展名。",
+  "cli.arg.verbose.description": "显示逐张图片的压缩明细",
+  "log.image": "1 张图片",
+  "log.startOne": "正在优化 1 张图片…",
+  "log.convertedCount": "转为 JPEG {count}"
 }

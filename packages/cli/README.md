@@ -20,14 +20,15 @@ npx @pz4l/tinyimg-cli src/assets/**
 
 ### Global Options
 
-| Option                      | Alias | Description                   | Default |
-| --------------------------- | ----- | ----------------------------- | ------- |
-| `-o, --output <dir>`        | —     | Output directory              | —       |
-| `-s, --strategy <strategy>` | —     | Compression strategy          | `AUTO`  |
-| `--no-convert`              | —     | Disable PNG to JPG conversion | `false` |
-| `--no-cache`                | —     | Disable cache                 | `false` |
-| `-k, --key <keys>`          | —     | Comma-separated API keys      | —       |
-| `-p, --parallel <number>`   | —     | Parallel limit                | `3`     |
+| Option                      | Alias | Description                         | Default |
+| --------------------------- | ----- | ----------------------------------- | ------- |
+| `-o, --output <dir>`        | —     | Output directory                    | —       |
+| `-s, --strategy <strategy>` | —     | Compression strategy                | `AUTO`  |
+| `--convert`                 | —     | Enable opaque PNG to JPG conversion | `false` |
+| `--no-cache`                | —     | Disable cache                       | `false` |
+| `-k, --key <keys>`          | —     | Comma-separated API keys            | —       |
+| `-p, --parallel <number>`   | —     | Parallel limit                      | `3`     |
+| `--verbose`                 | —     | Show per-image compression details  | `false` |
 
 ### Commands
 
@@ -37,20 +38,20 @@ npx @pz4l/tinyimg-cli src/assets/**
 tinyimg src/assets/**
 tinyimg src/assets/** -o dist/images
 tinyimg src/assets/** -s API_FIRST -k YOUR_API_KEY
-tinyimg src/assets/** --no-convert
+tinyimg src/assets/** --convert
 ```
 
 #### `tinyimg convert <paths>`
 
 Convert PNGs without alpha to JPG.
 
-- `--noRename` — Keep original `.png` extension (only changes encoding)
+- `--rename` — Rename `.png` to `.jpg`; the default keeps the filename and changes only the encoding
 
 Example:
 
 ```bash
 tinyimg convert src/assets/**
-tinyimg convert src/assets/** --noRename
+tinyimg convert src/assets/** --rename
 ```
 
 #### `tinyimg keys <subcommand>`
@@ -97,7 +98,7 @@ tinyimg ls src/assets/** -c
 
 The CLI automatically reads `.env` and `.env.local` in the current working directory on startup.
 
-Supported variable names: `TINYIMG_KEY`, `TINYIMG_KEYS`, `TINYPNG_KEY`, `TINYPNG_KEYS` (and any prefixed variant like `VITE_TINYIMG_KEY` — matched by suffix).
+Supported variable names: `TINYIMG_KEY`, `TINYIMG_KEYS`, `TINYPNG_KEY`, `TINYPNG_KEYS` (and any prefixed variant like `BUILD_TINYIMG_KEY` — matched by suffix).
 
 Example `.env.local`:
 
@@ -112,3 +113,13 @@ Stored via `tinyimg keys add <key>` in `~/.tinyimg/keys.json`. Used as fallback 
 ## License
 
 [MIT](../../LICENSE)
+
+## Cache and output behavior
+
+Processed sources skip remote compression; explicitly requested PNG-to-JPG conversion is performed locally. `--no-cache` (CLI) or `noCache: true` (plugins) disables cache reads and writes, without forcing marked sources to be recompressed. Cache clearing preserves saved API keys. PNG-to-JPG conversion keeps the filename; it defaults to off for both the CLI and plugins. Use `--convert` (CLI) or `convertPngToJpg: true` (plugins) to enable it. Plugins report compression errors and keep the original asset. Saved user keys are disabled in plugins unless `USE_USER_TINYIMG_KEYS=true`.
+
+## Compression logs
+
+The CLI and plugins default to a start message, one summary and actionable errors. Eligible opaque PNGs trigger an info hint for `--convert` or `convertPngToJpg: true`, without guaranteeing a smaller output. The hint is suppressed when conversion is already enabled. Enable per-image, filename-sorted details with `--verbose` (CLI) or `verbose: true` (plugins). Empty builds stay quiet.
+
+Plugins use native host logging: Vite `config.logger`, Webpack `compiler.getInfrastructureLogger('tinyimg')`, and Rsbuild `api.logger`, respecting host log levels.

@@ -63,11 +63,11 @@ tinyimg src/assets/** -s API_FIRST -k YOUR_API_KEY
 
 将无透明通道的 PNG 转换为 JPG。
 
-- `--noRename` — 保留原始 `.png` 扩展名（仅更改编码）
+- `--rename` — 将 `.png` 改为 `.jpg`；默认保留文件名，仅改变编码
 
 ```bash
 tinyimg convert src/assets/**
-tinyimg convert src/assets/** --noRename
+tinyimg convert src/assets/** --rename
 ```
 
 #### `tinyimg keys <subcommand>`
@@ -211,7 +211,7 @@ plugins: [
 
 CLI 从两个来源读取 API 密钥：
 
-**项目级密钥** — CLI 启动时自动读取当前工作目录下的 `.env` 和 `.env.local`。支持的变量名：`TINYIMG_KEY`、`TINYIMG_KEYS`、`TINYPNG_KEY`、`TINYPNG_KEYS`（以及任何带前缀的变体，如 `VITE_TINYIMG_KEY` — 按后缀匹配）。
+**项目级密钥** — CLI 启动时自动读取当前工作目录下的 `.env` 和 `.env.local`。支持的变量名：`TINYIMG_KEY`、`TINYIMG_KEYS`、`TINYPNG_KEY`、`TINYPNG_KEYS`（以及任何带前缀的变体，如 `BUILD_TINYIMG_KEY` — 按后缀匹配）。
 
 **用户级密钥** — 通过 `tinyimg keys add <key>` 存储在 `~/.tinyimg/keys.json` 中。当没有项目级密钥时作为回退使用。
 
@@ -225,14 +225,14 @@ TINYIMG_KEY=your_api_key
 
 ## 环境变量 — 插件
 
-插件本身不读取 `.env` 文件；由构建工具（Vite/Webpack/Rsbuild）加载。建议使用 `.env.local` 存放本地密钥（不提交到 git）。
+Vite 插件按实际 `mode` 和 `envDir` 加载 `.env` 文件；Webpack/Rsbuild 插件读取 `process.env`，由宿主配置加载环境文件。建议使用 `.env.local` 存放本地密钥（不提交到 git）。
 
 支持的变量名：任何以 `TINYIMG_KEY`、`TINYIMG_KEYS`、`TINYPNG_KEY`、`TINYPNG_KEYS` 结尾的变量。
 
-带框架前缀的示例：
+构建专用密钥示例（不要使用 VITE\_ 前缀）：
 
 ```bash
-VITE_TINYIMG_KEY=your_api_key
+TINYIMG_KEY=your_api_key
 ```
 
 ---
@@ -256,3 +256,28 @@ VITE_TINYIMG_KEY=your_api_key
 ## 许可证
 
 [MIT](https://opensource.org/licenses/MIT)
+
+## 缓存和输出行为
+
+已处理图片不会重复远程压缩，显式开启 PNG 转 JPG 时仅进行本地转换；`--no-cache`（CLI）或 `noCache: true`（插件）只关闭缓存读写。缓存清理保留保存的 API key。PNG 转 JPG 保留文件名，CLI 和插件均默认关闭；分别使用 `--convert` 和 `convertPngToJpg: true` 开启。插件失败时记录错误并保留原图继续构建。插件默认不使用用户保存的 key，`USE_USER_TINYIMG_KEYS=true` 才启用。
+
+## 转换后的扩展名
+
+插件默认 `renameConvertedFiles: false`，保留原文件名；设置 `convertPngToJpg: true` 和 `renameConvertedFiles: true` 后，不透明 PNG 转换为 JPEG 并将产物扩展名改为 `.jpg`，目录、基本名及 hash 部分保持不变，JS/CSS/HTML/构建清单引用同步更新。透明 PNG 和失败的压缩保持原文件名。目标名称已存在时构建报错，避免覆盖资源。重命名开关不改变压缩缓存身份，也不会自动开启格式转换。
+
+```ts
+tinyimg({
+  convertPngToJpg: true,
+  renameConvertedFiles: true,
+})
+```
+
+## 压缩日志
+
+CLI 和插件默认仅输出开始提示、一行汇总和必要的错误；检测到可转换的不透明 PNG 时，使用 info 提示 `--convert` 或 `convertPngToJpg: true`，不承诺一定更小。已开启转换时不重复提示。CLI 用 `--verbose`、插件用 `verbose: true` 开启按文件名排序的明细，显示大小变化、缓存和转换状态。空任务不输出构建日志。
+
+插件使用宿主原生日志：Vite 的 `config.logger`、Webpack 的 `compiler.getInfrastructureLogger('tinyimg')`、Rsbuild 的 `api.logger`，遵守宿主日志级别。
+
+## 宿主编译器版本
+
+插件保留现有兼容下限，开发与示例已升级到 Vite 8.3.2、Webpack 5.111.1、Rsbuild 2.2.11。支持范围、实际验证版本与 Node 要求见[宿主兼容说明](docs/host-compatibility.md)。

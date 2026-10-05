@@ -1,177 +1,108 @@
+import type { CompressFileResult } from '../src/compress-file'
 import { Buffer } from 'node:buffer'
 import { describe, expect, it, vi } from 'vitest'
+import { createLocaleI18n } from '../../locale/src/index'
 import { createReporter } from '../src/reporter'
 
-function createMockReporter() {
-  return {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  }
+function result(overrides: Partial<CompressFileResult> = {}): CompressFileResult {
+  return { buffer: Buffer.alloc(700), originalSize: 1000, compressedSize: 700, ratio: 0.7, compressor: 'ApiCompressor', cached: false, outputExt: 'png', ...overrides }
+}
+function setup(options: { verbose?: boolean, target?: 'cli' | 'plugin', locale?: 'en' | 'zh-CN' } = {}) {
+  const sink = { info: vi.fn(), warn: vi.fn(), error: vi.fn() }
+  return { sink, log: createReporter({ t: createLocaleI18n(options.locale || 'en'), reporter: sink, ...options }) }
 }
 
-function createMockT() {
-  return (key: string, params?: Record<string, string | number>) => {
-    if (params) {
-      return `${key} ${JSON.stringify(params)}`
+describe('compression logs', () => {
+  it('defaults to start and concise summary instead of per-image output', () => {
+    const { log, sink } = setup({ target: 'plugin' })
+    log.logStart(1)
+    log.track(result())
+    log.logItem('logo.png', result())
+    expect(sink.info).toHaveBeenCalledTimes(1)
+    log.logSummary()
+    expect(sink.info).toHaveBeenCalledTimes(2)
+    const text = sink.info.mock.calls[1][0]
+    expect(text).toBe('1 image · 1 compressed · 1000 B → 700 B (−30.0%)')
+    expect(text).not.toContain('0 cached')
+    expect(text).not.toContain('ApiCompressor')
+  })
+  it('buffers verbose details in filename order and flushes them once', () => {
+    const { log, sink } = setup({ verbose: true })
+    for (const name of ['z.png', 'a.png']) {
+      log.track(result())
+      log.logItem(name, result())
     }
-    return key
-  }
-}
-
-describe('createReporter', () => {
-  it('logItem outputs success with ratio and sizes', () => {
-    const reporter = createMockReporter()
-    const r = createReporter({ t: createMockT(), reporter })
-
-    r.logItem('logo.png', {
-      buffer: Buffer.from(''),
-      originalSize: 1000,
-      compressedSize: 700,
-      ratio: 0.7,
-      compressor: 'WebCompressor',
-      cached: false,
-    })
-
-    expect(reporter.info).toHaveBeenCalledTimes(1)
-    const msg = reporter.info.mock.calls[0][0]
-    expect(msg).toContain('status.success')
-    expect(msg).toContain('logo.png')
-    expect(msg).toContain('1000B')
-    expect(msg).toContain('700B')
-    expect(msg).toContain('-30%')
+    expect(sink.info).not.toHaveBeenCalled()
+    log.logSummary()
+    expect(sink.info.mock.calls[0][0]).toContain('a.png')
+    expect(sink.info.mock.calls[1][0]).toContain('z.png')
+    expect(sink.info.mock.calls[0][0]).toContain('−30.0%')
+    const count = sink.info.mock.calls.length
+    log.logSummary()
+    expect(sink.info.mock.calls.length).toBe(count + 1)
   })
-
-  it('logItem appends cached tag when cached', () => {
-    const reporter = createMockReporter()
-    const r = createReporter({ t: createMockT(), reporter })
-
-    r.logItem('banner.jpg', {
-      buffer: Buffer.from(''),
-      originalSize: 1000,
-      compressedSize: 1000,
-      ratio: 1,
-      compressor: 'Cache',
-      cached: true,
-    })
-
-    expect(reporter.info.mock.calls[0][0]).toContain('cli.output.usedCache')
+  it('counts savings from cached results and shows cache status in details', () => {
+    const { log, sink } = setup({ verbose: true })
+    const cached = result({ cached: true })
+    log.track(cached)
+    log.logItem('cached.png', cached)
+    log.logSummary()
+    expect(log.getSummary().saved).toBe(300)
+    expect(sink.info.mock.calls[0][0]).toContain('cached')
+    expect(sink.info.mock.calls[1][0]).toContain('1 cached')
+    expect(sink.info.mock.calls[1][0]).not.toContain('0 compressed')
   })
-
-  it('logItem appends converted tag when convertedPngToJpg', () => {
-    const reporter = createMockReporter()
-    const r = createReporter({ t: createMockT(), reporter })
-
-    r.logItem('logo.png', {
-      buffer: Buffer.from(''),
-      originalSize: 1000,
-      compressedSize: 500,
-      ratio: 0.5,
-      compressor: 'WebCompressor',
-      cached: false,
-      convertedPngToJpg: true,
-    })
-
-    expect(reporter.info.mock.calls[0][0]).toContain('plugin.output.converted')
+  it('shows already-processed and converted output without a misleading zero reduction', () => {
+    const { log, sink } = setup({ verbose: true })
+    const processed = result({ alreadyProcessed: true, originalSize: 700 })
+    log.track(processed)
+    log.logItem('done.png', processed)
+    log.logSummary()
+    expect(sink.info.mock.calls[0][0]).toContain('already compressed')
+    expect(sink.info.mock.calls[0][0]).not.toContain('0.0%')
+    const converted = result({ convertedPngToJpg: true, outputExt: 'jpg' })
+    log.logItem('converted.jpg', converted)
+    log.logSummary()
+    expect(sink.info.mock.calls.at(-2)?.[0]).toContain('PNG → JPG')
   })
-
-  it('logError outputs failed with error message and compressor', () => {
-    const reporter = createMockReporter()
-    const r = createReporter({ t: createMockT(), reporter })
-
-    r.logError('photo.jpg', {
-      buffer: Buffer.from(''),
-      originalSize: 1000,
-      compressedSize: 1000,
-      ratio: 1,
-      compressor: 'ApiCompressor',
-      cached: false,
-      error: new Error('rate limited'),
-    })
-
-    expect(reporter.error).toHaveBeenCalledTimes(1)
-    const msg = reporter.error.mock.calls[0][0]
-    expect(msg).toContain('status.failed')
-    expect(msg).toContain('rate limited')
-    expect(msg).toContain('ApiCompressor')
+  it('formats growth with a positive sign and avoids NaN/Infinity', () => {
+    const { log, sink } = setup({ verbose: true })
+    log.track(result())
+    log.logItem('small.png', result({ originalSize: 100, compressedSize: 120 }))
+    log.logItem('empty.png', result({ originalSize: 0, compressedSize: 0 }))
+    log.logSummary()
+    const text = sink.info.mock.calls.flat().join('\n')
+    expect(text).toContain('+20.0%')
+    expect(text).not.toMatch(/--|NaN|Infinity/)
   })
-
-  it('logError uses compressor from error object if present', () => {
-    const reporter = createMockReporter()
-    const r = createReporter({ t: createMockT(), reporter })
-
-    const err = new Error('bad request') as any
-    err.compressor = 'WebCompressor'
-
-    r.logError('photo.jpg', {
-      buffer: Buffer.from(''),
-      originalSize: 1000,
-      compressedSize: 1000,
-      ratio: 1,
-      compressor: 'ApiCompressor',
-      cached: false,
-      error: err,
-    })
-
-    expect(reporter.error.mock.calls[0][0]).toContain('WebCompressor')
+  it('reports failures and cache warnings through their proper log levels', () => {
+    const { log, sink } = setup()
+    const failure = result({ error: new Error('rate limited\ntry later') })
+    expect(log.track(failure)).toBe(false)
+    log.logError('photo.jpg', failure)
+    expect(sink.error).toHaveBeenCalledWith('photo.jpg: rate limited try later')
+    log.logItem('cached.png', result({ cacheWarning: 'read only' }))
+    expect(sink.warn).toHaveBeenCalledWith('Cache unavailable for cached.png: read only')
+    log.logSummary()
+    expect(sink.info.mock.calls.at(-1)?.[0]).toContain('1 failed')
   })
-
-  it('logSummary outputs total, success, cached, failed, saved', () => {
-    const reporter = createMockReporter()
-    const r = createReporter({ t: createMockT(), reporter })
-
-    r.logSummary({
-      total: 10,
-      success: 7,
-      cached: 2,
-      failed: 1,
-      saved: 1024,
-    })
-
-    expect(reporter.info).toHaveBeenCalledTimes(1)
-    const msg = reporter.info.mock.calls[0][0]
-    expect(msg).toContain('cli.output.compressionComplete')
-    expect(msg).toContain('total: 10')
-    expect(msg).toContain('success: 7')
-    expect(msg).toContain('cached: 2')
-    expect(msg).toContain('summary.failed: 1')
-    expect(msg).toContain('saved: 1.0KB')
+  it.each(['en', 'zh-CN'] as const)('gives CLI and plugin specific conversion instructions in %s', (locale) => {
+    const cli = setup({ locale, target: 'cli' })
+    const plugin = setup({ locale, target: 'plugin' })
+    cli.log.logConvertiblePngs(3)
+    plugin.log.logConvertiblePngs(3)
+    expect(cli.sink.info.mock.calls[0][0]).toContain('--convert')
+    expect(plugin.sink.info.mock.calls[0][0]).toContain('convertPngToJpg: true')
+    expect(plugin.sink.info.mock.calls[0][0]).toContain('renameConvertedFiles: true')
+    expect(plugin.sink.info.mock.calls[0][0]).not.toContain('tinyimg convert')
+    expect(cli.sink.warn).not.toHaveBeenCalled()
+    expect(plugin.sink.warn).not.toHaveBeenCalled()
   })
-
-  it('logSummary appends compressionCount when provided', () => {
-    const reporter = createMockReporter()
-    const r = createReporter({ t: createMockT(), reporter })
-
-    r.logSummary({
-      total: 5,
-      success: 5,
-      cached: 0,
-      failed: 0,
-      saved: 0,
-      compressionCount: 42,
-    })
-
-    expect(reporter.info.mock.calls[0][0]).toContain('usedThisMonth: 42')
-  })
-
-  it('logConvertiblePngs outputs warning tags', () => {
-    const reporter = createMockReporter()
-    const r = createReporter({ t: createMockT(), reporter })
-
-    r.logConvertiblePngs(3)
-
-    expect(reporter.warn).toHaveBeenCalledTimes(2)
-    expect(reporter.warn.mock.calls[0][0]).toContain('cli.output.convertiblePngsHint')
-    expect(reporter.warn.mock.calls[1][0]).toContain('cli.output.convertiblePngsCommand')
-  })
-
-  it('logNoKeysHint outputs warning tag', () => {
-    const reporter = createMockReporter()
-    const r = createReporter({ t: createMockT(), reporter })
-
-    r.logNoKeysHint()
-
-    expect(reporter.warn).toHaveBeenCalledTimes(1)
-    expect(reporter.warn.mock.calls[0][0]).toContain('cli.output.noKeysHint')
+  it('stays quiet for empty work and no conversion candidates', () => {
+    const { log, sink } = setup()
+    log.logStart(0)
+    log.logSummary()
+    log.logConvertiblePngs(0)
+    expect(sink.info).not.toHaveBeenCalled()
   })
 })

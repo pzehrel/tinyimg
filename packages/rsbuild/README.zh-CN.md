@@ -78,3 +78,28 @@ RSBUILD_TINYIMG_KEY=your_api_key
 ## 许可证
 
 [MIT](https://github.com/pzehrel/tinyimg/blob/main/LICENSE)
+
+## 缓存和输出行为
+
+已处理图片不会重复远程压缩，显式开启 PNG 转 JPG 时仅进行本地转换；`--no-cache`（CLI）或 `noCache: true`（插件）只关闭缓存读写。缓存清理保留保存的 API key。PNG 转 JPG 保留文件名，CLI 和插件均默认关闭；分别使用 `--convert` 和 `convertPngToJpg: true` 开启。插件失败时记录错误并保留原图继续构建。插件默认不使用用户保存的 key，`USE_USER_TINYIMG_KEYS=true` 才启用。
+
+## 转换后的扩展名
+
+插件默认 `renameConvertedFiles: false`，保留原文件名；设置 `convertPngToJpg: true` 和 `renameConvertedFiles: true` 后，不透明 PNG 转换为 JPEG 并将产物扩展名改为 `.jpg`，目录、基本名及 hash 部分保持不变，JS/CSS/HTML/构建清单引用同步更新。透明 PNG 和失败的压缩保持原文件名。目标名称已存在时构建报错，避免覆盖资源。重命名开关不改变压缩缓存身份，也不会自动开启格式转换。
+
+```ts
+tinyimg({
+  convertPngToJpg: true,
+  renameConvertedFiles: true,
+})
+```
+
+## 压缩日志
+
+CLI 和插件默认仅输出开始提示、一行汇总和必要的错误；检测到可转换的不透明 PNG 时，使用 info 提示 `--convert` 或 `convertPngToJpg: true`，不承诺一定更小。已开启转换时不重复提示。CLI 用 `--verbose`、插件用 `verbose: true` 开启按文件名排序的明细，显示大小变化、缓存和转换状态。空任务不输出构建日志。
+
+插件使用宿主原生日志：Vite 的 `config.logger`、Webpack 的 `compiler.getInfrastructureLogger('tinyimg')`、Rsbuild 的 `api.logger`，遵守宿主日志级别。
+
+## 宿主版本兼容
+
+开发和示例使用最新稳定版宿主，保留现有兼容下限。详细范围、验证版本及 Node 要求见[宿主兼容说明](../../docs/host-compatibility.md)。

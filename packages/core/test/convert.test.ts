@@ -138,3 +138,21 @@ describe('convert', () => {
     await expect(canConvertToJpg('/nonexistent/path.png')).resolves.toBe(false)
   })
 })
+
+for (const format of ['png', 'jpeg', 'webp', 'avif'] as const) {
+  it(`marking ${format} preserves decoded pixels and is idempotent`, async () => {
+    const raw = Buffer.from(Array.from({ length: 12 * 12 * 3 }, (_, index) => (index * 17 + index % 23 * 3) % 256))
+    const buffer = await sharp(raw, { raw: { width: 12, height: 12, channels: 3 } }).toFormat(format, { quality: 100 }).toBuffer()
+    const marked = await markProcessed(buffer, format)
+    expect(await isProcessed(marked)).toBe(true)
+    expect((await sharp(marked).raw().toBuffer()).equals(await sharp(buffer).raw().toBuffer())).toBe(true)
+    expect(await markProcessed(marked, format)).toEqual(marked)
+  })
+}
+it('recognizes an EXIF marker written by an older release', async () => {
+  const buffer = await sharp({ create: { width: 10, height: 10, channels: 3, background: 'red' } })
+    .jpeg()
+    .withMetadata({ exif: { IFD0: { ImageDescription: 'ProcessedBy: tinyimg' } } })
+    .toBuffer()
+  expect(await isProcessed(buffer)).toBe(true)
+})

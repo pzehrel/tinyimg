@@ -13,9 +13,7 @@
   "summary.failed": "Failed",
   "summary.saved": "Saved",
   "summary.processed": "Processed",
-
   "cli.meta.description": "TinyPNG image compression tool",
-
   "cli.command.convert.description": "Convert PNG to JPG (only PNGs without alpha channel)",
   "cli.command.keys.description": "Manage API keys",
   "cli.command.keys.list.description": "List saved keys",
@@ -26,7 +24,6 @@
   "cli.command.cache.list.description": "List cached compression results",
   "cli.command.cache.info.description": "Show cache statistics",
   "cli.command.cache.clear.description": "Clear compression cache",
-
   "cli.arg.paths.description": "image paths or globs",
   "cli.arg.global.description": "use user-level cache (~/.tinyimg)",
   "cli.arg.yes.description": "skip confirmation prompt",
@@ -42,7 +39,6 @@
   "cli.arg.maskedKey.description": "Masked key to delete",
   "cli.arg.json.description": "output as JSON",
   "cli.arg.convertList.description": "show only convertible PNGs (without alpha channel)",
-
   "cli.output.noFiles": "No files found",
   "cli.output.alreadyProcessed": "already compressed",
   "cli.output.failed": "failed:",
@@ -79,6 +75,19 @@
   "cli.output.convertiblePngsHint": "{count} PNG files can be converted to JPG for further size reduction:",
   "cli.output.convertiblePngsCommand": "Run `tinyimg convert <paths>` to convert them.",
   "cli.output.convertedPngsHint": "{count} PNG files were automatically converted to JPG encoding.",
-
-  "plugin.output.converted": "converted"
+  "plugin.output.converted": "converted",
+  "log.start": "Optimizing {count} images…",
+  "log.images": "{count} images",
+  "log.compressed": "{count} compressed",
+  "log.cached": "{count} cached",
+  "log.processed": "{count} already processed",
+  "log.failed": "{count} failed",
+  "log.converted": "PNG → JPG",
+  "log.cacheWarning": "Cache unavailable for {name}: {message}",
+  "log.conversionHint.cli": "{count} opaque PNGs may be smaller as JPEG. Enable --convert; filenames stay unchanged.",
+  "log.conversionHint.plugin": "{count} opaque PNGs may be smaller as JPEG. Enable convertPngToJpg: true (renameConvertedFiles: true also changes .png to .jpg).",
+  "cli.arg.verbose.description": "show per-image compression details",
+  "log.image": "1 image",
+  "log.startOne": "Optimizing 1 image…",
+  "log.convertedCount": "{count} converted to JPEG"
 }

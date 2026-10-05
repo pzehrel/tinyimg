@@ -1,7 +1,7 @@
 import type { CommandDef } from 'citty'
 import fs from 'node:fs/promises'
 import process from 'node:process'
-import { canConvertToJpg, compressFile, createReporter, formatExtras, formatSize, initKeyManager, listProjectKeys, listUserKeys, markProcessed, matchFiles, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
+import { canConvertToJpg, compressFile, createReporter, initKeyManager, matchFiles, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
 import kleur from 'kleur'
 import pLimit from 'p-limit'
 import path from 'pathe'
@@ -20,15 +20,16 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         alias: 'o',
       },
       strategy: {
-        type: 'string',
+        type: 'enum',
+        options: ['AUTO', 'API_ONLY', 'API_FIRST', 'RANDOM'],
         description: t('cli.arg.strategy.description'),
         alias: 's',
         default: 'AUTO',
       },
-      noCache: {
+      cache: {
         type: 'boolean',
         description: t('cli.arg.noCache.description'),
-        default: false,
+        default: true,
       },
       key: {
         type: 'string',
@@ -45,15 +46,15 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         type: 'boolean',
         description: t('cli.arg.convert.description'),
         alias: 'c',
-        default: true,
+        default: false,
+      },
+      verbose: {
+        type: 'boolean',
+        description: t('cli.arg.verbose.description'),
+        default: false,
       },
     },
     async run({ args, cmd }) {
-      const subCommands = ['convert', 'keys', 'list', 'ls']
-      if (args._.length && subCommands.includes(args._[0] as string)) {
-        return
-      }
-
       const inputs = args._.length ? args._.map(String) : (args.paths ? [args.paths as string] : [])
       if (inputs.length === 0) {
         const { renderUsage } = await import('citty')
@@ -64,7 +65,7 @@ export function registerCompress(t: (key: string, params?: Record<string, string
       const envKeys = resolveProjectKeysFromEnv(process.env)
       const argKeys = (args.key as string | undefined)?.split(',').map(k => k.trim()).filter(Boolean) || []
       initKeyManager({
-        projectKeys: [...envKeys, ...argKeys],
+        projectKeys: argKeys.length ? argKeys : envKeys,
         useUserKeys: true,
       })
 
@@ -78,18 +79,24 @@ export function registerCompress(t: (key: string, params?: Record<string, string
         return
       }
 
-      const limit = pLimit(Number(args.parallel) || 3)
+      const parallel = Number(args.parallel)
+      if (!Number.isSafeInteger(parallel) || parallel < 1)
+        throw new Error('parallel must be a positive integer')
+      const limit = pLimit(parallel)
       const convertiblePngs: string[] = []
-      const convertedPngs: string[] = []
 
       const reporter = createReporter({
         t,
+        target: 'cli',
+        verbose: args.verbose as boolean,
         reporter: {
-          info: msg => console.log(msg),
-          warn: msg => console.warn(msg),
-          error: msg => console.error(msg),
+          info: msg => console.log(`${kleur.cyan('[tinyimg]')} ${msg}`),
+          warn: msg => console.warn(`${kleur.yellow('[tinyimg]')} ${msg}`),
+          error: msg => console.error(`${kleur.red('[tinyimg]')} ${msg}`),
         },
       })
+
+      reporter.logStart(files.length)
 
       await Promise.all(
         files.map(file =>
@@ -106,72 +113,36 @@ export function registerCompress(t: (key: string, params?: Record<string, string
               strategy: args.strategy as 'AUTO' | 'API_ONLY' | 'RANDOM' | 'API_FIRST',
               maxFileSize: 5 * 1024 * 1024,
               convertPngToJpg: args.convert as boolean,
-              noCache: args.noCache as boolean,
+              noCache: args.cache === false,
             })
 
             const ok = reporter.track(result)
             if (!ok) {
-              const errorMsg = String(result.error!.message || 'Unknown error').replace(/\n/g, ' ')
-              const compressorName = (result.error as any)?.compressor || result.compressor
-              console.log(`${kleur.red(t('status.failed'))} ${relPath.padEnd(40)} ${kleur.red().bold(t('cli.output.failed'))} ${errorMsg} ${kleur.gray(`(${compressorName})`)}`)
+              reporter.logError(relPath, result)
               return
-            }
-
-            if (result.convertedPngToJpg) {
-              convertedPngs.push(file.path)
             }
 
             const outputDir = args.output as string | undefined
             if (outputDir) {
-              const outputPath = path.join(outputDir, path.relative(process.cwd(), file.path))
+              const relative = path.relative(process.cwd(), file.path)
+              if (relative === '..' || relative.startsWith('../') || path.isAbsolute(relative))
+                throw new Error('Input must be inside the working directory when using --output')
+              const outputPath = path.join(outputDir, relative)
               await fs.mkdir(path.dirname(outputPath), { recursive: true })
-              const buf = result.alreadyProcessed ? result.buffer : await markProcessed(result.buffer, result.outputExt)
-              await fs.writeFile(outputPath, buf)
+              await fs.writeFile(outputPath, result.buffer)
             }
-            else if (!result.alreadyProcessed) {
-              const processedBuf = await markProcessed(result.buffer, result.outputExt)
-              await fs.writeFile(file.path, processedBuf)
+            else if (!result.alreadyProcessed || result.convertedPngToJpg) {
+              await fs.writeFile(file.path, result.buffer)
             }
 
-            const origStr = formatSize(result.originalSize)
-            const compStr = formatSize(result.compressedSize)
-            const extras: (string | undefined)[] = []
-            if (result.alreadyProcessed) {
-              extras.push(t('cli.output.alreadyProcessed'))
-            }
-            else {
-              const ratio = Math.round((1 - result.compressedSize / result.originalSize) * 100)
-              extras.push(`-${ratio}%`)
-              if (result.cached) {
-                extras.push(t('cli.output.usedCache'))
-              }
-            }
-            if (result.convertedPngToJpg) {
-              extras.push(t('cli.output.converted'))
-            }
-            else if (!args.convert && convertible) {
-              extras.push(t('cli.output.convertible'))
-            }
-            console.log(kleur.green(t('status.success')), relPath.padEnd(40), `${origStr}→${compStr}${formatExtras(extras)}`)
+            reporter.logItem(relPath, result)
           }),
         ),
       )
 
-      if (args.convert && convertedPngs.length > 0) {
-        console.log(kleur.yellow(t('cli.output.convertedPngsHint', { count: convertedPngs.length })))
-      }
-      else if (!args.convert && convertiblePngs.length > 0) {
-        console.log(kleur.yellow(t('cli.output.convertiblePngsHint', { count: convertiblePngs.length })))
-        console.log(kleur.yellow(t('cli.output.convertiblePngsCommand')))
-      }
-
-      const projectKeys = listProjectKeys()
-      const userKeys = await listUserKeys()
-      if (projectKeys.length === 0 && userKeys.length === 0) {
-        console.log(kleur.yellow(t('cli.output.noKeysHint')))
-      }
-
-      reporter.logSummary(reporter.getSummary())
+      reporter.logSummary()
+      if (!args.convert)
+        reporter.logConvertiblePngs(convertiblePngs.length)
       process.exit(reporter.getSummary().failed > 0 ? 1 : 0)
     },
   }

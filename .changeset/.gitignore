@@ -1,1 +1,5 @@
 *.md
+!fix-compression-pipeline.md
+!rename-converted-files.md
+!opt-in-conversion-logs.md
+!host-version-compatibility.md
