@@ -29,13 +29,15 @@
   },
   "dependencies": {
     "p-limit": "^6.2.0",
-    "pathe": "^2.0.3"
+    "pathe": "^2.0.3",
+    "sharp": "^0.34.1"
   },
   "devDependencies": {
     "@pz4l/tinyimg-core": "workspace:*",
     "@pz4l/tinyimg-locale": "workspace:*",
     "tsdown": "^0.21.8",
     "typescript": "^5.9.3",
-    "webpack": "^5.98.0"
+    "webpack": "^5.111.1",
+    "webpack-previous": "npm:webpack@5.106.1"
   }
 }

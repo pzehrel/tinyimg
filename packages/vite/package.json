@@ -30,17 +30,21 @@
     "prepublishOnly": "test -n \"$CI\" || (echo 'Error: Publishing is only allowed from CI.' && exit 1)"
   },
   "peerDependencies": {
-    "vite": "^5.0.0 || ^6.0.0"
+    "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0"
   },
   "dependencies": {
     "p-limit": "^6.2.0",
-    "pathe": "^2.0.3"
+    "pathe": "^2.0.3",
+    "sharp": "^0.34.1"
   },
   "devDependencies": {
     "@pz4l/tinyimg-core": "workspace:*",
     "@pz4l/tinyimg-locale": "workspace:*",
     "tsdown": "^0.21.8",
     "typescript": "^5.9.3",
-    "vite": "^6.2.0"
+    "vite": "^8.3.2",
+    "vite5": "npm:vite@5.0.0",
+    "vite6": "npm:vite@6.4.2",
+    "vite7": "npm:vite@7.3.1"
   }
 }

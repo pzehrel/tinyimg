@@ -63,3 +63,20 @@ describe('cache', () => {
     expect(entries).toHaveLength(0)
   })
 })
+
+it('clearing user cache preserves saved credentials and unrelated files', async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'tinyimg-cache-credentials-'))
+  try {
+    await fs.writeFile(path.join(dir, 'keys.json'), '["fake-key"]')
+    await fs.writeFile(path.join(dir, 'notes.txt'), 'keep')
+    await fs.mkdir(path.join(dir, 'nested.png'))
+    await writeCache('abc123', 'png', Buffer.from('compressed'), dir)
+    expect(await listCacheEntries(dir)).toEqual([{ md5: 'abc123', ext: 'png', size: 10 }])
+    expect(await clearCache(dir)).toEqual({ deleted: 1 })
+    expect(await fs.readFile(path.join(dir, 'keys.json'), 'utf8')).toBe('["fake-key"]')
+    expect(await fs.readdir(dir)).toEqual(expect.arrayContaining(['keys.json', 'notes.txt', 'nested.png']))
+  }
+  finally {
+    await fs.rm(dir, { recursive: true, force: true })
+  }
+})

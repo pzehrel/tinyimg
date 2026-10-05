@@ -41,14 +41,14 @@ export async function runKeysList(console_: KeysConsole) {
   if (projectKeys.length > 0) {
     console_.log(kleur.cyan(`${t('cli.output.project')}:`))
     projectKeys.forEach((k, i) => {
-      console_.log(`  ${i + 1}. ${k.key} (${t('cli.output.usedThisMonth')}: ${k.used})`)
+      console_.log(`  ${i + 1}. ${k.key} (${t('cli.output.usedThisMonth')}: ${k.used ?? 'unknown'})`)
     })
   }
 
   if (userKeys.length > 0) {
     console_.log(kleur.cyan(`${t('cli.output.user')}:`))
     userKeys.forEach((k, i) => {
-      console_.log(`  ${i + 1}. ${k.key} (${t('cli.output.usedThisMonth')}: ${k.used})`)
+      console_.log(`  ${i + 1}. ${k.key} (${t('cli.output.usedThisMonth')}: ${k.used ?? 'unknown'})`)
     })
   }
 }

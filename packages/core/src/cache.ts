@@ -6,7 +6,8 @@ import path from 'pathe'
 export async function readCache(md5: string, ext: string, cacheDir: string): Promise<Buffer | null> {
   const filePath = path.join(cacheDir, `${md5}.${ext}`)
   try {
-    return await fs.readFile(filePath)
+    const buffer = await fs.readFile(filePath)
+    return buffer.length ? buffer : null
   }
   catch {
     return null
@@ -29,7 +30,9 @@ export function getUserCacheDir(): string {
 
 export async function listCacheEntries(cacheDir: string): Promise<{ md5: string, ext: string, size: number }[]> {
   try {
-    const entries = await fs.readdir(cacheDir)
+    const entries = (await fs.readdir(cacheDir, { withFileTypes: true }))
+      .filter(entry => entry.isFile() && isCacheFile(entry.name))
+      .map(entry => entry.name)
     const result = await Promise.all(
       entries.map(async (entry) => {
         const lastDot = entry.lastIndexOf('.')
@@ -48,11 +51,16 @@ export async function listCacheEntries(cacheDir: string): Promise<{ md5: string,
 
 export async function clearCache(cacheDir: string): Promise<{ deleted: number }> {
   try {
-    const entries = await fs.readdir(cacheDir)
-    await Promise.all(entries.map(entry => fs.unlink(path.join(cacheDir, entry))))
-    return { deleted: entries.length }
+    const entries = (await fs.readdir(cacheDir, { withFileTypes: true }))
+      .filter(entry => entry.isFile() && isCacheFile(entry.name))
+    const results = await Promise.allSettled(entries.map(entry => fs.unlink(path.join(cacheDir, entry.name))))
+    return { deleted: results.filter(result => result.status === 'fulfilled').length }
   }
   catch {
     return { deleted: 0 }
   }
+}
+
+function isCacheFile(name: string): boolean {
+  return /^[\w-]+\.(?:png|jpe?g|webp|avif)$/i.test(name)
 }

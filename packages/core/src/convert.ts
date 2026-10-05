@@ -1,5 +1,6 @@
 import type { Buffer } from 'node:buffer'
 import sharp from 'sharp'
+import { addProcessedMarker, hasProcessedMarker } from './processed-marker'
 
 export async function canConvertToJpg(filePath: string): Promise<boolean> {
   try {
@@ -25,41 +26,25 @@ export async function convertPngToJpg(filePath: string): Promise<Buffer> {
   }
 }
 
-export async function markProcessed(buffer: Buffer, ext: 'png' | 'jpg' | 'jpeg' | 'webp'): Promise<Buffer> {
-  const normalized = ext.toLowerCase()
-  let pipeline: sharp.Sharp
-
-  if (normalized === 'png') {
-    pipeline = sharp(buffer).png({ compressionLevel: 9 })
-  }
-  else if (normalized === 'jpg' || normalized === 'jpeg') {
-    pipeline = sharp(buffer).jpeg()
-  }
-  else if (normalized === 'webp') {
-    pipeline = sharp(buffer).webp()
-  }
-  else {
+export async function markProcessed(buffer: Buffer, ext: 'png' | 'jpg' | 'jpeg' | 'webp' | 'avif'): Promise<Buffer> {
+  if (!['png', 'jpg', 'jpeg', 'webp', 'avif'].includes(ext.toLowerCase()))
     throw new Error(`Unsupported extension for markProcessed: ${ext}`)
-  }
-
-  return pipeline
-    .withMetadata({ exif: { IFD0: { ImageDescription: 'ProcessedBy: tinyimg' } } })
-    .toBuffer()
+  if (await isProcessed(buffer))
+    return buffer
+  const meta = await sharp(buffer).metadata()
+  const format = meta.format === 'heif' && meta.compression === 'av1' ? 'avif' : meta.format
+  if (!format || !['png', 'jpeg', 'webp', 'avif'].includes(format))
+    throw new Error(`Unsupported image format: ${format}`)
+  return addProcessedMarker(buffer, format)
 }
 
-/**
- * Checks if the image buffer contains the "ProcessedBy: tinyimg" marker.
- *
- * sharp's `metadata()` returns the raw EXIF buffer (`meta.exif`) but does not
- * expose parsed IFD0 fields directly. We decode the buffer as latin1 and scan
- * for the marker string. This is a lightweight approach that avoids adding a
- * dedicated EXIF-parsing dependency.
- */
 export async function isProcessed(buffer: Buffer): Promise<boolean> {
+  if (hasProcessedMarker(buffer))
+    return true
   try {
+    // Continue recognizing files marked by earlier releases using EXIF.
     const meta = await sharp(buffer).metadata()
-    const desc = meta.exif ? meta.exif.toString('latin1') : ''
-    return desc.includes('ProcessedBy: tinyimg')
+    return (meta.exif?.toString('latin1') || '').includes('ProcessedBy: tinyimg')
   }
   catch {
     return false

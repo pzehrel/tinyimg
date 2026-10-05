@@ -1,5 +1,6 @@
+export { assertAssetRenames, type AssetReferenceEdit, assetReferenceEdits, convertedAssetName, rewriteAssetReferences } from './asset-renames'
 export { clearCache, getCacheDir, getUserCacheDir, listCacheEntries, readCache, writeCache } from './cache'
-export { compressFile, type CompressFileOptions, type CompressFileResult } from './compress-file'
+export { compressFile, type CompressFileOptions, type CompressFileResult, type CompressionStrategy, type ImageExtension } from './compress-file'
 export { canConvertToJpg, convertPngToJpg, isProcessed, markProcessed } from './convert'
 export { addUserKeys, initKeyManager, type KeyInfo, listProjectKeys, listUserKeys, removeUserKey, resolveProjectKeysFromEnv, type VerifyResult } from './key-manager'
 export { type MatchedFile, matchFiles, type MatchOptions } from './match'

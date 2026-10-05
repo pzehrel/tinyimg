@@ -4,7 +4,7 @@ import { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import process from 'node:process'
-import { canConvertToJpg, compressFile, createReporter, initKeyManager, listProjectKeys, listUserKeys, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
+import { assertAssetRenames, assetReferenceEdits, canConvertToJpg, compressFile, convertedAssetName, createReporter, initKeyManager, resolveProjectKeysFromEnv } from '@pz4l/tinyimg-core'
 import { createLocaleI18n } from '@pz4l/tinyimg-locale'
 import pLimit from 'p-limit'
 import path from 'pathe'
@@ -36,10 +36,20 @@ export interface PluginOptions extends Omit<CompressFileOptions, 'filePath'> {
   convertPngToJpg?: boolean
 
   /**
+   * Rename emitted .png assets with JPEG content to .jpg and update references.
+   * Does not enable PNG-to-JPG conversion by itself.
+   * @default false
+   */
+  renameConvertedFiles?: boolean
+
+  /**
    * Maximum number of images to compress in parallel.
    * @default 3
    */
   parallel?: number
+
+  /** Show sorted per-image details in addition to the summary. @default false */
+  verbose?: boolean
 }
 
 export default class TinyimgWebpackPlugin {
@@ -47,8 +57,10 @@ export default class TinyimgWebpackPlugin {
 
   apply(compiler: Compiler) {
     const pluginName = 'TinyimgWebpackPlugin'
+    const logger = compiler.getInfrastructureLogger('tinyimg')
 
     compiler.hooks.compilation.tap(pluginName, (compilation) => {
+      const renames = new Map<string, string>()
       initKeyManager({
         projectKeys: resolveProjectKeysFromEnv(process.env),
         useUserKeys: process.env.USE_USER_TINYIMG_KEYS === 'true',
@@ -60,24 +72,27 @@ export default class TinyimgWebpackPlugin {
           stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_SIZE,
         },
         async () => {
-          const limit = pLimit(this.options.parallel || 3)
+          const parallel = this.options.parallel ?? 3
+          if (!Number.isSafeInteger(parallel) || parallel < 1)
+            throw new Error('parallel must be a positive integer')
+          const limit = pLimit(parallel)
           const assets = compilation.getAssets()
-          const images = assets.filter(a => /\.(?:png|jpg|jpeg|webp|avif)$/.test(a.name))
-
-          if (images.length > 0) {
-            console.log()
-          }
+          const images = assets.filter(a => /\.(?:png|jpg|jpeg|webp|avif)$/i.test(a.name))
 
           const convertiblePngs: string[] = []
 
           const reporter = createReporter({
             t,
+            target: 'plugin',
+            verbose: this.options.verbose,
             reporter: {
-              info: msg => console.log(`[tinyimg] ${msg}`),
-              warn: msg => console.warn(`[tinyimg] ${msg}`),
-              error: msg => console.error(`[tinyimg] ${msg}`),
+              info: msg => logger.info(msg),
+              warn: msg => logger.warn(msg),
+              error: msg => logger.error(msg),
             },
           })
+
+          reporter.logStart(images.length)
 
           await Promise.all(
             images.map(asset =>
@@ -86,31 +101,39 @@ export default class TinyimgWebpackPlugin {
                 if (!source)
                   return
                 const buf = Buffer.isBuffer(source) ? source : Buffer.from(source as string)
-                const tmpPath = path.join(os.tmpdir(), `tinyimg-${Date.now()}-${path.basename(asset.name)}`)
-                await fs.writeFile(tmpPath, buf)
+                const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'tinyimg-'))
+                const tmpPath = path.join(tmpDir, path.basename(asset.name))
+                try {
+                  await fs.writeFile(tmpPath, buf)
 
-                const isPng = asset.name.toLowerCase().endsWith('.png')
-                if (isPng && await canConvertToJpg(tmpPath)) {
-                  convertiblePngs.push(asset.name)
+                  const isPng = asset.name.toLowerCase().endsWith('.png')
+                  if (isPng && await canConvertToJpg(tmpPath)) {
+                    convertiblePngs.push(asset.name)
+                  }
+
+                  const result = await compressFile({
+                    filePath: tmpPath,
+                    strategy: this.options.strategy,
+                    maxFileSize: this.options.maxFileSize,
+                    convertPngToJpg: this.options.convertPngToJpg,
+                    noCache: this.options.noCache,
+                  })
+
+                  const ok = reporter.track(result)
+                  if (!ok) {
+                    reporter.logError(asset.name, result)
+                    return
+                  }
+
+                  const renamed = convertedAssetName(asset.name, result.outputExt, this.options.renameConvertedFiles ?? false)
+                  if (renamed !== asset.name)
+                    renames.set(asset.name, renamed)
+                  compilation.updateAsset(asset.name, new compiler.webpack.sources.RawSource(result.buffer))
+                  reporter.logItem(renamed, result)
                 }
-
-                const result = await compressFile({
-                  filePath: tmpPath,
-                  strategy: this.options.strategy,
-                  maxFileSize: this.options.maxFileSize,
-                  convertPngToJpg: this.options.convertPngToJpg,
-                })
-
-                await fs.unlink(tmpPath).catch(() => {})
-
-                const ok = reporter.track(result)
-                if (!ok) {
-                  reporter.logError(asset.name, result)
-                  return
+                finally {
+                  await fs.rm(tmpDir, { recursive: true, force: true })
                 }
-
-                compilation.updateAsset(asset.name, new compiler.webpack.sources.RawSource(result.buffer))
-                reporter.logItem(asset.name, result)
               }),
             ),
           )
@@ -118,18 +141,33 @@ export default class TinyimgWebpackPlugin {
           if (images.length > 0) {
             reporter.logSummary()
 
-            if (convertiblePngs.length > 0) {
+            if (!this.options.convertPngToJpg)
               reporter.logConvertiblePngs(convertiblePngs.length)
-            }
-
-            const projectKeys = listProjectKeys()
-            const userKeys = await listUserKeys()
-            if (projectKeys.length === 0 && userKeys.length === 0) {
-              reporter.logNoKeysHint()
-            }
           }
         },
       )
+      if (this.options.renameConvertedFiles) {
+        compilation.hooks.processAssets.tap(
+          { name: `${pluginName}:rename`, stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE },
+          () => {
+            assertAssetRenames(compilation.getAssets().map(asset => asset.name), renames)
+            for (const [from, to] of renames)
+              compilation.renameAsset(from, to)
+            const publicPath = typeof compilation.outputOptions.publicPath === 'string' ? compilation.outputOptions.publicPath : ''
+            for (const asset of compilation.getAssets()) {
+              if (!/\.(?:[cm]?js|css|html?|json)$/i.test(asset.name))
+                continue
+              const edits = assetReferenceEdits(asset.source.source().toString(), asset.name, renames, publicPath)
+              if (!edits.length)
+                continue
+              const source = new compiler.webpack.sources.ReplaceSource(asset.source)
+              for (const edit of edits)
+                source.replace(edit.start, edit.end - 1, edit.value)
+              compilation.updateAsset(asset.name, source)
+            }
+          },
+        )
+      }
     })
   }
 }

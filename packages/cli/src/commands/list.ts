@@ -1,7 +1,7 @@
 import type { CommandDef } from 'citty'
 import fs from 'node:fs/promises'
 import process from 'node:process'
-import { formatSize, matchFiles, readCache } from '@pz4l/tinyimg-core'
+import { formatSize, listCacheEntries, matchFiles, readCache } from '@pz4l/tinyimg-core'
 import { createLocaleI18n } from '@pz4l/tinyimg-locale'
 import kleur from 'kleur'
 import path from 'pathe'
@@ -11,6 +11,7 @@ const t = createLocaleI18n()
 export interface ListDeps {
   matchFiles: typeof matchFiles
   readCache: typeof readCache
+  listCacheEntries?: typeof listCacheEntries
   access: typeof fs.access
   cwd: string
   log: (...args: any[]) => void
@@ -43,6 +44,8 @@ export async function runList(args: { paths: string | undefined, _: string[], js
     cacheDirExists = false
   }
 
+  const cacheEntries = cacheDirExists && deps.listCacheEntries ? await deps.listCacheEntries(cacheDir) : []
+
   const maxPathLen = Math.max(
     ...filtered.map(f => path.relative(deps.cwd, f.path).length),
     20,
@@ -54,7 +57,13 @@ export async function runList(args: { paths: string | undefined, _: string[], js
 
   for (const f of filtered) {
     const rel = path.relative(deps.cwd, f.path).padEnd(maxPathLen)
-    const cached = cacheDirExists ? await deps.readCache(f.md5!, path.extname(f.path).slice(1), cacheDir) : null
+    const ext = path.extname(f.path).slice(1).toLowerCase()
+    let cached = cacheDirExists ? await deps.readCache(f.md5!, ext, cacheDir) : null
+    if (!cached) {
+      const entry = cacheEntries.find(entry => entry.md5.startsWith(`${f.md5}-`) && entry.ext === ext)
+      if (entry)
+        cached = await deps.readCache(entry.md5, entry.ext, cacheDir)
+    }
     const lineColor = getLineColor(f.size)
     const parts: string[] = [rel, formatSize(f.size).padStart(8)]
     const tags: string[] = []
@@ -127,6 +136,7 @@ const listCommand: CommandDef = {
       {
         matchFiles,
         readCache,
+        listCacheEntries,
         access: fs.access,
         cwd: process.cwd(),
         log: console.log,

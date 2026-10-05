@@ -55,3 +55,13 @@ describe('list command', () => {
     expect(summary).toContain('100B')
   })
 })
+
+it('reports a configuration-keyed compression cache as cached', async () => {
+  const deps = { ...createDeps(), listCacheEntries: vi.fn().mockResolvedValue([{ md5: 'abc-config', ext: 'png', size: 80 }]) }
+  deps.matchFiles.mockResolvedValue([{ path: '/project/a.PNG', size: 100, md5: 'abc' }])
+  deps.access.mockResolvedValue(undefined)
+  deps.readCache.mockImplementation(async (key: string) => key === 'abc-config' ? Buffer.from('cached') : null)
+  await runList({ paths: './', _: [], json: false, convert: false }, deps)
+  expect(deps.readCache).toHaveBeenCalledWith('abc-config', 'png', '/project/node_modules/.tinyimg')
+  expect(deps.log.mock.calls.map(call => call[0]).join(' ')).toMatch(/cached|缓存/)
+})
